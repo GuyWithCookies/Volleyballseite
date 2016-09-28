@@ -1,81 +1,89 @@
 <navbar log="true"></navbar>
 <div class="container-fluid">
-	<div class="row col-sm-12">
-		<div class='col-sm-3'>
-			<div class="panel panel-primary">
-				<div class="panel panel-heading">
-					<h3 class="panel-title">Turniere</h3>
-					<button type="button" class="btn btn-success btn-small pull-right" ng-click="openNewCompModal()">
-						Erstellen
-					</button>             
-					<div class="clearfix"></div> 
-				</div>
-				<div class="panel panel-body">
-					<div class="col-sm-12 list-group">
-						<a href="" ng-repeat="comp in comps | orderBy : date" 
-						class="list-group-item list-group-item-default text-center">  
-						<span class="glyphicon glyphicon-exclamation-sign" ng-show="comp.own && !comp.done"></span>
-						<span class="glyphicon glyphicon-ok-sign" ng-show="comp.own && comp.done"></span>
+    <div class="row col-sm-12">
+        <div class='col-sm-3'>
+            <div class="panel panel-primary">
+                <div class="panel panel-heading">
+                    <h3 class="panel-title">Turniere</h3>
+                    <button type="button" class="btn btn-success btn-small pull-right" ng-click="showNewCompView()">
+                        Erstellen
+                    </button>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="panel panel-body">
+                    <div class="col-sm-12 list-group">
+                        <a href="" ng-click="showCompetition(comp.id)" ng-repeat="comp in comps | orderBy : date:true"
+                           class="list-group-item list-group-item-default text-center">
+                            <span class="glyphicon glyphicon-exclamation-sign" ng-show="!comp.done"></span>
+                            <span class="glyphicon glyphicon-ok-sign" ng-show="comp.done"></span>
 
-						<h5>{{comp.name}}<br><small>{{comp.date|date}}</small></h5>
-						<span class="glyphicon glyphicon-user" ng-show="comp.own"></span>
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
+                            <h5>{{comp.name}}<br><small>{{comp.date|date}}</small></h5>
+                            <span class="glyphicon glyphicon-user" ng-show="comp.own"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-	<div class='col-sm-9'>
-		<div>
-			<div class="panel panel-primary">
-				<div class="panel panel-heading">
-					<h3 class="panel-title">Erstelle ein neues Turnier</h3>
-				</div>
-				<div class="panel panel-body">
-					<div class="row">
-						<div class="col-sm-2 col-sm-offset-3">
-							<b>Turniername</b>
-						</div>
-						<input ng-model="newCompetition.name" class="col-sm-3"></input>
-						<hr class="col-sm-6 col-sm-offset-3">
-					</div>
-					<div class="row">
-						<div class="col-sm-2 col-sm-offset-3" >
-							<b>Datum</b>
-						</div>
-						<p class="input-group col-sm-4">
-						<input type="text" class="form-control" uib-datepicker-popup="dd.MM.yyyy" ng-model="newCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
-							<span class="input-group-btn">
+        <div class='col-sm-9' >
+            <div>
+                <div class="panel panel-primary" ng-if="createNewCompetition">
+                    <div class="panel panel-heading">
+                        <h3 class="panel-title">Erstelle ein neues Turnier</h3>
+                    </div>
+                    <div class="panel panel-body">
+                        <div class="row">
+                            <div class="col-sm-2 col-sm-offset-3">
+                                <b>Turniername</b>
+                            </div>
+                            <input ng-model="newCompetition.name" class="col-sm-3"></input>
+                            <hr class="col-sm-6 col-sm-offset-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 col-sm-offset-3" >
+                                <b>Datum</b>
+                            </div>
+                            <p class="input-group col-sm-4">
+                                <input type="text" class="form-control" uib-datepicker-popup="dd.MM.yyyy" ng-model="newCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
+                                <span class="input-group-btn">
 								<button type="button" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
 							</span>
-						</p>
-						<hr class="col-sm-6 col-sm-offset-3">
-					</div>
-					<div class="row">
-						<div class="col-sm-2 col-sm-offset-3">
-							<b>Ort</b>
-						</div>
-						<input ng-model="newCompetition.place" class="col-sm-3"></input>
-						<hr class="col-sm-6 col-sm-offset-3">
-					</div>
-					<div class="row">
-						<div class="col-sm-2 col-sm-offset-3">
-							<b>Beschreibung</b>
-						</div>
-						<textarea ng-model="newCompetition.description" class="col-sm-3"></textarea>
-					</div>
-					<br><br>
-					<div class="pull-right">
-						<label>
-							Eigenes Turnier:
-							<input type="checkbox" name="own" ng-model="newCompetition.own">
-						</label>
-						<button class="btn btn-success" type="button" ng-click="createCompetition()">Erstellen</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                            </p>
+                            <hr class="col-sm-6 col-sm-offset-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 col-sm-offset-3">
+                                <b>Ort</b>
+                            </div>
+                            <input ng-model="newCompetition.place" class="col-sm-3"></input>
+                            <hr class="col-sm-6 col-sm-offset-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 col-sm-offset-3">
+                                <b>Beschreibung</b>
+                            </div>
+                            <textarea ng-model="newCompetition.description" class="col-sm-3"></textarea>
+                        </div>
+                        <br><br>
+                        <div class="pull-right">
+                            <label>
+                                Eigenes Turnier:
+                                <input type="checkbox" name="own" ng-model="newCompetition.own">
+                            </label>
+                            <button class="btn btn-success" type="button" ng-click="createCompetition()">Erstellen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-primary" ng-if="!createNewCompetition && currentCompetition!=={}">
+                <div class="panel-heading">
+                    <p class="panel-title">{{currentCompetition.name}}</p>
+                    <
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 

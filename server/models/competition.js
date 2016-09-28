@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 var Competition = new Schema({
   id: Number,
   name: String,
-  own: String,
+  own: Boolean,
   place: String,
   date: Date,
   description: String,
