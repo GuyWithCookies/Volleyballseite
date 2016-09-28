@@ -1,0 +1,15 @@
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/">{{name}}</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li ng-repeat="view in views" ng-class="{'active': view.active, 'navbar-right':view.right}">
+        <a href={{view.link}} ng-click="changeActiveTab(view.link)"><span ng-show="view.symbol" class="glyphicon glyphicon-{{view.symbol}}"></span> {{view.text}}</a>
+      </li>
+    </ul>
+    <ul ng-show="log==='true'" class="nav navbar-nav navbar-right">
+      <li><a href="#" ng-click="logout()"><span class="glyphicon glyphicon-log-out"></span> Ausloggen</a></li>
+    </ul>
+  </div>
+</nav>

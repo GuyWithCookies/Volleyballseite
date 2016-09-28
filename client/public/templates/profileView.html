@@ -1,0 +1,45 @@
+<navbar log="true"></navbar>
+<div class="container-fluid">
+  <div class="row col-sm-12">
+    
+    <div class='col-sm-8 col-sm-offset-2'>
+    	<div class="col-sm-3 col-sm-offset-5 row extra-bottom-padding">
+			<img ng-src="/img/profiles/{{userdata.picture}}" width="100px" height="100px"></img>
+			<h3>{{userdata.username}}</h3>
+		</div>
+		<br>
+		<br>
+		<div class="row">
+			<div class="col-sm-2 col-sm-offset-3">
+				<b>Vorname</b>
+			</div>
+			<input ng-model="userdata.forename" class="col-sm-3" ng-disabled="!editing"></input>
+			<hr class="col-sm-6 col-sm-offset-3">
+		</div>
+		<div class="row">
+			<div class="col-sm-2 col-sm-offset-3">
+				<b>Nachname</b>
+			</div>
+			<input ng-model="userdata.surname" class="col-sm-3" ng-disabled="!editing"></input>
+			<hr class="col-sm-6 col-sm-offset-3">
+		</div>
+		<div class="row">
+			<div class="col-sm-2 col-sm-offset-3">
+				<b>E-Mail</b>
+			</div>
+			<input ng-model="userdata.email" class="col-sm-3" ng-disabled="!editing"></input>
+			<hr class="col-sm-6 col-sm-offset-3">
+		</div>
+		<div class="row">
+			<div class="col-sm-2 col-sm-offset-3">
+				<b>Telefonnummer</b>
+			</div>
+			<input ng-model="userdata.phone" class="col-sm-3" ng-disabled="!editing"></input>
+			<hr class="col-sm-6 col-sm-offset-3">
+		</div>
+		<div class="col-sm-6 col-sm-offset-3">
+			<button class="btn btn-success pull-right " ng-click="save()" ng-show="user===currentUser && editing">Speichern</button>
+			<button class="btn btn-primary pull-right " ng-click="toggleEditing()" ng-show="user===currentUser && !editing">Bearbeiten</button>
+		</div>
+    </div>
+  </div>

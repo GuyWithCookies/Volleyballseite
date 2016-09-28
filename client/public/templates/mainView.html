@@ -1,0 +1,89 @@
+<navbar log="true"></navbar>
+<div class="container-fluid">
+  <div class="row col-sm-12">
+    <div class='col-sm-8 col-sm-offset-2'>
+      <!--MainContent-->
+      <div class="panel panel-primary">
+        <div class="panel-heading row">
+          <div class="col-sm-6">
+            <h3>Training am {{currTraining.date| date:'dd.MM.yy'}}
+            </h3>
+          </div>
+          <div class="col-sm-6">
+            <img class="pull-right" ng-src="img/drink-{{currTraining.drink.supplied}}.png" width="10%" height="10%" alt="Trinken"></img>
+            <img class="pull-right" ng-src="img/food-{{currTraining.food.supplied}}.png" width="10%" height="10%" alt="Essen"></img>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="well row">
+            <div class="col-sm-4">
+              Teilnehmer:&nbsp;<a class="text-success">{{currTraining.appear.length}}</a>&nbsp;|&nbsp;<a class="text-warning">{{currTraining.maybe.length}}</a>&nbsp;|&nbsp;<a class="text-danger">{{currTraining.not.length}}</a>
+            </div>
+            <div class="col-sm-2">
+              <span class="glyphicon glyphicon-apple"></span>
+              <input type="checkbox" ng-model="registerData.food" 
+              ng-disabled="currTraining.food.supplied && currTraining.food.username !== username" ng-checked="currTraining.food.supplied">
+
+              <span class="glyphicon glyphicon-glass"></span>
+              <input type="checkbox" ng-model="registerData.drink" ng-disabled="currTraining.drink.supplied && currTraining.drink.username !== username" ng-checked="currTraining.drink.supplied">
+            </div>
+            <div class="col-sm-6">
+              <button type="button" class="btn btn-success col-sm-4" ng-click="register('appear')">Sicher</button>
+              <button type="button" class="btn btn-warning col-sm-4" ng-click="register('maybe')">Vielleicht</button>
+              <button type="button" class="btn btn-danger col-sm-4" ng-click="register('not')">Heute mal nicht!</button>
+            </div>
+          </div>
+          <!--Userdata here-->
+          <div class="row">
+            <div class="col-sm-1">
+              <span class="glyphicon glyphicon-triangle-left" ng-click="getPrevTraining()"><a></a></span>
+            </div>
+            <div class="col-sm-10 list-group">
+              <div class="col-sm-12">
+                <h3 class="text-center col-sm-12"
+                  ng-hide="currTraining.appear.length || currTraining.maybe.length || currTraining.not.length">
+                  <small>Es hat sich noch niemand eingetragen...</small>
+                </h3>
+                <a href="#/profile?user={{user}}" ng-repeat="user in currTraining.appear" class="list-group-item list-group-item-success text-center">  {{user}}
+                  <span ng-show="currTraining.food.username===user" class="glyphicon glyphicon-apple pull-right"></span>
+                  <span ng-show="currTraining.drink.username===user" class="glyphicon glyphicon-glass pull-right"></span>
+                </a>
+                <a href="#/profile?user={{user}}" ng-repeat="user in currTraining.maybe" class="list-group-item list-group-item-warning text-center">{{user}}
+                  <span ng-show="currTraining.food.username===user" class="glyphicon glyphicon-apple pull-right"></span>
+                  <span ng-show="currTraining.drink.username===user" class="glyphicon glyphicon-glass pull-right"></span>
+                </a>
+                <a href="#/profile?user={{user}}" ng-repeat="user in currTraining.not" class="list-group-item list-group-item-danger text-center">{{user}}
+                  <span ng-show="currTraining.food.username===user" class="glyphicon glyphicon-apple pull-right"></span>
+                  <span ng-show="currTraining.drink.username===user" class="glyphicon glyphicon-glass pull-right"></span>
+              </a>
+              </div>
+            </div>
+            <div class="col-sm-1">
+              <span class="pull-right glyphicon glyphicon-triangle-right" ng-click="getNextTraining()"><a></a></span>
+            </div>
+          </div>
+          <br>
+          <hr>
+          <br>
+          <div class="row">
+            <div ng-repeat="comment in currTraining.comments" class="col-sm-6 col-sm-offset-3 {{getMessageClass(comment.username)}}-bubble">
+              <p style="color:#333333;"><b>{{comment.username}}</b></p>
+              <div class="col-sm-6" style="color:#000000;">{{comment.message}}</div>
+            </div>
+          </div>
+          <!--Training Comments-->
+          <div class="row">
+            <div class="col-sm-8 col-sm-offset-3">
+              <textarea class="send-bubble col-sm-8" ng-model="message"></textarea>
+              <button type="button" style="height:100%;" class="col-sm-1 btn btn-primary btn-lg" ng-click="newComment()">              
+              <span class="pull-right glyphicon glyphicon-triangle-right" ng-click="getNextTraining()"><a></a>
+              </span>
+              </button>
+            </div>
+          </div>
+      </div>
+      </div>
+      <div class="col-sm-2">
+      </div>
+    </div>
+  </div>

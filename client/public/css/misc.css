@@ -1,0 +1,157 @@
+[ng-click],
+[data-ng-click],
+[x-ng-click] {
+    cursor: pointer;
+}
+
+.send-bubble
+{
+position: relative;
+height: auto;
+padding: 10px;
+background: #D9DCC4;
+-webkit-border-radius: 10px;
+-moz-border-radius: 10px;
+border-radius: 10px;
+border: #3A8D27 solid 2px;
+}
+
+.send-bubble:after
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 8px 0 8px 9px;
+border-color: transparent #A8A990;
+display: block;
+width: 0;
+z-index: 1;
+margin-top: -8px;
+right: -9px;
+top: 60%;
+}
+
+.send-bubble:before
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 9px 0 9px 10px;
+border-color: transparent #3A8D27;
+display: block;
+width: 0;
+z-index: 0;
+margin-top: -9px;
+right: -12px;
+top: 60%;
+}
+
+.send-bubble textarea {
+  position: inherit;
+  width: inherit;
+  height: inherit;
+  background: inherit;
+  
+  margin: 0;
+  padding: 0;
+  
+  border: none;
+  resize: none;
+}
+
+.right-bubble {
+position: relative;
+height: auto;
+padding: 10px;
+background: #D9DCC4;
+-webkit-border-radius: 10px;
+-moz-border-radius: 10px;
+border-radius: 10px;
+border: #000427 solid 2px;
+margin-bottom: 2em;
+}
+
+.right-bubble:after
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 8px 0 8px 9px;
+border-color: transparent #D9DCC4;
+display: block;
+width: 0;
+z-index: 1;
+margin-top: -8px;
+right: -9px;
+top: 66%;
+}
+
+.right-bubble:before
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 9px 0 9px 10px;
+border-color: transparent #000000;
+display: block;
+width: 0;
+z-index: 0;
+margin-top: -9px;
+right: -12px;
+top: 66%;
+}
+
+.left-bubble{
+position: relative;
+height: auto;
+padding: 10px;
+background: #D9DCC4;
+-webkit-border-radius: 10px;
+-moz-border-radius: 10px;
+border-radius: 10px;
+border: #C76427 solid 2px;
+margin-bottom: 2em;
+}
+
+.left-bubble:after
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 8px 9px 8px 0;
+border-color: transparent #D9DCC4;
+display: block;
+width: 0;
+z-index: 1;
+margin-top: -8px;
+left: -9px;
+top: 66%;
+}
+
+.left-bubble:before
+{
+content: '';
+position: absolute;
+border-style: solid;
+border-width: 9px 10px 9px 0;
+border-color: transparent #C76427;
+display: block;
+width: 0;
+z-index: 0;
+margin-top: -9px;
+left: -12px;
+top: 66%;
+}
+
+.row.extra-bottom-padding{
+   margin-bottom: 5rem;
+}
+
+.panel-heading h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: normal;
+    width: 75%;
+    padding-top: 8px;
+}
