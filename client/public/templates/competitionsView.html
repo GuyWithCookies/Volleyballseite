@@ -84,7 +84,9 @@
                         <div class="col-sm-2 col-sm-offset-3">
                             <b>Turniername</b>
                         </div>
-                        <input ng-model="currentCompetition.name" class="col-sm-3" ng-disabled="!editComp"></input>
+                        <p class="input-group col-sm-4">
+                            <input ng-model="currentCompetition.name" class="form-control col-sm-3" ng-disabled="!editComp">
+                        </p>
                         <hr class="col-sm-6 col-sm-offset-3">
                     </div>
                     <div class="row">
@@ -94,7 +96,7 @@
                         <p class="input-group col-sm-4">
                             <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="dd.MM.yyyy" ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
                             <span class="input-group-btn">
-								<button type="button" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
+								<button type="button" ng.show="editComp" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
 							</span>
                         </p>
                         <hr class="col-sm-6 col-sm-offset-3">
@@ -103,14 +105,18 @@
                         <div class="col-sm-2 col-sm-offset-3">
                             <b>Ort</b>
                         </div>
-                        <input ng-model="currentCompetition.place" class="col-sm-3" ng-disabled="!editComp"></input>
+                        <p class="input-group col-sm-4">
+                            <input ng-model="currentCompetition.place" class="form-control col-sm-3" ng-disabled="!editComp">
+                        </p>
                         <hr class="col-sm-6 col-sm-offset-3">
                     </div>
                     <div class="row">
                         <div class="col-sm-2 col-sm-offset-3">
                             <b>Beschreibung</b>
                         </div>
-                        <textarea ng-model="currentCompetition.description" class="col-sm-3" ng-disabled="!editComp"></textarea>
+                        <p class="input-group col-sm-4">
+                            <textarea ng-model="currentCompetition.description" class="form-control col-sm-3" ng-disabled="!editComp"></textarea>
+                        </p>
                     </div>
                     <br><br>
                     <div class="pull-right">

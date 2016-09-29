@@ -2,7 +2,7 @@ app.factory('competitionsService',  ['$q', '$timeout', '$http',  function ($q, $
     // return available functions for use in the controllers
     return ({
       get:get,
-      new:create
+      createOrUpdate:createOrUpdate
     });
 
     function get(id) {
@@ -28,11 +28,11 @@ app.factory('competitionsService',  ['$q', '$timeout', '$http',  function ($q, $
       return deferred.promise;
     }
 
-    function create(data) {
+    function createOrUpdate(data) {
       // create a new instance of deferred
       var deferred = $q.defer();
       // send a post request to the server
-      $http.post('/competition/new', {data: data})
+      $http.post('/competition/newOrUpdate', {data: data})
         // handle success
         .success(function (data, status) {
           if(status === 200 && data.status){

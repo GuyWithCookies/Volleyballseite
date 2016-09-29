@@ -15,7 +15,7 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
                 if ($scope.comps.length === 0) {
                     $scope.createNewCompetition = true;
                 }else{
-                    $scope.currentCompetition = $scope.comps.length;
+                    $scope.currentCompetition = $scope.comps[$scope.comps.length-1];
                 }
                 console.log($scope.comps);
                 console.log($scope.createNewCompetition);
@@ -46,14 +46,14 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
         $scope.newCompetition.id = $scope.comps.length;
         $scope.newCompetition.done = false;
         console.log($scope.newCompetition);
-        competitionsService.new($scope.newCompetition).then(function() {
+        competitionsService.createOrUpdate($scope.newCompetition).then(function() {
             console.log("Done");
             $scope.getAllCompetitions();
         })
     };
 
     $scope.saveCompetition = function () {
-        competitionsService.update($scope.currentCompetition).then(function (status) {
+        competitionsService.createOrUpdate($scope.currentCompetition).then(function (status) {
             if(status === "OK"){
                 console.log("Updated successfull");
             }
@@ -61,7 +61,7 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
     };
 
     $scope.editCompetition = function() {
-        $scope.editComp = !editComp;
+        $scope.editComp = true;
     };
 
     $scope.writeReport = function() {
