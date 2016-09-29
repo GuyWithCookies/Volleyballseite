@@ -78,7 +78,50 @@
             <div class="panel panel-primary" ng-if="!createNewCompetition && currentCompetition!=={}">
                 <div class="panel-heading">
                     <p class="panel-title">{{currentCompetition.name}}</p>
-                    <
+                </div>
+                <div class="panel-body text-center">
+                    <div class="row">
+                        <div class="col-sm-2 col-sm-offset-3">
+                            <b>Turniername</b>
+                        </div>
+                        <input ng-model="currentCompetition.name" class="col-sm-3" ng-disabled="!editComp"></input>
+                        <hr class="col-sm-6 col-sm-offset-3">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-sm-offset-3" >
+                            <b>Datum</b>
+                        </div>
+                        <p class="input-group col-sm-4">
+                            <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="dd.MM.yyyy" ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
+                            <span class="input-group-btn">
+								<button type="button" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
+							</span>
+                        </p>
+                        <hr class="col-sm-6 col-sm-offset-3">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-sm-offset-3">
+                            <b>Ort</b>
+                        </div>
+                        <input ng-model="currentCompetition.place" class="col-sm-3" ng-disabled="!editComp"></input>
+                        <hr class="col-sm-6 col-sm-offset-3">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-sm-offset-3">
+                            <b>Beschreibung</b>
+                        </div>
+                        <textarea ng-model="currentCompetition.description" class="col-sm-3" ng-disabled="!editComp"></textarea>
+                    </div>
+                    <br><br>
+                    <div class="pull-right">
+                        <label>
+                            Eigenes Turnier:
+                            <input type="checkbox" name="own" ng-model="currentCompetition.own" ng-disabled="!editComp">
+                        </label>
+                        <button class="btn btn-primary" type="button" ng-show="!editComp" ng-click="editCompetition()">Bearbeiten</button>
+                        <button class="btn btn-warning" type="button" ng-show="editComp" ng-click="saveCompetition()">Speichern</button>
+                        <button  class="btn btn-success" type="button" ng-click="addMember()">Teilnehmen</button>
+                    </div>
                 </div>
             </div>
         </div>

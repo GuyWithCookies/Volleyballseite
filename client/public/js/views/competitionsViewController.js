@@ -6,6 +6,7 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
     $scope.createNewCompetition = false;
     $scope.datepicker = {opened:false};
     $scope.currentCompetition = {};
+    $scope.editComp = false;
 
     //FUNCTIONS
     $scope.getAllCompetitions = function() {
@@ -13,6 +14,8 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
                 $scope.comps = comps || [];
                 if ($scope.comps.length === 0) {
                     $scope.createNewCompetition = true;
+                }else{
+                    $scope.currentCompetition = $scope.comps.length;
                 }
                 console.log($scope.comps);
                 console.log($scope.createNewCompetition);
@@ -25,6 +28,7 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
 
     $scope.showCompetition = function(id) {
         $scope.currentCompetition = $scope.comps[id];
+        console.log($scope.currentCompetition);
         $scope.createNewCompetition = false;
     };
 
@@ -48,8 +52,16 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
         })
     };
 
-    $scope.editCompetition = function() {
+    $scope.saveCompetition = function () {
+        competitionsService.update($scope.currentCompetition).then(function (status) {
+            if(status === "OK"){
+                console.log("Updated successfull");
+            }
+        })
+    };
 
+    $scope.editCompetition = function() {
+        $scope.editComp = !editComp;
     };
 
     $scope.writeReport = function() {
