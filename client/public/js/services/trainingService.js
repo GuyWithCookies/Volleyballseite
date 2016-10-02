@@ -20,12 +20,12 @@ app.factory('TrainingService',  ['$q', '$timeout', '$http',  function ($q, $time
           }
         })
         // handle error
-        .error(function (data) {
-          deferred.reject();
+    .error(function (data) {
+            deferred.reject();
         });
 
-      // return promise object
-      return deferred.promise;
+        // return promise object
+        return deferred.promise;
 
     }
 

@@ -99,18 +99,31 @@
             <h2>Tuniere</h2>
             <hr>
         </div>
-        <div class="space"></div>
         <div class="row">
+            <div ng-repeat="comp in reports track by $index">
 
+
+                <!-- Media middle -->
+                <div class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading">{{comp[0]}}</h4>
+                        <p>{{comp[1]}}</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <img ng-src="img/competitions/flow-{{comp[2].split(' ').join('')}}.1" class="media-object" width="400em" height="300em">
+                    </div>
+                </div>
+                <div class="space"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Team Section -->
-
+<div class="space"></div>
 <div id="footer">
     <div class="container">
-        <p>Copyright &copy; Team Volleyball Radebeul. Designed by Benjamin Schimke</p>
+        <p>Copyright &copy; Team Volleyball Radebeul</p>
     </div>
 </div>
 </body>

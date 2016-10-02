@@ -28,7 +28,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
       console.log($scope.currTraining.date);
 
     });
-  }
+  };
 
   $scope.getPrevTraining = function() {
     var date = $scope.currTraining.date || Date.today().add(2).hours();
@@ -105,7 +105,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
       return "right";
     }else if ($scope.username === undefined) {
       return "";
-    } 
+    }
     else {
       return "left";
     }

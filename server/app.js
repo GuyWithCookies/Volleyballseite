@@ -57,12 +57,6 @@ app.use('/competition/', competitionRoutes);
 // Handle uploads through Flow.js
 app.post('/upload', multipartMiddleware, function(req, res) {
     flow.post(req, function(status, filename, original_filename, identifier) {
-        if (status == 'done') {
-                fs.rename(UPLOAD_DIR + filename, UPLOAD_DIR + hash + extension, function(err) {
-                    if ( err ) console.log('ERROR: ' + err);
-                });
-        }
-        console.log('POST', status, original_filename, identifier);
         res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
     });
 });

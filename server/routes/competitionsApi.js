@@ -56,6 +56,40 @@ router.post('/get', function(req, res) {
     }
 });
 
+router.get('/getReports', function(req, res) {
+    console.log("blub");
+    //date should be unix timestamp
+    Competition.find({
+        'done': true
+    }, function(err, docs) {
+        if (err) {
+            console.log(err);
+            res.json({
+                status: "ERROR",
+                msg: err
+            });
+        }
+        console.log(docs);
+        if (docs.length > 0) {
+            var tmp = [];
+            for (var doc in docs){
+                docs[doc].report.push(docs[doc].name);
+                tmp.push(docs[doc].report);
+            }
+            console.log(tmp);
+            res.json({
+                data: tmp,
+                status: "OK"
+            })
+        } else{
+            res.json({
+                status: "NOT FOUND",
+                msg: "Competition not found"
+            });
+        }
+    })
+});
+
 router.post('/newOrUpdate', function(req, res) {
     //date should be unix timestamp
     console.log(req.body.data);
@@ -82,6 +116,7 @@ router.post('/newOrUpdate', function(req, res) {
             doc.description = data.description;
             doc.done = data.done;
             doc.members = data.members;
+            doc.report = data.report;
 
             console.log(doc);
             doc.save();
