@@ -3,12 +3,11 @@
     <div class="row col-sm-12">
         <div class='col-sm-3'>
             <div class="panel panel-primary">
-                <div class="panel panel-heading">
-                    <h3 class="panel-title">Turniere</h3>
+                <div class="panel-heading clearfix">
+                    <h4 class="pull-left">Turniere</h4>
                     <button type="button" class="btn btn-success btn-small pull-right" ng-click="showNewCompView()">
                         Erstellen
                     </button>
-                    <div class="clearfix"></div>
                 </div>
                 <div class="panel panel-body">
                     <div class="col-sm-12 list-group">
@@ -78,9 +77,9 @@
 
             <!--competitions-->
             <div class="panel panel-primary" ng-if="!createNewCompetition && currentCompetition!=={}">
-                <div class="panel-heading row">
-                    <div class="panel-title col-sm-10">{{currentCompetition.name}}</div>
-                    <!--<button type="button" class="col-sm-2 btn btn-warning" ng-click="writeReport()">Bericht erstellen</button>-->
+                <div class="panel-heading clearfix">
+                    <h4 class="pull-left">{{currentCompetition.name}}</h4>
+                    <button type="button" class="pull-right btn btn-warning" ng-show="!currentCompetition.done" ng-click="writeReport()">Bericht erstellen</button>
                 </div>
                 <div class="panel-body text-center">
                     <div class="row">
@@ -97,7 +96,7 @@
                             <b>Datum</b>
                         </div>
                         <p class="input-group col-sm-4">
-                            <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="dd.MM.yyyy" ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
+                            <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="{{dateFormat}}" ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
                             <span class="input-group-btn" ng-show="editComp">
 								<button type="button" ng.show="editComp" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
 							</span>
@@ -127,15 +126,15 @@
                             <b>Teilnehmer</b>
                         </div>
                         <div  class="col-sm-4">
-                        <div class="alert-dismissable" ng-show="currentCompetition.members.length===0">
-                            Es hat sich noch niemand eingetragen!
-                        </div>
+                            <div class="alert-dismissable" ng-show="currentCompetition.members.length===0">
+                                Es hat sich noch niemand eingetragen!
+                            </div>
 
-                        <ul class="list-group">
-                            <li class="list-group-item" ng-repeat="member in currentCompetition.members track by $index">
-                                <a href="#/profile?user={{member}}">{{member}}</a>
-                            </li>
-                        </ul>
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="member in currentCompetition.members track by $index">
+                                    <a href="#/profile?user={{member}}">{{member}}</a>
+                                </li>
+                            </ul>
 
                         </div>
                         <hr class="col-sm-6 col-sm-offset-3">
@@ -156,6 +155,35 @@
         </div>
     </div>
 </div>
+
+<script type="text/ng-template" id="report.html">
+    <div class="modal-header clearfix">
+        <h3 class="modal-title pull-left" id="modal-title">Bericht für {{$ctrl.competition.name}}
+            <small>am {{$ctrl.competition.date|date:'dd.MM.yyyy'}}</small>
+        </h3>
+        <button class="btn btn-success pull-right" ng-click="$ctrl.useTemplate()">Vorlage benutzen</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+        <div class="form-group">
+            <input ng-model="$ctrl.report.heading" class="form-control" placeholder="Überschrift">
+            <textarea class="form-control" rows="8" id="comment"
+                      placeholder="Bericht - Hinweis: Datum etc. werden später eingefügt" ng-model="$ctrl.report.content"></textarea>
+        </div>
+        <div flow-init="{target: '/upload'}"
+             flow-file-added="$file.uniqueIdentifier = '{{$ctrl.competition.name}}'"
+             flow-files-submitted="$flow.upload()"
+             flow-file-success="$file.msg = $message">
+
+            <span class="btn" flow-btn>Mannschaftsfoto</span>
+
+            <img flow-img="$flow.files[0]" width="10%" height="10%"/>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-success" type="button" ng-click="$ctrl.ok()">Speichern</button>
+        <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Abbrechen</button>
+    </div>
+</script>
 
 
 

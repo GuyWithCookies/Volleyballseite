@@ -10,7 +10,7 @@ var Competition = new Schema({
   place: String,
   date: Date,
   description: String,
-  report: String,
+  report: Array,
   done: Boolean,
   members: Array
 });

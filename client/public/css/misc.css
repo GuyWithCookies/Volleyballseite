@@ -147,11 +147,17 @@ top: 66%;
    margin-bottom: 5rem;
 }
 
-.panel-heading h3 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: normal;
-    width: 75%;
-    padding-top: 8px;
+.statusmsg {
+    -webkit-animation: fadeinout 3s linear forwards;
+    animation: fadeinout 2s linear forwards;
+}
+
+@-webkit-keyframes fadeinout {
+    0%,100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+@keyframes fadeinout {
+    0%,100% { opacity: 0; }
+    50% { opacity: 1; }
 }

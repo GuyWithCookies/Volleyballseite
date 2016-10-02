@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngRoute', "ui.bootstrap"]);
+var app = angular.module('app', ['ngRoute', "ui.bootstrap", "flow"]);
 
 app.config(["$routeProvider", "$logProvider", function ($routeProvider, $logProvider) {
   $routeProvider

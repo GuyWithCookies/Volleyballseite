@@ -51,7 +51,7 @@ app.directive("navbar", ["$location", "AuthService", function($location, AuthSer
           .then(function() {
             $location.path('/login');
           });
-      }
+      };
 
       $scope.changeActiveTab = function(link) {
         for (var view in $scope.views) {

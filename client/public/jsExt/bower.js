@@ -123,11 +123,11 @@ q=l>p?1:-1;this.dates={start:arguments[0].clone(),end:arguments[1].clone()};d(q,
 m]=f(d)}})(c,"years months days hours minutes seconds milliseconds".split(" "));c.prototype.set=function(a,b,c,d,f,h,n){this.setYears(a||this.getYears());this.setMonths(b||this.getMonths());this.setDays(c||this.getDays());this.setHours(d||this.getHours());this.setMinutes(f||this.getMinutes());this.setSeconds(h||this.getSeconds());this.setMilliseconds(n||this.getMilliseconds())};Date.TimePeriod=c;"undefined"!==typeof window&&(window.TimePeriod=c)})();
 
 /**
- * @license AngularJS v1.5.7
- * (c) 2010-2016 Google, Inc. http://angularjs.org
+ * @license AngularJS v1.4.9
+ * (c) 2010-2015 Google, Inc. http://angularjs.org
  * License: MIT
  */
-(function(window) {'use strict';
+(function(window, document, undefined) {'use strict';
 
 /**
  * @description
@@ -181,7 +181,7 @@ function minErr(module, ErrorConstructor) {
       return match;
     });
 
-    message += '\nhttp://errors.angularjs.org/1.5.7/' +
+    message += '\nhttp://errors.angularjs.org/1.4.9/' +
       (module ? module + '/' : '') + code;
 
     for (i = SKIP_INDEXES, paramPrefix = '?'; i < templateArgs.length; i++, paramPrefix = '&') {
@@ -250,6 +250,7 @@ function minErr(module, ErrorConstructor) {
   includes: true,
   arrayRemove: true,
   copy: true,
+  shallowCopy: true,
   equals: true,
   csp: true,
   jq: true,
@@ -294,7 +295,6 @@ function minErr(module, ErrorConstructor) {
  * @ngdoc module
  * @name ng
  * @module ng
- * @installation
  * @description
  *
  * # ng (core module)
@@ -312,9 +312,29 @@ var REGEX_STRING_REGEXP = /^\/(.+)\/([a-z]*)$/;
 // This is used so that it's possible for internal tests to create mock ValidityStates.
 var VALIDITY_STATE_PROPERTY = 'validity';
 
+/**
+ * @ngdoc function
+ * @name angular.lowercase
+ * @module ng
+ * @kind function
+ *
+ * @description Converts the specified string to lowercase.
+ * @param {string} string String to be converted to lowercase.
+ * @returns {string} Lowercased string.
+ */
+var lowercase = function(string) {return isString(string) ? string.toLowerCase() : string;};
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-var lowercase = function(string) {return isString(string) ? string.toLowerCase() : string;};
+/**
+ * @ngdoc function
+ * @name angular.uppercase
+ * @module ng
+ * @kind function
+ *
+ * @description Converts the specified string to uppercase.
+ * @param {string} string String to be converted to uppercase.
+ * @returns {string} Uppercased string.
+ */
 var uppercase = function(string) {return isString(string) ? string.toUpperCase() : string;};
 
 
@@ -334,7 +354,7 @@ var manualUppercase = function(s) {
 
 // String#toLowerCase and String#toUpperCase don't produce correct results in browsers with Turkish
 // locale, for this reason we need to detect this case and redefine lowercase/uppercase methods
-// with correct but slower alternatives. See https://github.com/angular/angular.js/issues/11387
+// with correct but slower alternatives.
 if ('i' !== 'I'.toLowerCase()) {
   lowercase = manualLowercase;
   uppercase = manualUppercase;
@@ -361,7 +381,7 @@ var
  * documentMode is an IE-only property
  * http://msdn.microsoft.com/en-us/library/ie/cc196988(v=vs.85).aspx
  */
-msie = window.document.documentMode;
+msie = document.documentMode;
 
 
 /**
@@ -377,7 +397,7 @@ function isArrayLike(obj) {
 
   // arrays, strings and jQuery/jqLite objects are array like
   // * jqLite is either the jQuery or jqLite constructor function
-  // * we have to check the existence of jqLite first as this method is called
+  // * we have to check the existance of jqLite first as this method is called
   //   via the forEach method when constructing the jqLite object in the first place
   if (isArray(obj) || isString(obj) || (jqLite && obj instanceof jqLite)) return true;
 
@@ -409,7 +429,7 @@ function isArrayLike(obj) {
  *
  * Unlike ES262's
  * [Array.prototype.forEach](http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.18),
- * providing 'undefined' or 'null' values for `obj` will not throw a TypeError, but rather just
+ * Providing 'undefined' or 'null' values for `obj` will not throw a TypeError, but rather just
  * return the value provided.
  *
    ```js
@@ -486,7 +506,7 @@ function forEachSorted(obj, iterator, context) {
  * @returns {function(*, string)}
  */
 function reverseParams(iteratorFn) {
-  return function(value, key) {iteratorFn(key, value);};
+  return function(value, key) { iteratorFn(key, value); };
 }
 
 /**
@@ -639,28 +659,18 @@ noop.$inject = [];
  * functional style.
  *
    ```js
-   function transformer(transformationFn, value) {
-     return (transformationFn || angular.identity)(value);
-   };
-
-   // E.g.
-   function getResult(fn, input) {
-     return (fn || angular.identity)(input);
-   };
-
-   getResult(function(n) { return n * 2; }, 21);   // returns 42
-   getResult(null, 21);                            // returns 21
-   getResult(undefined, 21);                       // returns 21
+     function transformer(transformationFn, value) {
+       return (transformationFn || angular.identity)(value);
+     };
    ```
- *
- * @param {*} value to be returned.
- * @returns {*} the value passed in.
+  * @param {*} value to be returned.
+  * @returns {*} the value passed in.
  */
 function identity($) {return $;}
 identity.$inject = [];
 
 
-function valueFn(value) {return function valueRef() {return value;};}
+function valueFn(value) {return function() {return value;};}
 
 function hasCustomToString(obj) {
   return isFunction(obj.toString) && obj.toString !== toString;
@@ -867,10 +877,6 @@ function isTypedArray(value) {
   return value && isNumber(value.length) && TYPED_ARRAY_REGEXP.test(toString.call(value));
 }
 
-function isArrayBuffer(obj) {
-  return toString.call(obj) === '[object ArrayBuffer]';
-}
-
 
 var trim = function(value) {
   return isString(value) ? value.trim() : value;
@@ -899,8 +905,8 @@ var escapeForRegexp = function(s) {
  */
 function isElement(node) {
   return !!(node &&
-    (node.nodeName  // We are a direct element.
-    || (node.prop && node.attr && node.find)));  // We have an on and find method part of jQuery API.
+    (node.nodeName  // we are a direct element
+    || (node.prop && node.attr && node.find)));  // we have an on and find method part of jQuery API
 }
 
 /**
@@ -908,7 +914,7 @@ function isElement(node) {
  * @returns {object} in the form of {key1:true, key2:true, ...}
  */
 function makeMap(str) {
-  var obj = {}, items = str.split(','), i;
+  var obj = {}, items = str.split(","), i;
   for (i = 0; i < items.length; i++) {
     obj[items[i]] = true;
   }
@@ -995,7 +1001,7 @@ function copy(source, destination) {
   var stackDest = [];
 
   if (destination) {
-    if (isTypedArray(destination) || isArrayBuffer(destination)) {
+    if (isTypedArray(destination)) {
       throw ngMinErr('cpta', "Can't copy! TypedArray destination cannot be mutated.");
     }
     if (source === destination) {
@@ -1022,7 +1028,7 @@ function copy(source, destination) {
 
   function copyRecurse(source, destination) {
     var h = destination.$$hashKey;
-    var key;
+    var result, key;
     if (isArray(source)) {
       for (var i = 0, ii = source.length; i < ii; i++) {
         destination.push(copyElement(source[i]));
@@ -1069,10 +1075,22 @@ function copy(source, destination) {
     }
 
     var needsRecurse = false;
-    var destination = copyType(source);
+    var destination;
 
-    if (destination === undefined) {
-      destination = isArray(source) ? [] : Object.create(getPrototypeOf(source));
+    if (isArray(source)) {
+      destination = [];
+      needsRecurse = true;
+    } else if (isTypedArray(source)) {
+      destination = new source.constructor(source);
+    } else if (isDate(source)) {
+      destination = new Date(source.getTime());
+    } else if (isRegExp(source)) {
+      destination = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
+      destination.lastIndex = source.lastIndex;
+    } else if (isFunction(source.cloneNode)) {
+        destination = source.cloneNode(true);
+    } else {
+      destination = Object.create(getPrototypeOf(source));
       needsRecurse = true;
     }
 
@@ -1083,48 +1101,31 @@ function copy(source, destination) {
       ? copyRecurse(source, destination)
       : destination;
   }
+}
 
-  function copyType(source) {
-    switch (toString.call(source)) {
-      case '[object Int8Array]':
-      case '[object Int16Array]':
-      case '[object Int32Array]':
-      case '[object Float32Array]':
-      case '[object Float64Array]':
-      case '[object Uint8Array]':
-      case '[object Uint8ClampedArray]':
-      case '[object Uint16Array]':
-      case '[object Uint32Array]':
-        return new source.constructor(copyElement(source.buffer));
+/**
+ * Creates a shallow copy of an object, an array or a primitive.
+ *
+ * Assumes that there are no proto properties for objects.
+ */
+function shallowCopy(src, dst) {
+  if (isArray(src)) {
+    dst = dst || [];
 
-      case '[object ArrayBuffer]':
-        //Support: IE10
-        if (!source.slice) {
-          var copied = new ArrayBuffer(source.byteLength);
-          new Uint8Array(copied).set(new Uint8Array(source));
-          return copied;
-        }
-        return source.slice(0);
-
-      case '[object Boolean]':
-      case '[object Number]':
-      case '[object String]':
-      case '[object Date]':
-        return new source.constructor(source.valueOf());
-
-      case '[object RegExp]':
-        var re = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
-        re.lastIndex = source.lastIndex;
-        return re;
-
-      case '[object Blob]':
-        return new source.constructor([source], {type: source.type});
+    for (var i = 0, ii = src.length; i < ii; i++) {
+      dst[i] = src[i];
     }
+  } else if (isObject(src)) {
+    dst = dst || {};
 
-    if (isFunction(source.cloneNode)) {
-      return source.cloneNode(true);
+    for (var key in src) {
+      if (!(key.charAt(0) === '$' && key.charAt(1) === '$')) {
+        dst[key] = src[key];
+      }
     }
   }
+
+  return dst || src;
 }
 
 
@@ -1156,78 +1157,44 @@ function copy(source, destination) {
  * @param {*} o1 Object or value to compare.
  * @param {*} o2 Object or value to compare.
  * @returns {boolean} True if arguments are equal.
- *
- * @example
-   <example module="equalsExample" name="equalsExample">
-     <file name="index.html">
-      <div ng-controller="ExampleController">
-        <form novalidate>
-          <h3>User 1</h3>
-          Name: <input type="text" ng-model="user1.name">
-          Age: <input type="number" ng-model="user1.age">
-
-          <h3>User 2</h3>
-          Name: <input type="text" ng-model="user2.name">
-          Age: <input type="number" ng-model="user2.age">
-
-          <div>
-            <br/>
-            <input type="button" value="Compare" ng-click="compare()">
-          </div>
-          User 1: <pre>{{user1 | json}}</pre>
-          User 2: <pre>{{user2 | json}}</pre>
-          Equal: <pre>{{result}}</pre>
-        </form>
-      </div>
-    </file>
-    <file name="script.js">
-        angular.module('equalsExample', []).controller('ExampleController', ['$scope', function($scope) {
-          $scope.user1 = {};
-          $scope.user2 = {};
-          $scope.result;
-          $scope.compare = function() {
-            $scope.result = angular.equals($scope.user1, $scope.user2);
-          };
-        }]);
-    </file>
-  </example>
  */
 function equals(o1, o2) {
   if (o1 === o2) return true;
   if (o1 === null || o2 === null) return false;
   if (o1 !== o1 && o2 !== o2) return true; // NaN === NaN
   var t1 = typeof o1, t2 = typeof o2, length, key, keySet;
-  if (t1 == t2 && t1 == 'object') {
-    if (isArray(o1)) {
-      if (!isArray(o2)) return false;
-      if ((length = o1.length) == o2.length) {
-        for (key = 0; key < length; key++) {
+  if (t1 == t2) {
+    if (t1 == 'object') {
+      if (isArray(o1)) {
+        if (!isArray(o2)) return false;
+        if ((length = o1.length) == o2.length) {
+          for (key = 0; key < length; key++) {
+            if (!equals(o1[key], o2[key])) return false;
+          }
+          return true;
+        }
+      } else if (isDate(o1)) {
+        if (!isDate(o2)) return false;
+        return equals(o1.getTime(), o2.getTime());
+      } else if (isRegExp(o1)) {
+        return isRegExp(o2) ? o1.toString() == o2.toString() : false;
+      } else {
+        if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
+          isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
+        keySet = createMap();
+        for (key in o1) {
+          if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
           if (!equals(o1[key], o2[key])) return false;
+          keySet[key] = true;
+        }
+        for (key in o2) {
+          if (!(key in keySet) &&
+              key.charAt(0) !== '$' &&
+              isDefined(o2[key]) &&
+              !isFunction(o2[key])) return false;
         }
         return true;
       }
-    } else if (isDate(o1)) {
-      if (!isDate(o2)) return false;
-      return equals(o1.getTime(), o2.getTime());
-    } else if (isRegExp(o1)) {
-      if (!isRegExp(o2)) return false;
-      return o1.toString() == o2.toString();
-    } else {
-      if (isScope(o1) || isScope(o2) || isWindow(o1) || isWindow(o2) ||
-        isArray(o2) || isDate(o2) || isRegExp(o2)) return false;
-      keySet = createMap();
-      for (key in o1) {
-        if (key.charAt(0) === '$' || isFunction(o1[key])) continue;
-        if (!equals(o1[key], o2[key])) return false;
-        keySet[key] = true;
-      }
-      for (key in o2) {
-        if (!(key in keySet) &&
-            key.charAt(0) !== '$' &&
-            isDefined(o2[key]) &&
-            !isFunction(o2[key])) return false;
-      }
-      return true;
     }
   }
   return false;
@@ -1237,8 +1204,8 @@ var csp = function() {
   if (!isDefined(csp.rules)) {
 
 
-    var ngCspElement = (window.document.querySelector('[ng-csp]') ||
-                    window.document.querySelector('[data-ng-csp]'));
+    var ngCspElement = (document.querySelector('[ng-csp]') ||
+                    document.querySelector('[data-ng-csp]'));
 
     if (ngCspElement) {
       var ngCspAttribute = ngCspElement.getAttribute('ng-csp') ||
@@ -1313,7 +1280,7 @@ var jq = function() {
   var i, ii = ngAttrPrefixes.length, prefix, name;
   for (i = 0; i < ii; ++i) {
     prefix = ngAttrPrefixes[i];
-    if (el = window.document.querySelector('[' + prefix.replace(':', '\\:') + 'jq]')) {
+    if (el = document.querySelector('[' + prefix.replace(':', '\\:') + 'jq]')) {
       name = el.getAttribute(prefix + 'jq');
       break;
     }
@@ -1365,7 +1332,7 @@ function bind(self, fn) {
             : fn.call(self);
         };
   } else {
-    // In IE, native methods are not functions so they cannot be bound (note: they don't need to be).
+    // in IE, native methods are not functions so they cannot be bound (note: they don't need to be)
     return fn;
   }
 }
@@ -1378,7 +1345,7 @@ function toJsonReplacer(key, value) {
     val = undefined;
   } else if (isWindow(value)) {
     val = '$WINDOW';
-  } else if (value &&  window.document === value) {
+  } else if (value &&  document === value) {
     val = '$DOCUMENT';
   } else if (isScope(value)) {
     val = '$SCOPE';
@@ -1402,30 +1369,9 @@ function toJsonReplacer(key, value) {
  * @param {boolean|number} [pretty=2] If set to true, the JSON output will contain newlines and whitespace.
  *    If set to an integer, the JSON output will contain that many spaces per indentation.
  * @returns {string|undefined} JSON-ified string representing `obj`.
- * @knownIssue
- *
- * The Safari browser throws a `RangeError` instead of returning `null` when it tries to stringify a `Date`
- * object with an invalid date value. The only reliable way to prevent this is to monkeypatch the
- * `Date.prototype.toJSON` method as follows:
- *
- * ```
- * var _DatetoJSON = Date.prototype.toJSON;
- * Date.prototype.toJSON = function() {
- *   try {
- *     return _DatetoJSON.call(this);
- *   } catch(e) {
- *     if (e instanceof RangeError) {
- *       return null;
- *     }
- *     throw e;
- *   }
- * };
- * ```
- *
- * See https://github.com/angular/angular.js/pull/14221 for more information.
  */
 function toJson(obj, pretty) {
-  if (isUndefined(obj)) return undefined;
+  if (typeof obj === 'undefined') return undefined;
   if (!isNumber(pretty)) {
     pretty = pretty ? 2 : null;
   }
@@ -1452,10 +1398,7 @@ function fromJson(json) {
 }
 
 
-var ALL_COLONS = /:/g;
 function timezoneToOffset(timezone, fallback) {
-  // IE/Edge do not "understand" colon (`:`) in timezone
-  timezone = timezone.replace(ALL_COLONS, '');
   var requestedTimezoneOffset = Date.parse('Jan 01, 1970 00:00:00 ' + timezone) / 60000;
   return isNaN(requestedTimezoneOffset) ? fallback : requestedTimezoneOffset;
 }
@@ -1470,9 +1413,8 @@ function addDateMinutes(date, minutes) {
 
 function convertTimezoneToLocal(date, timezone, reverse) {
   reverse = reverse ? -1 : 1;
-  var dateTimezoneOffset = date.getTimezoneOffset();
-  var timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
-  return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
+  var timezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
+  return addDateMinutes(date, reverse * (timezoneOffset - date.getTimezoneOffset()));
 }
 
 
@@ -1491,7 +1433,7 @@ function startingTag(element) {
     return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
         elemHtml.
           match(/^(<[^>]+>)/)[1].
-          replace(/^<([\w\-]+)/, function(match, nodeName) {return '<' + lowercase(nodeName);});
+          replace(/^<([\w\-]+)/, function(match, nodeName) { return '<' + lowercase(nodeName); });
   } catch (e) {
     return lowercase(elemHtml);
   }
@@ -1513,7 +1455,7 @@ function tryDecodeURIComponent(value) {
   try {
     return decodeURIComponent(value);
   } catch (e) {
-    // Ignore any invalid uri component.
+    // Ignore any invalid uri component
   }
 }
 
@@ -1639,17 +1581,10 @@ function getNgAttribute(element, ngAttr) {
  * designates the **root element** of the application and is typically placed near the root element
  * of the page - e.g. on the `<body>` or `<html>` tags.
  *
- * There are a few things to keep in mind when using `ngApp`:
- * - only one AngularJS application can be auto-bootstrapped per HTML document. The first `ngApp`
- *   found in the document will be used to define the root element to auto-bootstrap as an
- *   application. To run multiple applications in an HTML document you must manually bootstrap them using
- *   {@link angular.bootstrap} instead.
- * - AngularJS applications cannot be nested within each other.
- * - Do not use a directive that uses {@link ng.$compile#transclusion transclusion} on the same element as `ngApp`.
- *   This includes directives such as {@link ng.ngIf `ngIf`}, {@link ng.ngInclude `ngInclude`} and
- *   {@link ngRoute.ngView `ngView`}.
- *   Doing this misplaces the app {@link ng.$rootElement `$rootElement`} and the app's {@link auto.$injector injector},
- *   causing animations to stop working and making the injector inaccessible from outside the app.
+ * Only one AngularJS application can be auto-bootstrapped per HTML document. The first `ngApp`
+ * found in the document will be used to define the root element to auto-bootstrap as an
+ * application. To run multiple applications in an HTML document you must manually bootstrap them using
+ * {@link angular.bootstrap} instead. AngularJS applications cannot be nested within each other.
  *
  * You can specify an **AngularJS module** to be used as the root module for the application.  This
  * module will be loaded into the {@link auto.$injector} when the application is bootstrapped. It
@@ -1758,7 +1693,7 @@ function angularInit(element, bootstrap) {
       module,
       config = {};
 
-  // The element `element` has priority over any other element.
+  // The element `element` has priority over any other element
   forEach(ngAttrPrefixes, function(prefix) {
     var name = prefix + 'app';
 
@@ -1789,24 +1724,15 @@ function angularInit(element, bootstrap) {
  * @description
  * Use this function to manually start up angular application.
  *
- * For more information, see the {@link guide/bootstrap Bootstrap guide}.
+ * See: {@link guide/bootstrap Bootstrap}
+ *
+ * Note that Protractor based end-to-end tests cannot use this function to bootstrap manually.
+ * They must use {@link ng.directive:ngApp ngApp}.
  *
  * Angular will detect if it has been loaded into the browser more than once and only allow the
  * first loaded script to be bootstrapped and will report a warning to the browser console for
  * each of the subsequent scripts. This prevents strange results in applications, where otherwise
  * multiple instances of Angular try to work on the DOM.
- *
- * <div class="alert alert-warning">
- * **Note:** Protractor based end-to-end tests cannot use this function to bootstrap manually.
- * They must use {@link ng.directive:ngApp ngApp}.
- * </div>
- *
- * <div class="alert alert-warning">
- * **Note:** Do not bootstrap the app on an element with a directive that uses {@link ng.$compile#transclusion transclusion},
- * such as {@link ng.ngIf `ngIf`}, {@link ng.ngInclude `ngInclude`} and {@link ngRoute.ngView `ngView`}.
- * Doing this misplaces the app {@link ng.$rootElement `$rootElement`} and the app's {@link auto.$injector injector},
- * causing animations to stop working and making the injector inaccessible from outside the app.
- * </div>
  *
  * ```html
  * <!doctype html>
@@ -1851,11 +1777,11 @@ function bootstrap(element, modules, config) {
     element = jqLite(element);
 
     if (element.injector()) {
-      var tag = (element[0] === window.document) ? 'document' : startingTag(element);
-      // Encode angle brackets to prevent input from being sanitized to empty string #8683.
+      var tag = (element[0] === document) ? 'document' : startingTag(element);
+      //Encode angle brackets to prevent input from being sanitized to empty string #8683
       throw ngMinErr(
           'btstrpd',
-          "App already bootstrapped with this element '{0}'",
+          "App Already Bootstrapped with this Element '{0}'",
           tag.replace(/</,'&lt;').replace(/>/,'&gt;'));
     }
 
@@ -1950,6 +1876,7 @@ function snake_case(name, separator) {
 }
 
 var bindJQueryFired = false;
+var skipDestroyOnNextJQueryCleanData;
 function bindJQuery() {
   var originalCleanData;
 
@@ -1983,11 +1910,15 @@ function bindJQuery() {
     originalCleanData = jQuery.cleanData;
     jQuery.cleanData = function(elems) {
       var events;
-      for (var i = 0, elem; (elem = elems[i]) != null; i++) {
-        events = jQuery._data(elem, "events");
-        if (events && events.$destroy) {
-          jQuery(elem).triggerHandler('$destroy');
+      if (!skipDestroyOnNextJQueryCleanData) {
+        for (var i = 0, elem; (elem = elems[i]) != null; i++) {
+          events = jQuery._data(elem, "events");
+          if (events && events.$destroy) {
+            jQuery(elem).triggerHandler('$destroy');
+          }
         }
+      } else {
+        skipDestroyOnNextJQueryCleanData = false;
       }
       originalCleanData(elems);
     };
@@ -2302,9 +2233,9 @@ function setupModuleLoader(window) {
            * @ngdoc method
            * @name angular.Module#decorator
            * @module ng
-           * @param {string} name The name of the service to decorate.
-           * @param {Function} decorFn This function will be invoked when the service needs to be
-           *                           instantiated and should return the decorated service instance.
+           * @param {string} The name of the service to decorate.
+           * @param {Function} This function will be invoked when the service needs to be
+           *                                    instantiated and should return the decorated service instance.
            * @description
            * See {@link auto.$provide#decorator $provide.decorator()}.
            */
@@ -2389,19 +2320,6 @@ function setupModuleLoader(window) {
 
           /**
            * @ngdoc method
-           * @name angular.Module#component
-           * @module ng
-           * @param {string} name Name of the component in camel-case (i.e. myComp which will match as my-comp)
-           * @param {Object} options Component definition object (a simplified
-           *    {@link ng.$compile#directive-definition-object directive definition object})
-           *
-           * @description
-           * See {@link ng.$compileProvider#component $compileProvider.component()}.
-           */
-          component: invokeLaterAndSetModuleName('$compileProvider', 'component'),
-
-          /**
-           * @ngdoc method
            * @name angular.Module#config
            * @module ng
            * @param {Function} configFn Execute this function on module load. Useful for service
@@ -2467,34 +2385,7 @@ function setupModuleLoader(window) {
 
 }
 
-/* global shallowCopy: true */
-
-/**
- * Creates a shallow copy of an object, an array or a primitive.
- *
- * Assumes that there are no proto properties for objects.
- */
-function shallowCopy(src, dst) {
-  if (isArray(src)) {
-    dst = dst || [];
-
-    for (var i = 0, ii = src.length; i < ii; i++) {
-      dst[i] = src[i];
-    }
-  } else if (isObject(src)) {
-    dst = dst || {};
-
-    for (var key in src) {
-      if (!(key.charAt(0) === '$' && key.charAt(1) === '$')) {
-        dst[key] = src[key];
-      }
-    }
-  }
-
-  return dst || src;
-}
-
-/* global toDebugString: true */
+/* global: toDebugString: true */
 
 function serializeObject(obj) {
   var seen = [];
@@ -2585,7 +2476,6 @@ function toDebugString(obj) {
   $BrowserProvider,
   $CacheFactoryProvider,
   $ControllerProvider,
-  $DateProvider,
   $DocumentProvider,
   $ExceptionHandlerProvider,
   $FilterProvider,
@@ -2635,11 +2525,11 @@ function toDebugString(obj) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.5.7',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.4.9',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
-  minor: 5,
-  dot: 7,
-  codeName: 'hexagonal-circumvolution'
+  minor: 4,
+  dot: 9,
+  codeName: 'implicit-superannuation'
 };
 
 
@@ -2835,7 +2725,7 @@ function publishExternalAPI(angular) {
  * ## Angular's jqLite
  * jqLite provides only the following jQuery methods:
  *
- * - [`addClass()`](http://api.jquery.com/addClass/) - Does not support a function as first argument
+ * - [`addClass()`](http://api.jquery.com/addClass/)
  * - [`after()`](http://api.jquery.com/after/)
  * - [`append()`](http://api.jquery.com/append/)
  * - [`attr()`](http://api.jquery.com/attr/) - Does not support functions as parameters
@@ -2862,12 +2752,12 @@ function publishExternalAPI(angular) {
  * - [`ready()`](http://api.jquery.com/ready/)
  * - [`remove()`](http://api.jquery.com/remove/)
  * - [`removeAttr()`](http://api.jquery.com/removeAttr/)
- * - [`removeClass()`](http://api.jquery.com/removeClass/) - Does not support a function as first argument
+ * - [`removeClass()`](http://api.jquery.com/removeClass/)
  * - [`removeData()`](http://api.jquery.com/removeData/)
  * - [`replaceWith()`](http://api.jquery.com/replaceWith/)
  * - [`text()`](http://api.jquery.com/text/)
- * - [`toggleClass()`](http://api.jquery.com/toggleClass/) - Does not support a function as first argument
- * - [`triggerHandler()`](http://api.jquery.com/triggerHandler/) - Passes a dummy event object to handlers
+ * - [`toggleClass()`](http://api.jquery.com/toggleClass/)
+ * - [`triggerHandler()`](http://api.jquery.com/triggerHandler/) - Passes a dummy event object to handlers.
  * - [`unbind()`](http://api.jquery.com/unbind/) - Does not support namespaces or event object as parameter
  * - [`val()`](http://api.jquery.com/val/)
  * - [`wrap()`](http://api.jquery.com/wrap/)
@@ -2895,9 +2785,6 @@ function publishExternalAPI(angular) {
  *   Requires {@link guide/production#disabling-debug-data Debug Data} to be enabled.
  * - `inheritedData()` - same as `data()`, but walks up the DOM until a value is found or the top
  *   parent element is reached.
- *
- * @knownIssue You cannot spy on `angular.element` if you are using Jasmine version 1.x. See
- * https://github.com/angular/angular.js/issues/14251 for more information.
  *
  * @param {string|DOMElement} element HTML string or DOMElement to be wrapped into jQuery.
  * @returns {Object} jQuery object.
@@ -2981,12 +2868,6 @@ function jqLiteHasData(node) {
   return false;
 }
 
-function jqLiteCleanData(nodes) {
-  for (var i = 0, ii = nodes.length; i < ii; i++) {
-    jqLiteRemoveData(nodes[i]);
-  }
-}
-
 function jqLiteBuildFragment(html, context) {
   var tmp, tag, wrap,
       fragment = context.createDocumentFragment(),
@@ -3025,7 +2906,7 @@ function jqLiteBuildFragment(html, context) {
 }
 
 function jqLiteParseHTML(html, context) {
-  context = context || window.document;
+  context = context || document;
   var parsed;
 
   if ((parsed = SINGLE_TAG_REGEXP.exec(html))) {
@@ -3039,19 +2920,9 @@ function jqLiteParseHTML(html, context) {
   return [];
 }
 
-function jqLiteWrapNode(node, wrapper) {
-  var parent = node.parentNode;
-
-  if (parent) {
-    parent.replaceChild(wrapper, node);
-  }
-
-  wrapper.appendChild(node);
-}
-
 
 // IE9-11 has no method "contains" in SVG element and in Node.prototype. Bug #10259.
-var jqLiteContains = window.Node.prototype.contains || function(arg) {
+var jqLiteContains = Node.prototype.contains || function(arg) {
   // jshint bitwise: false
   return !!(this.compareDocumentPosition(arg) & 16);
   // jshint bitwise: true
@@ -3299,7 +3170,7 @@ function jqLiteRemove(element, keepData) {
 function jqLiteDocumentLoaded(action, win) {
   win = win || window;
   if (win.document.readyState === 'complete') {
-    // Force the action to be run async for consistent behavior
+    // Force the action to be run async for consistent behaviour
     // from the action's point of view
     // i.e. it will definitely not be in a $apply
     win.setTimeout(action);
@@ -3323,8 +3194,8 @@ var JQLitePrototype = JQLite.prototype = {
     }
 
     // check if document is already loaded
-    if (window.document.readyState === 'complete') {
-      window.setTimeout(trigger);
+    if (document.readyState === 'complete') {
+      setTimeout(trigger);
     } else {
       this.on('DOMContentLoaded', trigger); // works for modern browsers and IE9
       // we can not use jqLite since we are not done loading and jQuery could be loaded later.
@@ -3385,8 +3256,7 @@ function getAliasedAttrName(name) {
 forEach({
   data: jqLiteData,
   removeData: jqLiteRemoveData,
-  hasData: jqLiteHasData,
-  cleanData: jqLiteCleanData
+  hasData: jqLiteHasData
 }, function(fn, name) {
   JQLite[name] = fn;
 });
@@ -3741,7 +3611,12 @@ forEach({
   },
 
   wrap: function(element, wrapNode) {
-    jqLiteWrapNode(element, jqLite(wrapNode).eq(0).clone()[0]);
+    wrapNode = jqLite(wrapNode).eq(0).clone()[0];
+    var parent = element.parentNode;
+    if (parent) {
+      parent.replaceChild(wrapNode, element);
+    }
+    wrapNode.appendChild(element);
   },
 
   remove: jqLiteRemove,
@@ -4014,37 +3889,22 @@ var $$HashMapProvider = [function() {
 /**
  * @ngdoc module
  * @name auto
- * @installation
  * @description
  *
  * Implicit module which gets automatically added to each {@link auto.$injector $injector}.
  */
 
-var ARROW_ARG = /^([^\(]+?)=>/;
 var FN_ARGS = /^[^\(]*\(\s*([^\)]*)\)/m;
 var FN_ARG_SPLIT = /,/;
 var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var $injectorMinErr = minErr('$injector');
 
-function stringifyFn(fn) {
-  // Support: Chrome 50-51 only
-  // Creating a new string by adding `' '` at the end, to hack around some bug in Chrome v50/51
-  // (See https://github.com/angular/angular.js/issues/14487.)
-  // TODO (gkalpak): Remove workaround when Chrome v52 is released
-  return Function.prototype.toString.call(fn) + ' ';
-}
-
-function extractArgs(fn) {
-  var fnText = stringifyFn(fn).replace(STRIP_COMMENTS, ''),
-      args = fnText.match(ARROW_ARG) || fnText.match(FN_ARGS);
-  return args;
-}
-
 function anonFn(fn) {
   // For anonymous functions, showing at the very least the function signature can help in
   // debugging.
-  var args = extractArgs(fn);
+  var fnText = fn.toString().replace(STRIP_COMMENTS, ''),
+      args = fnText.match(FN_ARGS);
   if (args) {
     return 'function(' + (args[1] || '').replace(/[\s\r\n]+/, ' ') + ')';
   }
@@ -4053,6 +3913,7 @@ function anonFn(fn) {
 
 function annotate(fn, strictDi, name) {
   var $inject,
+      fnText,
       argDecl,
       last;
 
@@ -4067,7 +3928,8 @@ function annotate(fn, strictDi, name) {
           throw $injectorMinErr('strictdi',
             '{0} is not using explicit annotation and cannot be invoked in strict mode', name);
         }
-        argDecl = extractArgs(fn);
+        fnText = fn.toString().replace(STRIP_COMMENTS, '');
+        argDecl = fnText.match(FN_ARGS);
         forEach(argDecl[1].split(FN_ARG_SPLIT), function(arg) {
           arg.replace(FN_ARG, function(all, underscore, name) {
             $inject.push(name);
@@ -4304,20 +4166,18 @@ function annotate(fn, strictDi, name) {
  * these cases the {@link auto.$provide $provide} service has additional helper methods to register
  * services without specifying a provider.
  *
- * * {@link auto.$provide#provider provider(name, provider)} - registers a **service provider** with the
+ * * {@link auto.$provide#provider provider(provider)} - registers a **service provider** with the
  *     {@link auto.$injector $injector}
- * * {@link auto.$provide#constant constant(name, obj)} - registers a value/object that can be accessed by
+ * * {@link auto.$provide#constant constant(obj)} - registers a value/object that can be accessed by
  *     providers and services.
- * * {@link auto.$provide#value value(name, obj)} - registers a value/object that can only be accessed by
+ * * {@link auto.$provide#value value(obj)} - registers a value/object that can only be accessed by
  *     services, not providers.
- * * {@link auto.$provide#factory factory(name, fn)} - registers a service **factory function**
+ * * {@link auto.$provide#factory factory(fn)} - registers a service **factory function**, `fn`,
  *     that will be wrapped in a **service provider** object, whose `$get` property will contain the
  *     given factory function.
- * * {@link auto.$provide#service service(name, Fn)} - registers a **constructor function**
+ * * {@link auto.$provide#service service(class)} - registers a **constructor function**, `class`
  *     that will be wrapped in a **service provider** object, whose `$get` property will instantiate
  *      a new object using the given constructor function.
- * * {@link auto.$provide#decorator decorator(name, decorFn)} - registers a **decorator function** that
- *      will be able to modify or replace the implementation of another service.
  *
  * See the individual methods for more information and examples.
  */
@@ -4459,20 +4319,8 @@ function annotate(fn, strictDi, name) {
  *
  * Register a **service constructor**, which will be invoked with `new` to create the service
  * instance.
- * This is short for registering a service where its provider's `$get` property is a factory
- * function that returns an instance instantiated by the injector from the service constructor
- * function.
- *
- * Internally it looks a bit like this:
- *
- * ```
- * {
- *   $get: function() {
- *     return $injector.instantiate(constructor);
- *   }
- * }
- * ```
- *
+ * This is short for registering a service where its provider's `$get` property is the service
+ * constructor function that will be used to instantiate the service instance.
  *
  * You should use {@link auto.$provide#service $provide.service(class)} if you define your service
  * as a type/class.
@@ -4512,13 +4360,14 @@ function annotate(fn, strictDi, name) {
  * @description
  *
  * Register a **value service** with the {@link auto.$injector $injector}, such as a string, a
- * number, an array, an object or a function. This is short for registering a service where its
+ * number, an array, an object or a function.  This is short for registering a service where its
  * provider's `$get` property is a factory function that takes no arguments and returns the **value
- * service**. That also means it is not possible to inject other services into a value service.
+ * service**.
  *
  * Value services are similar to constant services, except that they cannot be injected into a
  * module configuration function (see {@link angular.Module#config}) but they can be overridden by
- * an Angular {@link auto.$provide#decorator decorator}.
+ * an Angular
+ * {@link auto.$provide#decorator decorator}.
  *
  * @param {string} name The name of the instance.
  * @param {*} value The value.
@@ -4543,11 +4392,8 @@ function annotate(fn, strictDi, name) {
  * @name $provide#constant
  * @description
  *
- * Register a **constant service** with the {@link auto.$injector $injector}, such as a string,
- * a number, an array, an object or a function. Like the {@link auto.$provide#value value}, it is not
- * possible to inject other services into a constant.
- *
- * But unlike {@link auto.$provide#value value}, a constant can be
+ * Register a **constant service**, such as a string, a number, an array, an object or a function,
+ * with the {@link auto.$injector $injector}. Unlike {@link auto.$provide#value value} it can be
  * injected into a module configuration function (see {@link angular.Module#config}) and it cannot
  * be overridden by an Angular {@link auto.$provide#decorator decorator}.
  *
@@ -4574,20 +4420,18 @@ function annotate(fn, strictDi, name) {
  * @name $provide#decorator
  * @description
  *
- * Register a **decorator function** with the {@link auto.$injector $injector}. A decorator function
+ * Register a **service decorator** with the {@link auto.$injector $injector}. A service decorator
  * intercepts the creation of a service, allowing it to override or modify the behavior of the
- * service. The return value of the decorator function may be the original service, or a new service
- * that replaces (or wraps and delegates to) the original service.
- *
- * You can find out more about using decorators in the {@link guide/decorators} guide.
+ * service. The object returned by the decorator may be the original service, or a new service
+ * object which replaces or wraps and delegates to the original service.
  *
  * @param {string} name The name of the service to decorate.
  * @param {Function|Array.<string|Function>} decorator This function will be invoked when the service needs to be
- *    provided and should return the decorated service instance. The function is called using
+ *    instantiated and should return the decorated service instance. The function is called using
  *    the {@link auto.$injector#invoke injector.invoke} method and is therefore fully injectable.
  *    Local injection arguments:
  *
- *    * `$delegate` - The original service instance, which can be replaced, monkey patched, configured,
+ *    * `$delegate` - The original service instance, which can be monkey patched, configured,
  *      decorated or delegated to.
  *
  * @example
@@ -4626,19 +4470,14 @@ function createInjector(modulesToLoad, strictDi) {
             throw $injectorMinErr('unpr', "Unknown provider: {0}", path.join(' <- '));
           })),
       instanceCache = {},
-      protoInstanceInjector =
+      instanceInjector = (instanceCache.$injector =
           createInternalInjector(instanceCache, function(serviceName, caller) {
             var provider = providerInjector.get(serviceName + providerSuffix, caller);
-            return instanceInjector.invoke(
-                provider.$get, provider, undefined, serviceName);
-          }),
-      instanceInjector = protoInstanceInjector;
+            return instanceInjector.invoke(provider.$get, provider, undefined, serviceName);
+          }));
 
-  providerCache['$injector' + providerSuffix] = { $get: valueFn(protoInstanceInjector) };
-  var runBlocks = loadModules(modulesToLoad);
-  instanceInjector = protoInstanceInjector.get('$injector');
-  instanceInjector.strictDi = strictDi;
-  forEach(runBlocks, function(fn) { if (fn) instanceInjector.invoke(fn); });
+
+  forEach(loadModules(modulesToLoad), function(fn) { if (fn) instanceInjector.invoke(fn); });
 
   return instanceInjector;
 
@@ -4788,66 +4627,47 @@ function createInjector(modulesToLoad, strictDi) {
       }
     }
 
-
-    function injectionArgs(fn, locals, serviceName) {
-      var args = [],
-          $inject = createInjector.$$annotate(fn, strictDi, serviceName);
-
-      for (var i = 0, length = $inject.length; i < length; i++) {
-        var key = $inject[i];
-        if (typeof key !== 'string') {
-          throw $injectorMinErr('itkn',
-                  'Incorrect injection token! Expected service name as string, got {0}', key);
-        }
-        args.push(locals && locals.hasOwnProperty(key) ? locals[key] :
-                                                         getService(key, serviceName));
-      }
-      return args;
-    }
-
-    function isClass(func) {
-      // IE 9-11 do not support classes and IE9 leaks with the code below.
-      if (msie <= 11) {
-        return false;
-      }
-      // Workaround for MS Edge.
-      // Check https://connect.microsoft.com/IE/Feedback/Details/2211653
-      return typeof func === 'function'
-        && /^(?:class\s|constructor\()/.test(stringifyFn(func));
-    }
-
     function invoke(fn, self, locals, serviceName) {
       if (typeof locals === 'string') {
         serviceName = locals;
         locals = null;
       }
 
-      var args = injectionArgs(fn, locals, serviceName);
+      var args = [],
+          $inject = createInjector.$$annotate(fn, strictDi, serviceName),
+          length, i,
+          key;
+
+      for (i = 0, length = $inject.length; i < length; i++) {
+        key = $inject[i];
+        if (typeof key !== 'string') {
+          throw $injectorMinErr('itkn',
+                  'Incorrect injection token! Expected service name as string, got {0}', key);
+        }
+        args.push(
+          locals && locals.hasOwnProperty(key)
+          ? locals[key]
+          : getService(key, serviceName)
+        );
+      }
       if (isArray(fn)) {
-        fn = fn[fn.length - 1];
+        fn = fn[length];
       }
 
-      if (!isClass(fn)) {
-        // http://jsperf.com/angularjs-invoke-apply-vs-switch
-        // #5388
-        return fn.apply(self, args);
-      } else {
-        args.unshift(null);
-        return new (Function.prototype.bind.apply(fn, args))();
-      }
+      // http://jsperf.com/angularjs-invoke-apply-vs-switch
+      // #5388
+      return fn.apply(self, args);
     }
-
 
     function instantiate(Type, locals, serviceName) {
       // Check if Type is annotated and use just the given function at n-1 as parameter
       // e.g. someModule.factory('greeter', ['$window', function(renamed$window) {}]);
-      var ctor = (isArray(Type) ? Type[Type.length - 1] : Type);
-      var args = injectionArgs(Type, locals, serviceName);
-      // Empty object at position 0 is ignored for invocation with `new`, but required.
-      args.unshift(null);
-      return new (Function.prototype.bind.apply(ctor, args))();
-    }
+      // Object creation: http://jsperf.com/create-constructor/2
+      var instance = Object.create((isArray(Type) ? Type[Type.length - 1] : Type).prototype || null);
+      var returnedValue = invoke(Type, instance, locals, serviceName);
 
+      return isObject(returnedValue) || isFunction(returnedValue) ? returnedValue : instance;
+    }
 
     return {
       invoke: invoke,
@@ -4904,7 +4724,7 @@ function $AnchorScrollProvider() {
    * When called, it scrolls to the element related to the specified `hash` or (if omitted) to the
    * current value of {@link ng.$location#hash $location.hash()}, according to the rules specified
    * in the
-   * [HTML5 spec](http://www.w3.org/html/wg/drafts/html/master/browsers.html#an-indicated-part-of-the-document).
+   * [HTML5 spec](http://www.w3.org/html/wg/drafts/html/master/browsers.html#the-indicated-part-of-the-document).
    *
    * It also watches the {@link ng.$location#hash $location.hash()} and automatically scrolls to
    * match any anchor whenever it changes. This can be disabled by calling
@@ -5188,7 +5008,7 @@ function prepareAnimateOptions(options) {
 }
 
 var $$CoreAnimateJsProvider = function() {
-  this.$get = noop;
+  this.$get = function() {};
 };
 
 // this is prefixed with Core since it conflicts with
@@ -5460,20 +5280,15 @@ var $AnimateProvider = ['$provide', function($provide) {
        * // remove all the animation event listeners listening for `enter`
        * $animate.off('enter');
        *
-       * // remove listeners for all animation events from the container element
-       * $animate.off(container);
-       *
        * // remove all the animation event listeners listening for `enter` on the given element and its children
        * $animate.off('enter', container);
        *
-       * // remove the event listener function provided by `callback` that is set
-       * // to listen for `enter` on the given `container` as well as its children
+       * // remove the event listener function provided by `listenerFn` that is set
+       * // to listen for `enter` on the given `element` as well as its children
        * $animate.off('enter', container, callback);
        * ```
        *
-       * @param {string|DOMElement} event|container the animation event (e.g. enter, leave, move,
-       * addClass, removeClass, etc...), or the container element. If it is the element, all other
-       * arguments are ignored.
+       * @param {string} event the animation event (e.g. enter, leave, move, addClass, removeClass, etc...)
        * @param {DOMElement=} container the container element the event listener was placed on
        * @param {Function=} callback the callback function that was registered as the listener
        */
@@ -5554,13 +5369,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        * @param {DOMElement} parent the parent element which will append the element as
        *   a child (so long as the after element is not present)
        * @param {DOMElement=} after the sibling element after which the element will be appended
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5586,13 +5395,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        * @param {DOMElement} parent the parent element which will append the element as
        *   a child (so long as the after element is not present)
        * @param {DOMElement=} after the sibling element after which the element will be appended
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5613,13 +5416,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        * digest once the animation has completed.
        *
        * @param {DOMElement} element the element which will be removed from the DOM
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5643,13 +5440,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        *
        * @param {DOMElement} element the element which the CSS classes will be applied to
        * @param {string} className the CSS class(es) that will be added (multiple classes are separated via spaces)
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5673,13 +5464,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        *
        * @param {DOMElement} element the element which the CSS classes will be applied to
        * @param {string} className the CSS class(es) that will be removed (multiple classes are separated via spaces)
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5704,13 +5489,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        * @param {DOMElement} element the element which the CSS classes will be applied to
        * @param {string} add the CSS class(es) that will be added (multiple classes are separated via spaces)
        * @param {string} remove the CSS class(es) that will be removed (multiple classes are separated via spaces)
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5728,7 +5507,7 @@ var $AnimateProvider = ['$provide', function($provide) {
        *
        * @description Performs an inline animation on the element which applies the provided to and from CSS styles to the element.
        * If any detected CSS transition, keyframe or JavaScript matches the provided className value, then the animation will take
-       * on the provided styles. For example, if a transition animation is set for the given classNamem, then the provided `from` and
+       * on the provided styles. For example, if a transition animation is set for the given className, then the provided `from` and
        * `to` styles will be applied alongside the given transition. If the CSS style provided in `from` does not have a corresponding
        * style in `to`, the style in `from` is applied immediately, and no animation is run.
        * If a JavaScript animation is detected then the provided styles will be given in as function parameters into the `animate`
@@ -5750,14 +5529,8 @@ var $AnimateProvider = ['$provide', function($provide) {
        * @param {object} to the to (destination) CSS styles that will be applied to the element and across the animation.
        * @param {string=} className an optional CSS class that will be applied to the element for the duration of the animation. If
        *    this value is left as empty then a CSS class of `ng-inline-animate` will be applied to the element.
-       *    (Note that if no animation is detected then this value will not be applied to the element.)
-       * @param {object=} options an optional collection of options/styles that will be applied to the element.
-       *   The object can have the following properties:
-       *
-       *   - **addClass** - `{string}` - space-separated CSS classes to add to element
-       *   - **from** - `{Object}` - CSS properties & values at the beginning of animation. Must have matching `to`
-       *   - **removeClass** - `{string}` - space-separated CSS classes to remove from element
-       *   - **to** - `{Object}` - CSS properties & values at end of animation. Must have matching `from`
+       *    (Note that if no animation is detected then this value will not be appplied to the element.)
+       * @param {object=} options an optional collection of options/styles that will be applied to the element
        *
        * @return {Promise} the animation callback promise
        */
@@ -5994,7 +5767,7 @@ var $CoreAnimateCssProvider = function() {
         options.from = null;
       }
 
-      /* jshint newcap: false */
+      /* jshint newcap: false*/
       var closed, runner = new $$AnimateRunner();
       return {
         start: run,
@@ -6055,6 +5828,7 @@ var $CoreAnimateCssProvider = function() {
  */
 function Browser(window, document, $log, $sniffer) {
   var self = this,
+      rawDocument = document[0],
       location = window.location,
       history = window.history,
       setTimeout = window.setTimeout,
@@ -6117,14 +5891,7 @@ function Browser(window, document, $log, $sniffer) {
   var cachedState, lastHistoryState,
       lastBrowserUrl = location.href,
       baseElement = document.find('base'),
-      pendingLocation = null,
-      getCurrentState = !$sniffer.history ? noop : function getCurrentState() {
-        try {
-          return history.state;
-        } catch (e) {
-          // MSIE can reportedly throw when there is no state (UNCONFIRMED).
-        }
-      };
+      pendingLocation = null;
 
   cacheState();
   lastHistoryState = cachedState;
@@ -6184,7 +5951,7 @@ function Browser(window, document, $log, $sniffer) {
         // Do the assignment again so that those two variables are referentially identical.
         lastHistoryState = cachedState;
       } else {
-        if (!sameBase) {
+        if (!sameBase || pendingLocation) {
           pendingLocation = url;
         }
         if (replace) {
@@ -6197,9 +5964,6 @@ function Browser(window, document, $log, $sniffer) {
         if (location.href !== url) {
           pendingLocation = url;
         }
-      }
-      if (pendingLocation) {
-        pendingLocation = url;
       }
       return self;
     // getter
@@ -6233,6 +5997,14 @@ function Browser(window, document, $log, $sniffer) {
     pendingLocation = null;
     cacheState();
     fireUrlChange();
+  }
+
+  function getCurrentState() {
+    try {
+      return history.state;
+    } catch (e) {
+      // MSIE can reportedly throw when there is no state (UNCONFIRMED).
+    }
   }
 
   // This variable should be used *only* inside the cacheState function.
@@ -6921,7 +6693,7 @@ function $TemplateCacheProvider() {
  * When this property is set to true, the HTML compiler will collect DOM nodes between
  * nodes with the attributes `directive-name-start` and `directive-name-end`, and group them
  * together as the directive elements. It is recommended that this feature be used on directives
- * which are not strictly behavioral (such as {@link ngClick}), and which
+ * which are not strictly behavioural (such as {@link ngClick}), and which
  * do not manipulate or replace child nodes (such as {@link ngInclude}).
  *
  * #### `priority`
@@ -6959,62 +6731,35 @@ function $TemplateCacheProvider() {
  * is bound to the parent scope, via matching attributes on the directive's element:
  *
  * * `@` or `@attr` - bind a local scope property to the value of DOM attribute. The result is
- *   always a string since DOM attributes are strings. If no `attr` name is specified then the
- *   attribute name is assumed to be the same as the local name. Given `<my-component
- *   my-attr="hello {{name}}">` and the isolate scope definition `scope: { localName:'@myAttr' }`,
- *   the directive's scope property `localName` will reflect the interpolated value of `hello
- *   {{name}}`. As the `name` attribute changes so will the `localName` property on the directive's
- *   scope. The `name` is read from the parent scope (not the directive's scope).
+ *   always a string since DOM attributes are strings. If no `attr` name is specified  then the
+ *   attribute name is assumed to be the same as the local name.
+ *   Given `<widget my-attr="hello {{name}}">` and widget definition
+ *   of `scope: { localName:'@myAttr' }`, then widget scope property `localName` will reflect
+ *   the interpolated value of `hello {{name}}`. As the `name` attribute changes so will the
+ *   `localName` property on the widget scope. The `name` is read from the parent scope (not
+ *   component scope).
  *
- * * `=` or `=attr` - set up a bidirectional binding between a local scope property and an expression
- *   passed via the attribute `attr`. The expression is evaluated in the context of the parent scope.
- *   If no `attr` name is specified then the attribute name is assumed to be the same as the local
- *   name. Given `<my-component my-attr="parentModel">` and the isolate scope definition `scope: {
- *   localModel: '=myAttr' }`, the property `localModel` on the directive's scope will reflect the
- *   value of `parentModel` on the parent scope. Changes to `parentModel` will be reflected in
- *   `localModel` and vice versa. Optional attributes should be marked as such with a question mark:
- *   `=?` or `=?attr`. If the binding expression is non-assignable, or if the attribute isn't
- *   optional and doesn't exist, an exception ({@link error/$compile/nonassign `$compile:nonassign`})
- *   will be thrown upon discovering changes to the local value, since it will be impossible to sync
- *   them back to the parent scope. By default, the {@link ng.$rootScope.Scope#$watch `$watch`}
- *   method is used for tracking changes, and the equality check is based on object identity.
- *   However, if an object literal or an array literal is passed as the binding expression, the
- *   equality check is done by value (using the {@link angular.equals} function). It's also possible
- *   to watch the evaluated value shallowly with {@link ng.$rootScope.Scope#$watchCollection
- *   `$watchCollection`}: use `=*` or `=*attr` (`=*?` or `=*?attr` if the attribute is optional).
- *
-  * * `<` or `<attr` - set up a one-way (one-directional) binding between a local scope property and an
- *   expression passed via the attribute `attr`. The expression is evaluated in the context of the
- *   parent scope. If no `attr` name is specified then the attribute name is assumed to be the same as the
- *   local name. You can also make the binding optional by adding `?`: `<?` or `<?attr`.
- *
- *   For example, given `<my-component my-attr="parentModel">` and directive definition of
- *   `scope: { localModel:'<myAttr' }`, then the isolated scope property `localModel` will reflect the
+ * * `=` or `=attr` - set up bi-directional binding between a local scope property and the
+ *   parent scope property of name defined via the value of the `attr` attribute. If no `attr`
+ *   name is specified then the attribute name is assumed to be the same as the local name.
+ *   Given `<widget my-attr="parentModel">` and widget definition of
+ *   `scope: { localModel:'=myAttr' }`, then widget scope property `localModel` will reflect the
  *   value of `parentModel` on the parent scope. Any changes to `parentModel` will be reflected
- *   in `localModel`, but changes in `localModel` will not reflect in `parentModel`. There are however
- *   two caveats:
- *     1. one-way binding does not copy the value from the parent to the isolate scope, it simply
- *     sets the same value. That means if your bound value is an object, changes to its properties
- *     in the isolated scope will be reflected in the parent scope (because both reference the same object).
- *     2. one-way binding watches changes to the **identity** of the parent value. That means the
- *     {@link ng.$rootScope.Scope#$watch `$watch`} on the parent value only fires if the reference
- *     to the value has changed. In most cases, this should not be of concern, but can be important
- *     to know if you one-way bind to an object, and then replace that object in the isolated scope.
- *     If you now change a property of the object in your parent scope, the change will not be
- *     propagated to the isolated scope, because the identity of the object on the parent scope
- *     has not changed. Instead you must assign a new object.
+ *   in `localModel` and any changes in `localModel` will reflect in `parentModel`. If the parent
+ *   scope property doesn't exist, it will throw a NON_ASSIGNABLE_MODEL_EXPRESSION exception. You
+ *   can avoid this behavior using `=?` or `=?attr` in order to flag the property as optional. If
+ *   you want to shallow watch for changes (i.e. $watchCollection instead of $watch) you can use
+ *   `=*` or `=*attr` (`=*?` or `=*?attr` if the property is optional).
  *
- *   One-way binding is useful if you do not plan to propagate changes to your isolated scope bindings
- *   back to the parent. However, it does not make this completely impossible.
- *
- * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope. If
- *   no `attr` name is specified then the attribute name is assumed to be the same as the local name.
- *   Given `<my-component my-attr="count = count + value">` and the isolate scope definition `scope: {
- *   localFn:'&myAttr' }`, the isolate scope property `localFn` will point to a function wrapper for
- *   the `count = count + value` expression. Often it's desirable to pass data from the isolated scope
- *   via an expression to the parent scope. This can be done by passing a map of local variable names
- *   and values into the expression wrapper fn. For example, if the expression is `increment(amount)`
- *   then we can specify the amount value by calling the `localFn` as `localFn({amount: 22})`.
+ * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope.
+ *   If no `attr` name is specified then the attribute name is assumed to be the same as the
+ *   local name. Given `<widget my-attr="count = count + value">` and widget definition of
+ *   `scope: { localFn:'&myAttr' }`, then isolate scope property `localFn` will point to
+ *   a function wrapper for the `count = count + value` expression. Often it's desirable to
+ *   pass data from the isolated scope via an expression to the parent scope, this can be
+ *   done by passing a map of local variable names and values into the expression wrapper fn.
+ *   For example, if the expression is `increment(amount)` then we can specify the amount value
+ *   by calling the `localFn` as `localFn({amount: 22})`.
  *
  * In general it's possible to apply more than one directive to one element, but there might be limitations
  * depending on the type of scope required by the directives. The following points will help explain these limitations.
@@ -7038,18 +6783,8 @@ function $TemplateCacheProvider() {
  * definition: `controller: 'myCtrl as myAlias'`.
  *
  * When an isolate scope is used for a directive (see above), `bindToController: true` will
- * allow a component to have its properties bound to the controller, rather than to scope.
- *
- * After the controller is instantiated, the initial values of the isolate scope bindings will be bound to the controller
- * properties. You can access these bindings once they have been initialized by providing a controller method called
- * `$onInit`, which is called after all the controllers on an element have been constructed and had their bindings
- * initialized.
- *
- * <div class="alert alert-warning">
- * **Deprecation warning:** although bindings for non-ES6 class controllers are currently
- * bound to `this` before the controller constructor is called, this use is now deprecated. Please place initialization
- * code that relies upon bindings inside a `$onInit` method on the controller, instead.
- * </div>
+ * allow a component to have its properties bound to the controller, rather than to scope. When the controller
+ * is instantiated, the initial values of the isolate scope bindings are already available.
  *
  * It is also possible to set `bindToController` to an object hash with the same format as the `scope` property.
  * This will set up the scope bindings to the controller directly. Note that `scope` can still be used
@@ -7069,10 +6804,10 @@ function $TemplateCacheProvider() {
  * * `$element` - Current element
  * * `$attrs` - Current attributes object for the element
  * * `$transclude` - A transclude linking function pre-bound to the correct transclusion scope:
- *   `function([scope], cloneLinkingFn, futureParentElement, slotName)`:
- *    * `scope`: (optional) override the scope.
- *    * `cloneLinkingFn`: (optional) argument to create clones of the original transcluded content.
- *    * `futureParentElement` (optional):
+ *   `function([scope], cloneLinkingFn, futureParentElement)`.
+ *    * `scope`: optional argument to override the scope.
+ *    * `cloneLinkingFn`: optional argument to create clones of the original transcluded content.
+ *    * `futureParentElement`:
  *        * defines the parent to which the `cloneLinkingFn` will add the cloned elements.
  *        * default: `$element.parent()` resp. `$element` for `transclude:'element'` resp. `transclude:true`.
  *        * only needed for transcludes that are allowed to contain non html elements (e.g. SVG elements)
@@ -7080,49 +6815,14 @@ function $TemplateCacheProvider() {
  *          as those elements need to created and cloned in a special way when they are defined outside their
  *          usual containers (e.g. like `<svg>`).
  *        * See also the `directive.templateNamespace` property.
- *    * `slotName`: (optional) the name of the slot to transclude. If falsy (e.g. `null`, `undefined` or `''`)
- *      then the default translusion is provided.
- *    The `$transclude` function also has a method on it, `$transclude.isSlotFilled(slotName)`, which returns
- *    `true` if the specified slot contains content (i.e. one or more DOM nodes).
- *
- * The controller can provide the following methods that act as life-cycle hooks:
- * * `$onInit()` - Called on each controller after all the controllers on an element have been constructed and
- *   had their bindings initialized (and before the pre &amp; post linking functions for the directives on
- *   this element). This is a good place to put initialization code for your controller.
- * * `$onChanges(changesObj)` - Called whenever one-way (`<`) or interpolation (`@`) bindings are updated. The
- *   `changesObj` is a hash whose keys are the names of the bound properties that have changed, and the values are an
- *   object of the form `{ currentValue, previousValue, isFirstChange() }`. Use this hook to trigger updates within a
- *   component such as cloning the bound value to prevent accidental mutation of the outer value.
- * * `$onDestroy()` - Called on a controller when its containing scope is destroyed. Use this hook for releasing
- *   external resources, watches and event handlers. Note that components have their `$onDestroy()` hooks called in
- *   the same order as the `$scope.$broadcast` events are triggered, which is top down. This means that parent
- *   components will have their `$onDestroy()` hook called before child components.
- * * `$postLink()` - Called after this controller's element and its children have been linked. Similar to the post-link
- *   function this hook can be used to set up DOM event handlers and do direct DOM manipulation.
- *   Note that child elements that contain `templateUrl` directives will not have been compiled and linked since
- *   they are waiting for their template to load asynchronously and their own compilation and linking has been
- *   suspended until that occurs.
  *
  *
  * #### `require`
  * Require another directive and inject its controller as the fourth argument to the linking function. The
- * `require` property can be a string, an array or an object:
- * * a **string** containing the name of the directive to pass to the linking function
- * * an **array** containing the names of directives to pass to the linking function. The argument passed to the
- * linking function will be an array of controllers in the same order as the names in the `require` property
- * * an **object** whose property values are the names of the directives to pass to the linking function. The argument
- * passed to the linking function will also be an object with matching keys, whose values will hold the corresponding
- * controllers.
- *
- * If the `require` property is an object and `bindToController` is truthy, then the required controllers are
- * bound to the controller using the keys of the `require` property. This binding occurs after all the controllers
- * have been constructed but before `$onInit` is called.
- * If the name of the required controller is the same as the local name (the key), the name can be
- * omitted. For example, `{parentDir: '^^'}` is equivalent to `{parentDir: '^^parentDir'}`.
- * See the {@link $compileProvider#component} helper for an example of how this can be used.
- * If no such required directive(s) can be found, or if the directive does not have a controller, then an error is
- * raised (unless no link function is specified and the required controllers are not being bound to the directive
- * controller, in which case error checking is skipped). The name can be prefixed with:
+ * `require` takes a string name (or array of strings) of the directive(s) to pass in. If an array is used, the
+ * injected argument will be an array in corresponding order. If no such directive can be
+ * found, or if the directive does not have a controller, then an error is raised (unless no link function
+ * is specified, in which case error checking is skipped). The name can be prefixed with:
  *
  * * (no prefix) - Locate the required controller on the current element. Throw an error if not found.
  * * `?` - Attempt to locate the required controller or pass `null` to the `link` fn if not found.
@@ -7215,6 +6915,14 @@ function $TemplateCacheProvider() {
  * The contents are compiled and provided to the directive as a **transclusion function**. See the
  * {@link $compile#transclusion Transclusion} section below.
  *
+ * There are two kinds of transclusion depending upon whether you want to transclude just the contents of the
+ * directive's element or the entire element:
+ *
+ * * `true` - transclude the content (i.e. the child nodes) of the directive's element.
+ * * `'element'` - transclude the whole of the directive's element including any directives on this
+ *   element that defined at a lower priority than this directive. When used, the `template`
+ *   property is ignored.
+ *
  *
  * #### `compile`
  *
@@ -7242,7 +6950,7 @@ function $TemplateCacheProvider() {
 
  * <div class="alert alert-warning">
  * **Note:** The compile function cannot handle directives that recursively use themselves in their
- * own templates or compile functions. Compiling these directives results in an infinite loop and
+ * own templates or compile functions. Compiling these directives results in an infinite loop and a
  * stack overflow errors.
  *
  * This can be avoided by manually using $compile in the postLink function to imperatively compile
@@ -7344,34 +7052,6 @@ function $TemplateCacheProvider() {
  * Testing Transclusion Directives}.
  * </div>
  *
- * There are three kinds of transclusion depending upon whether you want to transclude just the contents of the
- * directive's element, the entire element or multiple parts of the element contents:
- *
- * * `true` - transclude the content (i.e. the child nodes) of the directive's element.
- * * `'element'` - transclude the whole of the directive's element including any directives on this
- *   element that defined at a lower priority than this directive. When used, the `template`
- *   property is ignored.
- * * **`{...}` (an object hash):** - map elements of the content onto transclusion "slots" in the template.
- *
- * **Mult-slot transclusion** is declared by providing an object for the `transclude` property.
- *
- * This object is a map where the keys are the name of the slot to fill and the value is an element selector
- * used to match the HTML to the slot. The element selector should be in normalized form (e.g. `myElement`)
- * and will match the standard element variants (e.g. `my-element`, `my:element`, `data-my-element`, etc).
- *
- * For further information check out the guide on {@link guide/directive#matching-directives Matching Directives}
- *
- * If the element selector is prefixed with a `?` then that slot is optional.
- *
- * For example, the transclude object `{ slotA: '?myCustomElement' }` maps `<my-custom-element>` elements to
- * the `slotA` slot, which can be accessed via the `$transclude` function or via the {@link ngTransclude} directive.
- *
- * Slots that are not marked as optional (`?`) will trigger a compile time error if there are no matching elements
- * in the transclude content. If you wish to know if an optional slot was filled with content, then you can call
- * `$transclude.isSlotFilled(slotName)` on the transclude function passed to the directive's link function and
- * injectable into the directive's controller.
- *
- *
  * #### Transclusion Functions
  *
  * When a directive requests transclusion, the compiler extracts its contents and provides a **transclusion
@@ -7392,7 +7072,7 @@ function $TemplateCacheProvider() {
  * content and the `scope` is the newly created transclusion scope, to which the clone is bound.
  *
  * <div class="alert alert-info">
- * **Best Practice**: Always provide a `cloneFn` (clone attach function) when you call a transclude function
+ * **Best Practice**: Always provide a `cloneFn` (clone attach function) when you call a translude function
  * since you then get a fresh clone of the original DOM and also have access to the new transclusion scope.
  * </div>
  *
@@ -7424,7 +7104,7 @@ function $TemplateCacheProvider() {
  * </div>
  *
  * The built-in DOM manipulation directives, such as {@link ngIf}, {@link ngSwitch} and {@link ngRepeat}
- * automatically destroy their transcluded clones as necessary so you do not need to worry about this if
+ * automatically destroy their transluded clones as necessary so you do not need to worry about this if
  * you are simply using {@link ngTransclude} to inject the transclusion into your directive.
  *
  *
@@ -7469,9 +7149,10 @@ function $TemplateCacheProvider() {
  * The {@link ng.$compile.directive.Attributes Attributes} object - passed as a parameter in the
  * `link()` or `compile()` functions. It has a variety of uses.
  *
- * * *Accessing normalized attribute names:* Directives like 'ngBind' can be expressed in many ways:
- *   'ng:bind', `data-ng-bind`, or 'x-ng-bind'. The attributes object allows for normalized access
- *   to the attributes.
+ * accessing *Normalized attribute names:*
+ * Directives like 'ngBind' can be expressed in many ways: 'ng:bind', `data-ng-bind`, or 'x-ng-bind'.
+ * the attributes object allows for normalized access to
+ *   the attributes.
  *
  * * *Directive inter-communication:* All directives share the same instance of the attributes
  *   object which allows the directives to use the attributes object as inter directive
@@ -7640,9 +7321,6 @@ function $TemplateCacheProvider() {
 
 var $compileMinErr = minErr('$compile');
 
-function UNINITIALIZED_VALUE() {}
-var _UNINITIALIZED_VALUE = new UNINITIALIZED_VALUE();
-
 /**
  * @ngdoc provider
  * @name $compileProvider
@@ -7662,18 +7340,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
   // The assumption is that future DOM event attribute names will begin with
   // 'on' and be composed of only English letters.
   var EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/;
-  var bindingCache = createMap();
 
   function parseIsolateBindings(scope, directiveName, isController) {
-    var LOCAL_REGEXP = /^\s*([@&<]|=(\*?))(\??)\s*(\w*)\s*$/;
+    var LOCAL_REGEXP = /^\s*([@&]|=(\*?))(\??)\s*(\w*)\s*$/;
 
-    var bindings = createMap();
+    var bindings = {};
 
     forEach(scope, function(definition, scopeName) {
-      if (definition in bindingCache) {
-        bindings[scopeName] = bindingCache[definition];
-        return;
-      }
       var match = definition.match(LOCAL_REGEXP);
 
       if (!match) {
@@ -7691,9 +7364,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         optional: match[3] === '?',
         attrName: match[4] || scopeName
       };
-      if (match[4]) {
-        bindingCache[definition] = bindings[scopeName];
-      }
     });
 
     return bindings;
@@ -7739,27 +7409,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
   function assertValidDirectiveName(name) {
     var letter = name.charAt(0);
     if (!letter || letter !== lowercase(letter)) {
-      throw $compileMinErr('baddir', "Directive/Component name '{0}' is invalid. The first character must be a lowercase letter", name);
+      throw $compileMinErr('baddir', "Directive name '{0}' is invalid. The first character must be a lowercase letter", name);
     }
     if (name !== name.trim()) {
       throw $compileMinErr('baddir',
-            "Directive/Component name '{0}' is invalid. The name should not contain leading or trailing whitespaces",
+            "Directive name '{0}' is invalid. The name should not contain leading or trailing whitespaces",
             name);
     }
-  }
-
-  function getDirectiveRequire(directive) {
-    var require = directive.require || (directive.controller && directive.name);
-
-    if (!isArray(require) && isObject(require)) {
-      forEach(require, function(value, key) {
-        var match = value.match(REQUIRE_PREFIX_REGEXP);
-        var name = value.substring(match[0].length);
-        if (!name) require[key] = match[0] + key;
-      });
-    }
-
-    return require;
   }
 
   /**
@@ -7773,11 +7429,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
    * @param {string|Object} name Name of the directive in camel-case (i.e. <code>ngBind</code> which
    *    will match as <code>ng-bind</code>), or an object map of directives where the keys are the
    *    names and the values are the factories.
-   * @param {Function|Array} directiveFactory An injectable directive factory function. See the
-   *    {@link guide/directive directive guide} and the {@link $compile compile API} for more info.
+   * @param {Function|Array} directiveFactory An injectable directive factory function. See
+   *    {@link guide/directive} for more info.
    * @returns {ng.$compileProvider} Self for chaining.
    */
-  this.directive = function registerDirective(name, directiveFactory) {
+   this.directive = function registerDirective(name, directiveFactory) {
     assertNotHasOwnProperty(name, 'directive');
     if (isString(name)) {
       assertValidDirectiveName(name);
@@ -7798,8 +7454,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 directive.priority = directive.priority || 0;
                 directive.index = index;
                 directive.name = directive.name || name;
-                directive.require = getDirectiveRequire(directive);
+                directive.require = directive.require || (directive.controller && directive.name);
                 directive.restrict = directive.restrict || 'EA';
+                var bindings = directive.$$bindings =
+                    parseDirectiveBindings(directive, directive.name);
+                if (isObject(bindings.isolateScope)) {
+                  directive.$$isolateBindings = bindings.isolateScope;
+                }
                 directive.$$moduleName = directiveFactory.$$moduleName;
                 directives.push(directive);
               } catch (e) {
@@ -7814,147 +7475,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       forEach(name, reverseParams(registerDirective));
     }
     return this;
-  };
-
-  /**
-   * @ngdoc method
-   * @name $compileProvider#component
-   * @module ng
-   * @param {string} name Name of the component in camelCase (i.e. `myComp` which will match `<my-comp>`)
-   * @param {Object} options Component definition object (a simplified
-   *    {@link ng.$compile#directive-definition-object directive definition object}),
-   *    with the following properties (all optional):
-   *
-   *    - `controller` – `{(string|function()=}` – controller constructor function that should be
-   *      associated with newly created scope or the name of a {@link ng.$compile#-controller-
-   *      registered controller} if passed as a string. An empty `noop` function by default.
-   *    - `controllerAs` – `{string=}` – identifier name for to reference the controller in the component's scope.
-   *      If present, the controller will be published to scope under the `controllerAs` name.
-   *      If not present, this will default to be `$ctrl`.
-   *    - `template` – `{string=|function()=}` – html template as a string or a function that
-   *      returns an html template as a string which should be used as the contents of this component.
-   *      Empty string by default.
-   *
-   *      If `template` is a function, then it is {@link auto.$injector#invoke injected} with
-   *      the following locals:
-   *
-   *      - `$element` - Current element
-   *      - `$attrs` - Current attributes object for the element
-   *
-   *    - `templateUrl` – `{string=|function()=}` – path or function that returns a path to an html
-   *      template that should be used  as the contents of this component.
-   *
-   *      If `templateUrl` is a function, then it is {@link auto.$injector#invoke injected} with
-   *      the following locals:
-   *
-   *      - `$element` - Current element
-   *      - `$attrs` - Current attributes object for the element
-   *
-   *    - `bindings` – `{object=}` – defines bindings between DOM attributes and component properties.
-   *      Component properties are always bound to the component controller and not to the scope.
-   *      See {@link ng.$compile#-bindtocontroller- `bindToController`}.
-   *    - `transclude` – `{boolean=}` – whether {@link $compile#transclusion content transclusion} is enabled.
-   *      Disabled by default.
-   *    - `require` - `{Object<string, string>=}` - requires the controllers of other directives and binds them to
-   *      this component's controller. The object keys specify the property names under which the required
-   *      controllers (object values) will be bound. See {@link ng.$compile#-require- `require`}.
-   *    - `$...` – additional properties to attach to the directive factory function and the controller
-   *      constructor function. (This is used by the component router to annotate)
-   *
-   * @returns {ng.$compileProvider} the compile provider itself, for chaining of function calls.
-   * @description
-   * Register a **component definition** with the compiler. This is a shorthand for registering a special
-   * type of directive, which represents a self-contained UI component in your application. Such components
-   * are always isolated (i.e. `scope: {}`) and are always restricted to elements (i.e. `restrict: 'E'`).
-   *
-   * Component definitions are very simple and do not require as much configuration as defining general
-   * directives. Component definitions usually consist only of a template and a controller backing it.
-   *
-   * In order to make the definition easier, components enforce best practices like use of `controllerAs`,
-   * `bindToController`. They always have **isolate scope** and are restricted to elements.
-   *
-   * Here are a few examples of how you would usually define components:
-   *
-   * ```js
-   *   var myMod = angular.module(...);
-   *   myMod.component('myComp', {
-   *     template: '<div>My name is {{$ctrl.name}}</div>',
-   *     controller: function() {
-   *       this.name = 'shahar';
-   *     }
-   *   });
-   *
-   *   myMod.component('myComp', {
-   *     template: '<div>My name is {{$ctrl.name}}</div>',
-   *     bindings: {name: '@'}
-   *   });
-   *
-   *   myMod.component('myComp', {
-   *     templateUrl: 'views/my-comp.html',
-   *     controller: 'MyCtrl',
-   *     controllerAs: 'ctrl',
-   *     bindings: {name: '@'}
-   *   });
-   *
-   * ```
-   * For more examples, and an in-depth guide, see the {@link guide/component component guide}.
-   *
-   * <br />
-   * See also {@link ng.$compileProvider#directive $compileProvider.directive()}.
-   */
-  this.component = function registerComponent(name, options) {
-    var controller = options.controller || function() {};
-
-    function factory($injector) {
-      function makeInjectable(fn) {
-        if (isFunction(fn) || isArray(fn)) {
-          return function(tElement, tAttrs) {
-            return $injector.invoke(fn, this, {$element: tElement, $attrs: tAttrs});
-          };
-        } else {
-          return fn;
-        }
-      }
-
-      var template = (!options.template && !options.templateUrl ? '' : options.template);
-      var ddo = {
-        controller: controller,
-        controllerAs: identifierForController(options.controller) || options.controllerAs || '$ctrl',
-        template: makeInjectable(template),
-        templateUrl: makeInjectable(options.templateUrl),
-        transclude: options.transclude,
-        scope: {},
-        bindToController: options.bindings || {},
-        restrict: 'E',
-        require: options.require
-      };
-
-      // Copy annotations (starting with $) over to the DDO
-      forEach(options, function(val, key) {
-        if (key.charAt(0) === '$') ddo[key] = val;
-      });
-
-      return ddo;
-    }
-
-    // TODO(pete) remove the following `forEach` before we release 1.6.0
-    // The component-router@0.2.0 looks for the annotations on the controller constructor
-    // Nothing in Angular looks for annotations on the factory function but we can't remove
-    // it from 1.5.x yet.
-
-    // Copy any annotation properties (starting with $) over to the factory and controller constructor functions
-    // These could be used by libraries such as the new component router
-    forEach(options, function(val, key) {
-      if (key.charAt(0) === '$') {
-        factory[key] = val;
-        // Don't try to copy over annotations to named controller
-        if (isFunction(controller)) controller[key] = val;
-      }
-    });
-
-    factory.$inject = ['$injector'];
-
-    return this.directive(name, factory);
   };
 
 
@@ -8048,83 +7568,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     return debugInfoEnabled;
   };
 
-
-  var TTL = 10;
-  /**
-   * @ngdoc method
-   * @name $compileProvider#onChangesTtl
-   * @description
-   *
-   * Sets the number of times `$onChanges` hooks can trigger new changes before giving up and
-   * assuming that the model is unstable.
-   *
-   * The current default is 10 iterations.
-   *
-   * In complex applications it's possible that dependencies between `$onChanges` hooks and bindings will result
-   * in several iterations of calls to these hooks. However if an application needs more than the default 10
-   * iterations to stabilize then you should investigate what is causing the model to continuously change during
-   * the `$onChanges` hook execution.
-   *
-   * Increasing the TTL could have performance implications, so you should not change it without proper justification.
-   *
-   * @param {number} limit The number of `$onChanges` hook iterations.
-   * @returns {number|object} the current limit (or `this` if called as a setter for chaining)
-   */
-  this.onChangesTtl = function(value) {
-    if (arguments.length) {
-      TTL = value;
-      return this;
-    }
-    return TTL;
-  };
-
   this.$get = [
             '$injector', '$interpolate', '$exceptionHandler', '$templateRequest', '$parse',
             '$controller', '$rootScope', '$sce', '$animate', '$$sanitizeUri',
     function($injector,   $interpolate,   $exceptionHandler,   $templateRequest,   $parse,
              $controller,   $rootScope,   $sce,   $animate,   $$sanitizeUri) {
 
-    var SIMPLE_ATTR_NAME = /^\w/;
-    var specialAttrHolder = window.document.createElement('div');
-
-
-
-    var onChangesTtl = TTL;
-    // The onChanges hooks should all be run together in a single digest
-    // When changes occur, the call to trigger their hooks will be added to this queue
-    var onChangesQueue;
-
-    // This function is called in a $$postDigest to trigger all the onChanges hooks in a single digest
-    function flushOnChangesQueue() {
-      try {
-        if (!(--onChangesTtl)) {
-          // We have hit the TTL limit so reset everything
-          onChangesQueue = undefined;
-          throw $compileMinErr('infchng', '{0} $onChanges() iterations reached. Aborting!\n', TTL);
-        }
-        // We must run this hook in an apply since the $$postDigest runs outside apply
-        $rootScope.$apply(function() {
-          var errors = [];
-          for (var i = 0, ii = onChangesQueue.length; i < ii; ++i) {
-            try {
-              onChangesQueue[i]();
-            } catch (e) {
-              errors.push(e);
-            }
-          }
-          // Reset the queue to trigger a new schedule next time there is a change
-          onChangesQueue = undefined;
-          if (errors.length) {
-            throw errors;
-          }
-        });
-      } finally {
-        onChangesTtl++;
-      }
-    }
-
-
-    function Attributes(element, attributesToCopy) {
+    var Attributes = function(element, attributesToCopy) {
       if (attributesToCopy) {
         var keys = Object.keys(attributesToCopy);
         var i, l, key;
@@ -8138,7 +7588,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
 
       this.$$element = element;
-    }
+    };
 
     Attributes.prototype = {
       /**
@@ -8259,11 +7709,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         nodeName = nodeName_(this.$$element);
 
-        if ((nodeName === 'a' && (key === 'href' || key === 'xlinkHref')) ||
+        if ((nodeName === 'a' && key === 'href') ||
             (nodeName === 'img' && key === 'src')) {
           // sanitize a[href] and img[src] values
           this[key] = value = $$sanitizeUri(value, key === 'src');
-        } else if (nodeName === 'img' && key === 'srcset' && isDefined(value)) {
+        } else if (nodeName === 'img' && key === 'srcset') {
           // sanitize img[srcset] values
           var result = "";
 
@@ -8303,11 +7753,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (value === null || isUndefined(value)) {
             this.$$element.removeAttr(attrName);
           } else {
-            if (SIMPLE_ATTR_NAME.test(attrName)) {
-              this.$$element.attr(attrName, value);
-            } else {
-              setSpecialAttr(this.$$element[0], attrName, value);
-            }
+            this.$$element.attr(attrName, value);
           }
         }
 
@@ -8361,18 +7807,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       }
     };
 
-    function setSpecialAttr(element, attrName, value) {
-      // Attributes names that do not start with letters (such as `(click)`) cannot be set using `setAttribute`
-      // so we have to jump through some hoops to get such an attribute
-      // https://github.com/angular/angular.js/pull/13318
-      specialAttrHolder.innerHTML = "<span " + attrName + ">";
-      var attributes = specialAttrHolder.firstChild.attributes;
-      var attribute = attributes[0];
-      // We have to remove the attribute from its container element before we can add it to the destination element
-      attributes.removeNamedItem(attribute.name);
-      attribute.value = value;
-      element.attributes.setNamedItem(attribute);
-    }
 
     function safeAddClass($element, className) {
       try {
@@ -8386,7 +7820,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     var startSymbol = $interpolate.startSymbol(),
         endSymbol = $interpolate.endSymbol(),
-        denormalizeTemplate = (startSymbol == '{{' && endSymbol  == '}}')
+        denormalizeTemplate = (startSymbol == '{{' || endSymbol  == '}}')
             ? identity
             : function denormalizeTemplate(template) {
               return template.replace(/\{\{/g, startSymbol).replace(/}}/g, endSymbol);
@@ -8419,15 +7853,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       safeAddClass($element, isolated ? 'ng-isolate-scope' : 'ng-scope');
     } : noop;
 
-    compile.$$createComment = function(directiveName, comment) {
-      var content = '';
-      if (debugInfoEnabled) {
-        content = ' ' + (directiveName || '') + ': ';
-        if (comment) content += comment + ' ';
-      }
-      return window.document.createComment(content);
-    };
-
     return compile;
 
     //================================
@@ -8439,19 +7864,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         // modify it.
         $compileNodes = jqLite($compileNodes);
       }
-
-      var NOT_EMPTY = /\S+/;
-
       // We can not compile top level text elements since text nodes can be merged and we will
       // not be able to attach scope data to them, so we will wrap them in <span>
-      for (var i = 0, len = $compileNodes.length; i < len; i++) {
-        var domNode = $compileNodes[i];
-
-        if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
-          jqLiteWrapNode(domNode, $compileNodes[i] = window.document.createElement('span'));
+      forEach($compileNodes, function(node, index) {
+        if (node.nodeType == NODE_TYPE_TEXT && node.nodeValue.match(/\S+/) /* non-empty */ ) {
+          $compileNodes[index] = jqLite(node).wrap('<span></span>').parent()[0];
         }
-      }
-
+      });
       var compositeLinkFn =
               compileNodes($compileNodes, transcludeFn, $compileNodes,
                            maxPriority, ignoreDirective, previousCompileContext);
@@ -8522,7 +7941,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       if (!node) {
         return 'html';
       } else {
-        return nodeName_(node) !== 'foreignobject' && toString.call(node).match(/SVG/) ? 'svg' : 'html';
+        return nodeName_(node) !== 'foreignobject' && node.toString().match(/SVG/) ? 'svg' : 'html';
       }
     }
 
@@ -8641,7 +8060,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     }
 
     function createBoundTranscludeFn(scope, transcludeFn, previousBoundTranscludeFn) {
-      function boundTranscludeFn(transcludedScope, cloneFn, controllers, futureParentElement, containingScope) {
+
+      var boundTranscludeFn = function(transcludedScope, cloneFn, controllers, futureParentElement, containingScope) {
 
         if (!transcludedScope) {
           transcludedScope = scope.$new(false, containingScope);
@@ -8653,18 +8073,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           transcludeControllers: controllers,
           futureParentElement: futureParentElement
         });
-      }
-
-      // We need  to attach the transclusion slots onto the `boundTranscludeFn`
-      // so that they are available inside the `controllersBoundTransclude` function
-      var boundSlots = boundTranscludeFn.$$slots = createMap();
-      for (var slotName in transcludeFn.$$slots) {
-        if (transcludeFn.$$slots[slotName]) {
-          boundSlots[slotName] = createBoundTranscludeFn(scope, transcludeFn.$$slots[slotName], previousBoundTranscludeFn);
-        } else {
-          boundSlots[slotName] = null;
-        }
-      }
+      };
 
       return boundTranscludeFn;
     }
@@ -8818,38 +8227,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
      * @returns {Function}
      */
     function groupElementsLinkFnWrapper(linkFn, attrStart, attrEnd) {
-      return function groupedElementsLink(scope, element, attrs, controllers, transcludeFn) {
+      return function(scope, element, attrs, controllers, transcludeFn) {
         element = groupScan(element[0], attrStart, attrEnd);
         return linkFn(scope, element, attrs, controllers, transcludeFn);
-      };
-    }
-
-    /**
-     * A function generator that is used to support both eager and lazy compilation
-     * linking function.
-     * @param eager
-     * @param $compileNodes
-     * @param transcludeFn
-     * @param maxPriority
-     * @param ignoreDirective
-     * @param previousCompileContext
-     * @returns {Function}
-     */
-    function compilationGenerator(eager, $compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext) {
-      var compiled;
-
-      if (eager) {
-        return compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
-      }
-      return function lazyCompilation() {
-        if (!compiled) {
-          compiled = compile($compileNodes, transcludeFn, maxPriority, ignoreDirective, previousCompileContext);
-
-          // Null out all of these references in order to make them eligible for garbage collection
-          // since this is a potentially long lived closure
-          $compileNodes = transcludeFn = previousCompileContext = null;
-        }
-        return compiled.apply(this, arguments);
       };
     }
 
@@ -8897,8 +8277,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           replaceDirective = originalReplaceDirective,
           childTranscludeFn = transcludeFn,
           linkFn,
-          didScanForMultipleTransclusion = false,
-          mightHaveMultipleTransclusionError = false,
           directiveValue;
 
       // executes all directives on the current element
@@ -8941,27 +8319,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
         directiveName = directive.name;
 
-        // If we encounter a condition that can result in transclusion on the directive,
-        // then scan ahead in the remaining directives for others that may cause a multiple
-        // transclusion error to be thrown during the compilation process.  If a matching directive
-        // is found, then we know that when we encounter a transcluded directive, we need to eagerly
-        // compile the `transclude` function rather than doing it lazily in order to throw
-        // exceptions at the correct time
-        if (!didScanForMultipleTransclusion && ((directive.replace && (directive.templateUrl || directive.template))
-            || (directive.transclude && !directive.$$tlb))) {
-                var candidateDirective;
-
-                for (var scanningIndex = i + 1; candidateDirective = directives[scanningIndex++];) {
-                    if ((candidateDirective.transclude && !candidateDirective.$$tlb)
-                        || (candidateDirective.replace && (candidateDirective.templateUrl || candidateDirective.template))) {
-                        mightHaveMultipleTransclusionError = true;
-                        break;
-                    }
-                }
-
-                didScanForMultipleTransclusion = true;
-        }
-
         if (!directive.templateUrl && directive.controller) {
           directiveValue = directive.controller;
           controllerDirectives = controllerDirectives || createMap();
@@ -8986,22 +8343,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             terminalPriority = directive.priority;
             $template = $compileNode;
             $compileNode = templateAttrs.$$element =
-                jqLite(compile.$$createComment(directiveName, templateAttrs[directiveName]));
+                jqLite(document.createComment(' ' + directiveName + ': ' +
+                                              templateAttrs[directiveName] + ' '));
             compileNode = $compileNode[0];
             replaceWith(jqCollection, sliceArgs($template), compileNode);
 
-            // Support: Chrome < 50
-            // https://github.com/angular/angular.js/issues/14041
-
-            // In the versions of V8 prior to Chrome 50, the document fragment that is created
-            // in the `replaceWith` function is improperly garbage collected despite still
-            // being referenced by the `parentNode` property of all of the child nodes.  By adding
-            // a reference to the fragment via a different property, we can avoid that incorrect
-            // behavior.
-            // TODO: remove this line after Chrome 50 has been released
-            $template[0].$$parentNode = $template[0].parentNode;
-
-            childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, terminalPriority,
+            childTranscludeFn = compile($template, transcludeFn, terminalPriority,
                                         replaceDirective && replaceDirective.name, {
                                           // Don't pass in:
                                           // - controllerDirectives - otherwise we'll create duplicates controllers
@@ -9013,69 +8360,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                                           nonTlbTranscludeDirective: nonTlbTranscludeDirective
                                         });
           } else {
-
-            var slots = createMap();
-
             $template = jqLite(jqLiteClone(compileNode)).contents();
-
-            if (isObject(directiveValue)) {
-
-              // We have transclusion slots,
-              // collect them up, compile them and store their transclusion functions
-              $template = [];
-
-              var slotMap = createMap();
-              var filledSlots = createMap();
-
-              // Parse the element selectors
-              forEach(directiveValue, function(elementSelector, slotName) {
-                // If an element selector starts with a ? then it is optional
-                var optional = (elementSelector.charAt(0) === '?');
-                elementSelector = optional ? elementSelector.substring(1) : elementSelector;
-
-                slotMap[elementSelector] = slotName;
-
-                // We explicitly assign `null` since this implies that a slot was defined but not filled.
-                // Later when calling boundTransclusion functions with a slot name we only error if the
-                // slot is `undefined`
-                slots[slotName] = null;
-
-                // filledSlots contains `true` for all slots that are either optional or have been
-                // filled. This is used to check that we have not missed any required slots
-                filledSlots[slotName] = optional;
-              });
-
-              // Add the matching elements into their slot
-              forEach($compileNode.contents(), function(node) {
-                var slotName = slotMap[directiveNormalize(nodeName_(node))];
-                if (slotName) {
-                  filledSlots[slotName] = true;
-                  slots[slotName] = slots[slotName] || [];
-                  slots[slotName].push(node);
-                } else {
-                  $template.push(node);
-                }
-              });
-
-              // Check for required slots that were not filled
-              forEach(filledSlots, function(filled, slotName) {
-                if (!filled) {
-                  throw $compileMinErr('reqslot', 'Required transclusion slot `{0}` was not filled.', slotName);
-                }
-              });
-
-              for (var slotName in slots) {
-                if (slots[slotName]) {
-                  // Only define a transclusion function if the slot was filled
-                  slots[slotName] = compilationGenerator(mightHaveMultipleTransclusionError, slots[slotName], transcludeFn);
-                }
-              }
-            }
-
             $compileNode.empty(); // clear contents
-            childTranscludeFn = compilationGenerator(mightHaveMultipleTransclusionError, $template, transcludeFn, undefined,
+            childTranscludeFn = compile($template, transcludeFn, undefined,
                 undefined, { needsNewScope: directive.$$isolateScope || directive.$$newScope});
-            childTranscludeFn.$$slots = slots;
           }
         }
 
@@ -9141,9 +8429,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             replaceDirective = directive;
           }
 
-          /* jshint -W021 */
           nodeLinkFn = compileTemplateUrl(directives.splice(i, directives.length - i), $compileNode,
-          /* jshint +W021 */
               templateAttrs, jqCollection, hasTranscludeDirective && childTranscludeFn, preLinkFns, postLinkFns, {
                 controllerDirectives: controllerDirectives,
                 newScopeDirective: (newScopeDirective !== directive) && newScopeDirective,
@@ -9155,11 +8441,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         } else if (directive.compile) {
           try {
             linkFn = directive.compile($compileNode, templateAttrs, childTranscludeFn);
-            var context = directive.$$originalDirective || directive;
             if (isFunction(linkFn)) {
-              addLinkFns(null, bind(context, linkFn), attrStart, attrEnd);
+              addLinkFns(null, linkFn, attrStart, attrEnd);
             } else if (linkFn) {
-              addLinkFns(bind(context, linkFn.pre), bind(context, linkFn.post), attrStart, attrEnd);
+              addLinkFns(linkFn.pre, linkFn.post, attrStart, attrEnd);
             }
           } catch (e) {
             $exceptionHandler(e, startingTag($compileNode));
@@ -9206,9 +8491,80 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
       }
 
+
+      function getControllers(directiveName, require, $element, elementControllers) {
+        var value;
+
+        if (isString(require)) {
+          var match = require.match(REQUIRE_PREFIX_REGEXP);
+          var name = require.substring(match[0].length);
+          var inheritType = match[1] || match[3];
+          var optional = match[2] === '?';
+
+          //If only parents then start at the parent element
+          if (inheritType === '^^') {
+            $element = $element.parent();
+          //Otherwise attempt getting the controller from elementControllers in case
+          //the element is transcluded (and has no data) and to avoid .data if possible
+          } else {
+            value = elementControllers && elementControllers[name];
+            value = value && value.instance;
+          }
+
+          if (!value) {
+            var dataName = '$' + name + 'Controller';
+            value = inheritType ? $element.inheritedData(dataName) : $element.data(dataName);
+          }
+
+          if (!value && !optional) {
+            throw $compileMinErr('ctreq',
+                "Controller '{0}', required by directive '{1}', can't be found!",
+                name, directiveName);
+          }
+        } else if (isArray(require)) {
+          value = [];
+          for (var i = 0, ii = require.length; i < ii; i++) {
+            value[i] = getControllers(directiveName, require[i], $element, elementControllers);
+          }
+        }
+
+        return value || null;
+      }
+
+      function setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope) {
+        var elementControllers = createMap();
+        for (var controllerKey in controllerDirectives) {
+          var directive = controllerDirectives[controllerKey];
+          var locals = {
+            $scope: directive === newIsolateScopeDirective || directive.$$isolateScope ? isolateScope : scope,
+            $element: $element,
+            $attrs: attrs,
+            $transclude: transcludeFn
+          };
+
+          var controller = directive.controller;
+          if (controller == '@') {
+            controller = attrs[directive.name];
+          }
+
+          var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
+
+          // For directives with element transclusion the element is a comment,
+          // but jQuery .data doesn't support attaching data to comment nodes as it's hard to
+          // clean up (http://bugs.jquery.com/ticket/8335).
+          // Instead, we save the controllers for the element in a local hash and attach to .data
+          // later, once we have the actual element.
+          elementControllers[directive.name] = controllerInstance;
+          if (!hasElementTranscludeDirective) {
+            $element.data('$' + directive.name + 'Controller', controllerInstance.instance);
+          }
+        }
+        return elementControllers;
+      }
+
       function nodeLinkFn(childLinkFn, scope, linkNode, $rootElement, boundTranscludeFn) {
-        var i, ii, linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
-            attrs, scopeBindingInfo;
+        var linkFn, isolateScope, controllerScope, elementControllers, transcludeFn, $element,
+            attrs, removeScopeBindingWatches, removeControllerBindingWatches;
 
         if (compileNode === linkNode) {
           attrs = templateAttrs;
@@ -9230,14 +8586,10 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           // is later passed as `parentBoundTranscludeFn` to `publicLinkFn`
           transcludeFn = controllersBoundTransclude;
           transcludeFn.$$boundTransclude = boundTranscludeFn;
-          // expose the slots on the `$transclude` function
-          transcludeFn.isSlotFilled = function(slotName) {
-            return !!boundTranscludeFn.$$slots[slotName];
-          };
         }
 
         if (controllerDirectives) {
-          elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective);
+          elementControllers = setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope);
         }
 
         if (newIsolateScopeDirective) {
@@ -9247,11 +8599,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           compile.$$addScopeClass($element, true);
           isolateScope.$$isolateBindings =
               newIsolateScopeDirective.$$isolateBindings;
-          scopeBindingInfo = initializeDirectiveBindings(scope, attrs, isolateScope,
+          removeScopeBindingWatches = initializeDirectiveBindings(scope, attrs, isolateScope,
                                         isolateScope.$$isolateBindings,
                                         newIsolateScopeDirective);
-          if (scopeBindingInfo.removeWatches) {
-            isolateScope.$on('$destroy', scopeBindingInfo.removeWatches);
+          if (removeScopeBindingWatches) {
+            isolateScope.$on('$destroy', removeScopeBindingWatches);
           }
         }
 
@@ -9262,10 +8614,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           var bindings = controllerDirective.$$bindings.bindToController;
 
           if (controller.identifier && bindings) {
-            controller.bindingInfo =
+            removeControllerBindingWatches =
               initializeDirectiveBindings(controllerScope, attrs, controller.instance, bindings, controllerDirective);
-          } else {
-            controller.bindingInfo = {};
           }
 
           var controllerResult = controller();
@@ -9274,43 +8624,11 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             // from setupControllers
             controller.instance = controllerResult;
             $element.data('$' + controllerDirective.name + 'Controller', controllerResult);
-            controller.bindingInfo.removeWatches && controller.bindingInfo.removeWatches();
-            controller.bindingInfo =
+            removeControllerBindingWatches && removeControllerBindingWatches();
+            removeControllerBindingWatches =
               initializeDirectiveBindings(controllerScope, attrs, controller.instance, bindings, controllerDirective);
           }
         }
-
-        // Bind the required controllers to the controller, if `require` is an object and `bindToController` is truthy
-        forEach(controllerDirectives, function(controllerDirective, name) {
-          var require = controllerDirective.require;
-          if (controllerDirective.bindToController && !isArray(require) && isObject(require)) {
-            extend(elementControllers[name].instance, getControllers(name, require, $element, elementControllers));
-          }
-        });
-
-        // Handle the init and destroy lifecycle hooks on all controllers that have them
-        forEach(elementControllers, function(controller) {
-          var controllerInstance = controller.instance;
-          if (isFunction(controllerInstance.$onChanges)) {
-            try {
-              controllerInstance.$onChanges(controller.bindingInfo.initialChanges);
-            } catch (e) {
-              $exceptionHandler(e);
-            }
-          }
-          if (isFunction(controllerInstance.$onInit)) {
-            try {
-              controllerInstance.$onInit();
-            } catch (e) {
-              $exceptionHandler(e);
-            }
-          }
-          if (isFunction(controllerInstance.$onDestroy)) {
-            controllerScope.$on('$destroy', function callOnDestroyHook() {
-              controllerInstance.$onDestroy();
-            });
-          }
-        });
 
         // PRELINKING
         for (i = 0, ii = preLinkFns.length; i < ii; i++) {
@@ -9345,21 +8663,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           );
         }
 
-        // Trigger $postLink lifecycle hooks
-        forEach(elementControllers, function(controller) {
-          var controllerInstance = controller.instance;
-          if (isFunction(controllerInstance.$postLink)) {
-            controllerInstance.$postLink();
-          }
-        });
-
         // This is the function that is injected as `$transclude`.
         // Note: all arguments are optional!
-        function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement, slotName) {
+        function controllersBoundTransclude(scope, cloneAttachFn, futureParentElement) {
           var transcludeControllers;
+
           // No scope passed in:
           if (!isScope(scope)) {
-            slotName = futureParentElement;
             futureParentElement = cloneAttachFn;
             cloneAttachFn = scope;
             scope = undefined;
@@ -9371,97 +8681,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
           if (!futureParentElement) {
             futureParentElement = hasElementTranscludeDirective ? $element.parent() : $element;
           }
-          if (slotName) {
-            // slotTranscludeFn can be one of three things:
-            //  * a transclude function - a filled slot
-            //  * `null` - an optional slot that was not filled
-            //  * `undefined` - a slot that was not declared (i.e. invalid)
-            var slotTranscludeFn = boundTranscludeFn.$$slots[slotName];
-            if (slotTranscludeFn) {
-              return slotTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
-            } else if (isUndefined(slotTranscludeFn)) {
-              throw $compileMinErr('noslot',
-               'No parent directive that requires a transclusion with slot name "{0}". ' +
-               'Element: {1}',
-               slotName, startingTag($element));
-            }
-          } else {
-            return boundTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
-          }
+          return boundTranscludeFn(scope, cloneAttachFn, transcludeControllers, futureParentElement, scopeToChild);
         }
       }
-    }
-
-    function getControllers(directiveName, require, $element, elementControllers) {
-      var value;
-
-      if (isString(require)) {
-        var match = require.match(REQUIRE_PREFIX_REGEXP);
-        var name = require.substring(match[0].length);
-        var inheritType = match[1] || match[3];
-        var optional = match[2] === '?';
-
-        //If only parents then start at the parent element
-        if (inheritType === '^^') {
-          $element = $element.parent();
-        //Otherwise attempt getting the controller from elementControllers in case
-        //the element is transcluded (and has no data) and to avoid .data if possible
-        } else {
-          value = elementControllers && elementControllers[name];
-          value = value && value.instance;
-        }
-
-        if (!value) {
-          var dataName = '$' + name + 'Controller';
-          value = inheritType ? $element.inheritedData(dataName) : $element.data(dataName);
-        }
-
-        if (!value && !optional) {
-          throw $compileMinErr('ctreq',
-              "Controller '{0}', required by directive '{1}', can't be found!",
-              name, directiveName);
-        }
-      } else if (isArray(require)) {
-        value = [];
-        for (var i = 0, ii = require.length; i < ii; i++) {
-          value[i] = getControllers(directiveName, require[i], $element, elementControllers);
-        }
-      } else if (isObject(require)) {
-        value = {};
-        forEach(require, function(controller, property) {
-          value[property] = getControllers(directiveName, controller, $element, elementControllers);
-        });
-      }
-
-      return value || null;
-    }
-
-    function setupControllers($element, attrs, transcludeFn, controllerDirectives, isolateScope, scope, newIsolateScopeDirective) {
-      var elementControllers = createMap();
-      for (var controllerKey in controllerDirectives) {
-        var directive = controllerDirectives[controllerKey];
-        var locals = {
-          $scope: directive === newIsolateScopeDirective || directive.$$isolateScope ? isolateScope : scope,
-          $element: $element,
-          $attrs: attrs,
-          $transclude: transcludeFn
-        };
-
-        var controller = directive.controller;
-        if (controller == '@') {
-          controller = attrs[directive.name];
-        }
-
-        var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
-
-        // For directives with element transclusion the element is a comment.
-        // In this case .data will not attach any data.
-        // Instead, we save the controllers for the element in a local hash and attach to .data
-        // later, once we have the actual element.
-        elementControllers[directive.name] = controllerInstance;
-        $element.data('$' + directive.name + 'Controller', controllerInstance.instance);
-      }
-      return elementControllers;
     }
 
     // Depending upon the context in which a directive finds itself it might need to have a new isolated
@@ -9503,13 +8725,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                  directive.restrict.indexOf(location) != -1) {
               if (startAttrName) {
                 directive = inherit(directive, {$$start: startAttrName, $$end: endAttrName});
-              }
-              if (!directive.$$bindings) {
-                var bindings = directive.$$bindings =
-                    parseDirectiveBindings(directive, directive.name);
-                if (isObject(bindings.isolateScope)) {
-                  directive.$$isolateBindings = bindings.isolateScope;
-                }
               }
               tDirectives.push(directive);
               match = directive;
@@ -9567,16 +8782,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
       // copy the new attributes on the old attrs object
       forEach(src, function(value, key) {
-        // Check if we already set this attribute in the loop above.
-        // `dst` will never contain hasOwnProperty as DOM parser won't let it.
-        // You will get an "InvalidCharacterError: DOM Exception 5" error if you
-        // have an attribute like "has-own-property" or "data-has-own-property", etc.
-        if (!dst.hasOwnProperty(key) && key.charAt(0) !== '$') {
+        if (key == 'class') {
+          safeAddClass($element, value);
+          dst['class'] = (dst['class'] ? dst['class'] + ' ' : '') + value;
+        } else if (key == 'style') {
+          $element.attr('style', $element.attr('style') + ';' + value);
+          dst['style'] = (dst['style'] ? dst['style'] + ';' : '') + value;
+          // `dst` will never contain hasOwnProperty as DOM parser won't let it.
+          // You will get an "InvalidCharacterError: DOM Exception 5" error if you
+          // have an attribute like "has-own-property" or "data-has-own-property", etc.
+        } else if (key.charAt(0) != '$' && !dst.hasOwnProperty(key)) {
           dst[key] = value;
-
-          if (key !== 'class' && key !== 'style') {
-            dstAttr[key] = srcAttr[key];
-          }
+          dstAttr[key] = srcAttr[key];
         }
       });
     }
@@ -9756,7 +8973,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       switch (type) {
       case 'svg':
       case 'math':
-        var wrapper = window.document.createElement('div');
+        var wrapper = document.createElement('div');
         wrapper.innerHTML = '<' + type + '>' + template + '</' + type + '>';
         return wrapper.childNodes[0].childNodes;
       default:
@@ -9896,14 +9113,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         parent.replaceChild(newNode, firstElementToRemove);
       }
 
-      // Append all the `elementsToRemove` to a fragment. This will...
-      // - remove them from the DOM
-      // - allow them to still be traversed with .nextSibling
-      // - allow a single fragment.qSA to fetch all elements being removed
-      var fragment = window.document.createDocumentFragment();
-      for (i = 0; i < removeCount; i++) {
-        fragment.appendChild(elementsToRemove[i]);
-      }
+      // TODO(perf): what's this document fragment for? is it needed? can we at least reuse it?
+      var fragment = document.createDocumentFragment();
+      fragment.appendChild(firstElementToRemove);
 
       if (jqLite.hasData(firstElementToRemove)) {
         // Copy over user data (that includes Angular's $scope etc.). Don't copy private
@@ -9911,18 +9123,31 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         // event listeners (which is the main use of private data) wouldn't work anyway.
         jqLite.data(newNode, jqLite.data(firstElementToRemove));
 
-        // Remove $destroy event listeners from `firstElementToRemove`
-        jqLite(firstElementToRemove).off('$destroy');
+        // Remove data of the replaced element. We cannot just call .remove()
+        // on the element it since that would deallocate scope that is needed
+        // for the new node. Instead, remove the data "manually".
+        if (!jQuery) {
+          delete jqLite.cache[firstElementToRemove[jqLite.expando]];
+        } else {
+          // jQuery 2.x doesn't expose the data storage. Use jQuery.cleanData to clean up after
+          // the replaced element. The cleanData version monkey-patched by Angular would cause
+          // the scope to be trashed and we do need the very same scope to work with the new
+          // element. However, we cannot just cache the non-patched version and use it here as
+          // that would break if another library patches the method after Angular does (one
+          // example is jQuery UI). Instead, set a flag indicating scope destroying should be
+          // skipped this one time.
+          skipDestroyOnNextJQueryCleanData = true;
+          jQuery.cleanData([firstElementToRemove]);
+        }
       }
 
-      // Cleanup any data/listeners on the elements and children.
-      // This includes invoking the $destroy event on any elements with listeners.
-      jqLite.cleanData(fragment.querySelectorAll('*'));
-
-      // Update the jqLite collection to only contain the `newNode`
-      for (i = 1; i < removeCount; i++) {
-        delete elementsToRemove[i];
+      for (var k = 1, kk = elementsToRemove.length; k < kk; k++) {
+        var element = elementsToRemove[k];
+        jqLite(element).remove(); // must do this way to clean up expando
+        fragment.appendChild(element);
+        delete elementsToRemove[k];
       }
+
       elementsToRemove[0] = newNode;
       elementsToRemove.length = 1;
     }
@@ -9946,14 +9171,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     // only occurs for isolate scopes and new scopes with controllerAs.
     function initializeDirectiveBindings(scope, attrs, destination, bindings, directive) {
       var removeWatchCollection = [];
-      var initialChanges = {};
-      var changes;
-      forEach(bindings, function initializeBinding(definition, scopeName) {
+      forEach(bindings, function(definition, scopeName) {
         var attrName = definition.attrName,
         optional = definition.optional,
         mode = definition.mode, // @, =, or &
         lastValue,
-        parentGet, parentSet, compare, removeWatch;
+        parentGet, parentSet, compare;
 
         switch (mode) {
 
@@ -9962,24 +9185,16 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               destination[scopeName] = attrs[attrName] = void 0;
             }
             attrs.$observe(attrName, function(value) {
-              if (isString(value) || isBoolean(value)) {
-                var oldValue = destination[scopeName];
-                recordChanges(scopeName, value, oldValue);
+              if (isString(value)) {
                 destination[scopeName] = value;
               }
             });
             attrs.$$observers[attrName].$$scope = scope;
-            lastValue = attrs[attrName];
-            if (isString(lastValue)) {
+            if (isString(attrs[attrName])) {
               // If the attribute has been provided then we trigger an interpolation to ensure
               // the value is there for use in the link fn
-              destination[scopeName] = $interpolate(lastValue)(scope);
-            } else if (isBoolean(lastValue)) {
-              // If the attributes is one of the BOOLEAN_ATTR then Angular will have converted
-              // the value to boolean rather than a string, so we special case this situation
-              destination[scopeName] = lastValue;
+              destination[scopeName] = $interpolate(attrs[attrName])(scope);
             }
-            initialChanges[scopeName] = new SimpleChange(_UNINITIALIZED_VALUE, destination[scopeName]);
             break;
 
           case '=':
@@ -9993,14 +9208,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             if (parentGet.literal) {
               compare = equals;
             } else {
-              compare = function simpleCompare(a, b) { return a === b || (a !== a && b !== b); };
+              compare = function(a, b) { return a === b || (a !== a && b !== b); };
             }
             parentSet = parentGet.assign || function() {
               // reset the change, or we will throw this exception on every $digest
               lastValue = destination[scopeName] = parentGet(scope);
               throw $compileMinErr('nonassign',
-                  "Expression '{0}' in attribute '{1}' used with directive '{2}' is non-assignable!",
-                  attrs[attrName], attrName, directive.name);
+                  "Expression '{0}' used with directive '{1}' is non-assignable!",
+                  attrs[attrName], directive.name);
             };
             lastValue = destination[scopeName] = parentGet(scope);
             var parentValueWatch = function parentValueWatch(parentValue) {
@@ -10017,35 +9232,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               return lastValue = parentValue;
             };
             parentValueWatch.$stateful = true;
+            var removeWatch;
             if (definition.collection) {
               removeWatch = scope.$watchCollection(attrs[attrName], parentValueWatch);
             } else {
               removeWatch = scope.$watch($parse(attrs[attrName], parentValueWatch), null, parentGet.literal);
             }
-            removeWatchCollection.push(removeWatch);
-            break;
-
-          case '<':
-            if (!hasOwnProperty.call(attrs, attrName)) {
-              if (optional) break;
-              attrs[attrName] = void 0;
-            }
-            if (optional && !attrs[attrName]) break;
-
-            parentGet = $parse(attrs[attrName]);
-
-            var initialValue = destination[scopeName] = parentGet(scope);
-            initialChanges[scopeName] = new SimpleChange(_UNINITIALIZED_VALUE, destination[scopeName]);
-
-            removeWatch = scope.$watch(parentGet, function parentValueWatchAction(newValue, oldValue) {
-              if (oldValue === newValue) {
-                if (oldValue === initialValue) return;
-                oldValue = initialValue;
-              }
-              recordChanges(scopeName, newValue, oldValue);
-              destination[scopeName] = newValue;
-            }, parentGet.literal);
-
             removeWatchCollection.push(removeWatch);
             break;
 
@@ -10063,51 +9255,14 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         }
       });
 
-      function recordChanges(key, currentValue, previousValue) {
-        if (isFunction(destination.$onChanges) && currentValue !== previousValue) {
-          // If we have not already scheduled the top level onChangesQueue handler then do so now
-          if (!onChangesQueue) {
-            scope.$$postDigest(flushOnChangesQueue);
-            onChangesQueue = [];
-          }
-          // If we have not already queued a trigger of onChanges for this controller then do so now
-          if (!changes) {
-            changes = {};
-            onChangesQueue.push(triggerOnChangesHook);
-          }
-          // If the has been a change on this property already then we need to reuse the previous value
-          if (changes[key]) {
-            previousValue = changes[key].previousValue;
-          }
-          // Store this change
-          changes[key] = new SimpleChange(previousValue, currentValue);
-        }
-      }
-
-      function triggerOnChangesHook() {
-        destination.$onChanges(changes);
-        // Now clear the changes so that we schedule onChanges when more changes arrive
-        changes = undefined;
-      }
-
-      return {
-        initialChanges: initialChanges,
-        removeWatches: removeWatchCollection.length && function removeWatches() {
-          for (var i = 0, ii = removeWatchCollection.length; i < ii; ++i) {
-            removeWatchCollection[i]();
-          }
+      return removeWatchCollection.length && function removeWatches() {
+        for (var i = 0, ii = removeWatchCollection.length; i < ii; ++i) {
+          removeWatchCollection[i]();
         }
       };
     }
   }];
 }
-
-function SimpleChange(previous, current) {
-  this.previousValue = previous;
-  this.currentValue = current;
-}
-SimpleChange.prototype.isFirstChange = function() { return this.previousValue === _UNINITIALIZED_VALUE; };
-
 
 var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
 /**
@@ -10240,15 +9395,6 @@ function $ControllerProvider() {
 
   /**
    * @ngdoc method
-   * @name $controllerProvider#has
-   * @param {string} name Controller name to check.
-   */
-  this.has = function(name) {
-    return controllers.hasOwnProperty(name);
-  };
-
-  /**
-   * @ngdoc method
    * @name $controllerProvider#register
    * @param {string|Object} name Controller name, or an object map of controllers where the keys are
    *    the names and the values are the constructors.
@@ -10303,7 +9449,7 @@ function $ControllerProvider() {
      * It's just a simple call to {@link auto.$injector $injector}, but extracted into
      * a service, so that one can override this service with [BC version](https://gist.github.com/1649788).
      */
-    return function $controller(expression, locals, later, ident) {
+    return function(expression, locals, later, ident) {
       // PRIVATE API:
       //   param `later` --- indicates that the controller's constructor is invoked at a later time.
       //                     If true, $controller will allocate the object with the correct
@@ -10354,7 +9500,7 @@ function $ControllerProvider() {
         }
 
         var instantiate;
-        return instantiate = extend(function $controllerInit() {
+        return instantiate = extend(function() {
           var result = $injector.invoke(expression, instance, locals, constructor);
           if (result !== instance && (isObject(result) || isFunction(result))) {
             instance = result;
@@ -10437,20 +9583,17 @@ function $DocumentProvider() {
  *
  * ## Example:
  *
- * The example below will overwrite the default `$exceptionHandler` in order to (a) log uncaught
- * errors to the backend for later inspection by the developers and (b) to use `$log.warn()` instead
- * of `$log.error()`.
- *
  * ```js
- *   angular.
- *     module('exceptionOverwrite', []).
- *     factory('$exceptionHandler', ['$log', 'logErrorsToBackend', function($log, logErrorsToBackend) {
- *       return function myExceptionHandler(exception, cause) {
- *         logErrorsToBackend(exception, cause);
- *         $log.warn(exception, cause);
- *       };
- *     });
+ *   angular.module('exceptionOverride', []).factory('$exceptionHandler', function() {
+ *     return function(exception, cause) {
+ *       exception.message += ' (caused by "' + cause + '")';
+ *       throw exception;
+ *     };
+ *   });
  * ```
+ *
+ * This example will override the normal action of `$exceptionHandler`, to make angular
+ * exceptions fail hard when they happen, instead of just logging to the console.
  *
  * <hr />
  * Note, that code executed in event-listeners (even those registered using jqLite's `on`/`bind`
@@ -10461,7 +9604,7 @@ function $DocumentProvider() {
  * `try { ... } catch(e) { $exceptionHandler(e); }`
  *
  * @param {Error} exception Exception associated with the error.
- * @param {string=} cause Optional information about the context in which
+ * @param {string=} cause optional information about the context in which
  *       the error was thrown.
  *
  */
@@ -10543,7 +9686,7 @@ function $HttpParamSerializerProvider() {
       forEachSorted(params, function(value, key) {
         if (value === null || isUndefined(value)) return;
         if (isArray(value)) {
-          forEach(value, function(v) {
+          forEach(value, function(v, k) {
             parts.push(encodeUriQuery(key)  + '=' + encodeUriQuery(serializeValue(v)));
           });
         } else {
@@ -10753,9 +9896,10 @@ function $HttpProvider() {
    *
    * Object containing default values for all {@link ng.$http $http} requests.
    *
-   * - **`defaults.cache`** - {boolean|Object} - A boolean value or object created with
-   * {@link ng.$cacheFactory `$cacheFactory`} to enable or disable caching of HTTP responses
-   * by default. See {@link $http#caching $http Caching} for more information.
+   * - **`defaults.cache`** - {Object} - an object built with {@link ng.$cacheFactory `$cacheFactory`}
+   * that will provide the cache for all requests who set their `cache` property to `true`.
+   * If you set the `defaults.cache = false` then only requests that specify their own custom
+   * cache object will be cached. See {@link $http#caching $http Caching} for more information.
    *
    * - **`defaults.xsrfCookieName`** - {string} - Name of cookie containing the XSRF token.
    * Defaults value is `'XSRF-TOKEN'`.
@@ -10946,13 +10090,10 @@ function $HttpProvider() {
      *   - **config** – `{Object}` – The configuration object that was used to generate the request.
      *   - **statusText** – `{string}` – HTTP status text of the response.
      *
-     * A response status code between 200 and 299 is considered a success status and will result in
-     * the success callback being called. Any response status code outside of that range is
-     * considered an error status and will result in the error callback being called.
-     * Also, status codes less than -1 are normalized to zero. -1 usually means the request was
-     * aborted, e.g. using a `config.timeout`.
-     * Note that if the response is a redirect, XMLHttpRequest will transparently follow it, meaning
-     * that the outcome (success or error) will be determined by the final response status code.
+     * A response status code between 200 and 299 is considered a success status and
+     * will result in the success callback being called. Note that if the response is a redirect,
+     * XMLHttpRequest will transparently follow it, meaning that the error callback will not be
+     * called for such responses.
      *
      *
      * ## Shortcut methods
@@ -11019,7 +10160,7 @@ function $HttpProvider() {
      *
      * ```
      * module.run(function($http) {
-     *   $http.defaults.headers.common.Authorization = 'Basic YmVlcDpib29w';
+     *   $http.defaults.headers.common.Authorization = 'Basic YmVlcDpib29w'
      * });
      * ```
      *
@@ -11048,15 +10189,6 @@ function $HttpProvider() {
      * and `transformResponse`. These properties can be a single function that returns
      * the transformed value (`function(data, headersGetter, status)`) or an array of such transformation functions,
      * which allows you to `push` or `unshift` a new transformation function into the transformation chain.
-     *
-     * <div class="alert alert-warning">
-     * **Note:** Angular does not make a copy of the `data` parameter before it is passed into the `transformRequest` pipeline.
-     * That means changes to the properties of `data` are not local to the transform function (since Javascript passes objects by reference).
-     * For example, when calling `$http.get(url, $scope.myObject)`, modifications to the object's properties in a transformRequest
-     * function will be reflected on the scope and in any templates where the object is data-bound.
-     * To prevent this, transform functions should have no side-effects.
-     * If you need to modify properties, it is recommended to make a copy of the data, or create new object to return.
-     * </div>
      *
      * ### Default Transformations
      *
@@ -11115,35 +10247,26 @@ function $HttpProvider() {
      *
      * ## Caching
      *
-     * {@link ng.$http `$http`} responses are not cached by default. To enable caching, you must
-     * set the config.cache value or the default cache value to TRUE or to a cache object (created
-     * with {@link ng.$cacheFactory `$cacheFactory`}). If defined, the value of config.cache takes
-     * precedence over the default cache value.
+     * To enable caching, set the request configuration `cache` property to `true` (to use default
+     * cache) or to a custom cache object (built with {@link ng.$cacheFactory `$cacheFactory`}).
+     * When the cache is enabled, `$http` stores the response from the server in the specified
+     * cache. The next time the same request is made, the response is served from the cache without
+     * sending a request to the server.
      *
-     * In order to:
-     *   * cache all responses - set the default cache value to TRUE or to a cache object
-     *   * cache a specific response - set config.cache value to TRUE or to a cache object
+     * Note that even if the response is served from cache, delivery of the data is asynchronous in
+     * the same way that real requests are.
      *
-     * If caching is enabled, but neither the default cache nor config.cache are set to a cache object,
-     * then the default `$cacheFactory($http)` object is used.
+     * If there are multiple GET requests for the same URL that should be cached using the same
+     * cache, but the cache is not populated yet, only one request to the server will be made and
+     * the remaining requests will be fulfilled using the response from the first request.
      *
-     * The default cache value can be set by updating the
-     * {@link ng.$http#defaults `$http.defaults.cache`} property or the
-     * {@link $httpProvider#defaults `$httpProvider.defaults.cache`} property.
+     * You can change the default cache to a new object (built with
+     * {@link ng.$cacheFactory `$cacheFactory`}) by updating the
+     * {@link ng.$http#defaults `$http.defaults.cache`} property. All requests who set
+     * their `cache` property to `true` will now use this cache object.
      *
-     * When caching is enabled, {@link ng.$http `$http`} stores the response from the server using
-     * the relevant cache object. The next time the same request is made, the response is returned
-     * from the cache without sending a request to the server.
-     *
-     * Take note that:
-     *
-     *   * Only GET and JSONP requests are cached.
-     *   * The cache key is the request URL including search parameters; headers are not considered.
-     *   * Cached responses are returned asynchronously, in the same way as responses from the server.
-     *   * If multiple identical requests are made using the same cache, which is not yet populated,
-     *     one request will be made to the server and remaining requests will return the same response.
-     *   * A cache-control header on the response does not affect if or how responses are cached.
-     *
+     * If you set the default cache to `false` then only requests that specify their own custom
+     * cache object will be cached.
      *
      * ## Interceptors
      *
@@ -11265,13 +10388,13 @@ function $HttpProvider() {
      *
      * ### Cross Site Request Forgery (XSRF) Protection
      *
-     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is an attack technique by
-     * which the attacker can trick an authenticated user into unknowingly executing actions on your
-     * website. Angular provides a mechanism to counter XSRF. When performing XHR requests, the
-     * $http service reads a token from a cookie (by default, `XSRF-TOKEN`) and sets it as an HTTP
-     * header (`X-XSRF-TOKEN`). Since only JavaScript that runs on your domain could read the
-     * cookie, your server can be assured that the XHR came from JavaScript running on your domain.
-     * The header will not be set for cross-domain requests.
+     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is a technique by which
+     * an unauthorized site can gain your user's private data. Angular provides a mechanism
+     * to counter XSRF. When performing XHR requests, the $http service reads a token from a cookie
+     * (by default, `XSRF-TOKEN`) and sets it as an HTTP header (`X-XSRF-TOKEN`). Since only
+     * JavaScript that runs on your domain could read the cookie, your server can be assured that
+     * the XHR came from JavaScript running on your domain. The header will not be set for
+     * cross-domain requests.
      *
      * To take advantage of this, your server needs to set a token in a JavaScript readable session
      * cookie called `XSRF-TOKEN` on the first HTTP GET request. On subsequent XHR requests the
@@ -11300,12 +10423,6 @@ function $HttpProvider() {
      *    - **headers** – `{Object}` – Map of strings or functions which return strings representing
      *      HTTP headers to send to the server. If the return value of a function is null, the
      *      header will not be sent. Functions accept a config object as an argument.
-     *    - **eventHandlers** - `{Object}` - Event listeners to be bound to the XMLHttpRequest object.
-     *      To bind events to the XMLHttpRequest upload object, use `uploadEventHandlers`.
-     *      The handler will be called in the context of a `$apply` block.
-     *    - **uploadEventHandlers** - `{Object}` - Event listeners to be bound to the XMLHttpRequest upload
-     *      object. To bind events to the XMLHttpRequest object, use `eventHandlers`.
-     *      The handler will be called in the context of a `$apply` block.
      *    - **xsrfHeaderName** – `{string}` – Name of HTTP header to populate with the XSRF token.
      *    - **xsrfCookieName** – `{string}` – Name of cookie containing the XSRF token.
      *    - **transformRequest** –
@@ -11319,7 +10436,7 @@ function $HttpProvider() {
      *      transform function or an array of such functions. The transform function takes the http
      *      response body, headers and status and returns its transformed (typically deserialized) version.
      *      See {@link ng.$http#overriding-the-default-transformations-per-request
-     *      Overriding the Default Transformations}
+     *      Overriding the Default TransformationjqLiks}
      *    - **paramSerializer** - `{string|function(Object<string,string>):string}` - A function used to
      *      prepare the string representation of request parameters (specified as an object).
      *      If specified as string, it is interpreted as function registered with the
@@ -11327,9 +10444,10 @@ function $HttpProvider() {
      *      by registering it as a {@link auto.$provide#service service}.
      *      The default serializer is the {@link $httpParamSerializer $httpParamSerializer};
      *      alternatively, you can use the {@link $httpParamSerializerJQLike $httpParamSerializerJQLike}
-     *    - **cache** – `{boolean|Object}` – A boolean value or object created with
-     *      {@link ng.$cacheFactory `$cacheFactory`} to enable or disable caching of the HTTP response.
-     *      See {@link $http#caching $http Caching} for more information.
+     *    - **cache** – `{boolean|Cache}` – If true, a default $http cache will be used to cache the
+     *      GET request, otherwise if a cache instance built with
+     *      {@link ng.$cacheFactory $cacheFactory}, this cache will be used for
+     *      caching.
      *    - **timeout** – `{number|Promise}` – timeout in milliseconds, or {@link ng.$q promise}
      *      that should abort the request when resolved.
      *    - **withCredentials** - `{boolean}` - whether to set the `withCredentials` flag on the
@@ -11435,7 +10553,7 @@ function $HttpProvider() {
      */
     function $http(requestConfig) {
 
-      if (!isObject(requestConfig)) {
+      if (!angular.isObject(requestConfig)) {
         throw minErr('$http')('badreq', 'Http request configuration must be an object.  Received: {0}', requestConfig);
       }
 
@@ -11555,7 +10673,7 @@ function $HttpProvider() {
 
         defHeaders = extend({}, defHeaders.common, defHeaders[lowercase(config.method)]);
 
-        // using for-in instead of forEach to avoid unnecessary iteration after header has been found
+        // using for-in instead of forEach to avoid unecessary iteration after header has been found
         defaultHeadersIteration:
         for (defHeaderName in defHeaders) {
           lowercaseDefHeaderName = lowercase(defHeaderName);
@@ -11764,34 +10882,10 @@ function $HttpProvider() {
         }
 
         $httpBackend(config.method, url, reqData, done, reqHeaders, config.timeout,
-            config.withCredentials, config.responseType,
-            createApplyHandlers(config.eventHandlers),
-            createApplyHandlers(config.uploadEventHandlers));
+            config.withCredentials, config.responseType);
       }
 
       return promise;
-
-      function createApplyHandlers(eventHandlers) {
-        if (eventHandlers) {
-          var applyHandlers = {};
-          forEach(eventHandlers, function(eventHandler, key) {
-            applyHandlers[key] = function(event) {
-              if (useApplyAsync) {
-                $rootScope.$applyAsync(callEventHandler);
-              } else if ($rootScope.$$phase) {
-                callEventHandler();
-              } else {
-                $rootScope.$apply(callEventHandler);
-              }
-
-              function callEventHandler() {
-                eventHandler(event);
-              }
-            };
-          });
-          return applyHandlers;
-        }
-      }
 
 
       /**
@@ -11913,7 +11007,7 @@ function $HttpBackendProvider() {
 
 function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDocument) {
   // TODO(vojta): fix the signature
-  return function(method, url, post, callback, headers, timeout, withCredentials, responseType, eventHandlers, uploadEventHandlers) {
+  return function(method, url, post, callback, headers, timeout, withCredentials, responseType) {
     $browser.$$incOutstandingRequestCount();
     url = url || $browser.url();
 
@@ -11972,14 +11066,6 @@ function createHttpBackend($browser, createXhr, $browserDefer, callbacks, rawDoc
 
       xhr.onerror = requestError;
       xhr.onabort = requestError;
-
-      forEach(eventHandlers, function(value, key) {
-          xhr.addEventListener(key, value);
-      });
-
-      forEach(uploadEventHandlers, function(value, key) {
-        xhr.upload.addEventListener(key, value);
-      });
 
       if (withCredentials) {
         xhr.withCredentials = true;
@@ -12086,14 +11172,6 @@ $interpolateMinErr.interr = function(text, err) {
  *
  * Used for configuring the interpolation markup. Defaults to `{{` and `}}`.
  *
- * <div class="alert alert-danger">
- * This feature is sometimes used to mix different markup languages, e.g. to wrap an Angular
- * template within a Python Jinja template (or any other template language). Mixing templating
- * languages is **very dangerous**. The embedding template language will not safely escape Angular
- * expressions, so any user-controlled values in the template will cause Cross Site Scripting (XSS)
- * security bugs!
- * </div>
- *
  * @example
 <example name="custom-interpolation-markup" module="customInterpolationApp">
 <file name="index.html">
@@ -12194,15 +11272,6 @@ function $InterpolateProvider() {
       return value;
     }
 
-    //TODO: this is the same as the constantWatchDelegate in parse.js
-    function constantWatchDelegate(scope, listener, objectEquality, constantInterp) {
-      var unwatch;
-      return unwatch = scope.$watch(function constantInterpolateWatch(scope) {
-        unwatch();
-        return constantInterp(scope);
-      }, listener, objectEquality);
-    }
-
     /**
      * @ngdoc service
      * @name $interpolate
@@ -12282,30 +11351,6 @@ function $InterpolateProvider() {
      *  </file>
      * </example>
      *
-     * @knownIssue
-     * It is currently not possible for an interpolated expression to contain the interpolation end
-     * symbol. For example, `{{ '}}' }}` will be incorrectly interpreted as `{{ ' }}` + `' }}`, i.e.
-     * an interpolated expression consisting of a single-quote (`'`) and the `' }}` string.
-     *
-     * @knownIssue
-     * All directives and components must use the standard `{{` `}}` interpolation symbols
-     * in their templates. If you change the application interpolation symbols the {@link $compile}
-     * service will attempt to denormalize the standard symbols to the custom symbols.
-     * The denormalization process is not clever enough to know not to replace instances of the standard
-     * symbols where they would not normally be treated as interpolation symbols. For example in the following
-     * code snippet the closing braces of the literal object will get incorrectly denormalized:
-     *
-     * ```
-     * <div data-context='{"context":{"id":3,"type":"page"}}">
-     * ```
-     *
-     * The workaround is to ensure that such instances are separated by whitespace:
-     * ```
-     * <div data-context='{"context":{"id":3,"type":"page"} }">
-     * ```
-     *
-     * See https://github.com/angular/angular.js/pull/14610#issuecomment-219401099 for more information.
-     *
      * @param {string} text The text with markup to interpolate.
      * @param {boolean=} mustHaveExpression if set to true then the interpolation string must have
      *    embedded expression in order to return an interpolation function. Strings with no
@@ -12322,19 +11367,6 @@ function $InterpolateProvider() {
      * - `context`: evaluation context for all expressions embedded in the interpolated text
      */
     function $interpolate(text, mustHaveExpression, trustedContext, allOrNothing) {
-      // Provide a quick exit and simplified result function for text with no interpolation
-      if (!text.length || text.indexOf(startSymbol) === -1) {
-        var constantInterp;
-        if (!mustHaveExpression) {
-          var unescapedText = unescapeText(text);
-          constantInterp = valueFn(unescapedText);
-          constantInterp.exp = text;
-          constantInterp.expressions = [];
-          constantInterp.$$watchDelegate = constantWatchDelegate;
-        }
-        return constantInterp;
-      }
-
       allOrNothing = !!allOrNothing;
       var startIndex,
           endIndex,
@@ -12471,8 +11503,8 @@ function $InterpolateProvider() {
 }
 
 function $IntervalProvider() {
-  this.$get = ['$rootScope', '$window', '$q', '$$q', '$browser',
-       function($rootScope,   $window,   $q,   $$q,   $browser) {
+  this.$get = ['$rootScope', '$window', '$q', '$$q',
+       function($rootScope,   $window,   $q,   $$q) {
     var intervals = {};
 
 
@@ -12613,12 +11645,11 @@ function $IntervalProvider() {
 
       count = isDefined(count) ? count : 0;
 
+      promise.then(null, null, (!hasParams) ? fn : function() {
+        fn.apply(null, args);
+      });
+
       promise.$$intervalId = setInterval(function tick() {
-        if (skipApply) {
-          $browser.defer(callback);
-        } else {
-          $rootScope.$evalAsync(callback);
-        }
         deferred.notify(iteration++);
 
         if (count > 0 && iteration >= count) {
@@ -12634,14 +11665,6 @@ function $IntervalProvider() {
       intervals[promise.$$intervalId] = deferred;
 
       return promise;
-
-      function callback() {
-        if (!hasParams) {
-          fn(iteration);
-        } else {
-          fn.apply(null, args);
-        }
-      }
     }
 
 
@@ -12728,20 +11751,17 @@ function parseAppUrl(relativeUrl, locationObj) {
   }
 }
 
-function startsWith(haystack, needle) {
-  return haystack.lastIndexOf(needle, 0) === 0;
-}
 
 /**
  *
- * @param {string} base
- * @param {string} url
- * @returns {string} returns text from `url` after `base` or `undefined` if it does not begin with
- *                   the expected string.
+ * @param {string} begin
+ * @param {string} whole
+ * @returns {string} returns text from whole after begin or undefined if it does not begin with
+ *                   expected string.
  */
-function stripBaseUrl(base, url) {
-  if (startsWith(url, base)) {
-    return url.substr(base.length);
+function beginsWith(begin, whole) {
+  if (whole.indexOf(begin) === 0) {
+    return whole.substr(begin.length);
   }
 }
 
@@ -12787,7 +11807,7 @@ function LocationHtml5Url(appBase, appBaseNoFile, basePrefix) {
    * @private
    */
   this.$$parse = function(url) {
-    var pathUrl = stripBaseUrl(appBaseNoFile, url);
+    var pathUrl = beginsWith(appBaseNoFile, url);
     if (!isString(pathUrl)) {
       throw $locationMinErr('ipthprfx', 'Invalid url "{0}", missing path prefix "{1}".', url,
           appBaseNoFile);
@@ -12824,14 +11844,14 @@ function LocationHtml5Url(appBase, appBaseNoFile, basePrefix) {
     var appUrl, prevAppUrl;
     var rewrittenUrl;
 
-    if (isDefined(appUrl = stripBaseUrl(appBase, url))) {
+    if (isDefined(appUrl = beginsWith(appBase, url))) {
       prevAppUrl = appUrl;
-      if (isDefined(appUrl = stripBaseUrl(basePrefix, appUrl))) {
-        rewrittenUrl = appBaseNoFile + (stripBaseUrl('/', appUrl) || appUrl);
+      if (isDefined(appUrl = beginsWith(basePrefix, appUrl))) {
+        rewrittenUrl = appBaseNoFile + (beginsWith('/', appUrl) || appUrl);
       } else {
         rewrittenUrl = appBase + prevAppUrl;
       }
-    } else if (isDefined(appUrl = stripBaseUrl(appBaseNoFile, url))) {
+    } else if (isDefined(appUrl = beginsWith(appBaseNoFile, url))) {
       rewrittenUrl = appBaseNoFile + appUrl;
     } else if (appBaseNoFile == url + '/') {
       rewrittenUrl = appBaseNoFile;
@@ -12865,14 +11885,14 @@ function LocationHashbangUrl(appBase, appBaseNoFile, hashPrefix) {
    * @private
    */
   this.$$parse = function(url) {
-    var withoutBaseUrl = stripBaseUrl(appBase, url) || stripBaseUrl(appBaseNoFile, url);
+    var withoutBaseUrl = beginsWith(appBase, url) || beginsWith(appBaseNoFile, url);
     var withoutHashUrl;
 
     if (!isUndefined(withoutBaseUrl) && withoutBaseUrl.charAt(0) === '#') {
 
       // The rest of the url starts with a hash so we have
       // got either a hashbang path or a plain hash fragment
-      withoutHashUrl = stripBaseUrl(hashPrefix, withoutBaseUrl);
+      withoutHashUrl = beginsWith(hashPrefix, withoutBaseUrl);
       if (isUndefined(withoutHashUrl)) {
         // There was no hashbang prefix so we just have a hash fragment
         withoutHashUrl = withoutBaseUrl;
@@ -12920,7 +11940,7 @@ function LocationHashbangUrl(appBase, appBaseNoFile, hashPrefix) {
       var firstPathSegmentMatch;
 
       //Get the relative path from the input URL.
-      if (startsWith(url, base)) {
+      if (url.indexOf(base) === 0) {
         url = url.replace(base, '');
       }
 
@@ -12983,7 +12003,7 @@ function LocationHashbangInHtml5Url(appBase, appBaseNoFile, hashPrefix) {
 
     if (appBase == stripHash(url)) {
       rewrittenUrl = url;
-    } else if ((appUrl = stripBaseUrl(appBaseNoFile, url))) {
+    } else if ((appUrl = beginsWith(appBaseNoFile, url))) {
       rewrittenUrl = appBase + hashPrefix + appUrl;
     } else if (appBaseNoFile === url + '/') {
       rewrittenUrl = appBaseNoFile;
@@ -13007,12 +12027,6 @@ function LocationHashbangInHtml5Url(appBase, appBaseNoFile, hashPrefix) {
 
 
 var locationPrototype = {
-
-  /**
-   * Ensure absolute url is initialized.
-   * @private
-   */
-  $$absUrl:'',
 
   /**
    * Are we in html5 mode?
@@ -13171,7 +12185,7 @@ var locationPrototype = {
    * ```
    *
    * @param {(string|number)=} path New path
-   * @return {(string|object)} path if called with no parameters, or `$location` if called with a parameter
+   * @return {string} path
    */
   path: locationGetterSetter('$$path', function(path) {
     path = path !== null ? path.toString() : '';
@@ -13597,7 +12611,7 @@ function $LocationProvider() {
     // update $location when $browser url changes
     $browser.onUrlChange(function(newUrl, newState) {
 
-      if (isUndefined(stripBaseUrl(appBaseNoFile, newUrl))) {
+      if (isUndefined(beginsWith(appBaseNoFile, newUrl))) {
         // If we are navigating outside of the app then force a reload
         $window.location.href = newUrl;
         return;
@@ -13890,22 +12904,23 @@ function ensureSafeMemberName(name, fullExpression) {
   return name;
 }
 
-function getStringValue(name) {
+function getStringValue(name, fullExpression) {
+  // From the JavaScript docs:
   // Property names must be strings. This means that non-string objects cannot be used
   // as keys in an object. Any non-string object, including a number, is typecasted
   // into a string via the toString method.
-  // -- MDN, https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Property_accessors#Property_names
   //
-  // So, to ensure that we are checking the same `name` that JavaScript would use, we cast it
-  // to a string. It's not always possible. If `name` is an object and its `toString` method is
-  // 'broken' (doesn't return a string, isn't a function, etc.), an error will be thrown:
-  //
-  // TypeError: Cannot convert object to primitive value
-  //
-  // For performance reasons, we don't catch this error here and allow it to propagate up the call
-  // stack. Note that you'll get the same error in JavaScript if you try to access a property using
-  // such a 'broken' object as a key.
-  return name + '';
+  // So, to ensure that we are checking the same `name` that JavaScript would use,
+  // we cast it to a string, if possible.
+  // Doing `name + ''` can cause a repl error if the result to `toString` is not a string,
+  // this is, this will handle objects that misbehave.
+  name = name + '';
+  if (!isString(name)) {
+    throw $parseMinErr('iseccst',
+        'Cannot convert object to primitive value! '
+        + 'Expression: {0}', fullExpression);
+  }
+  return name;
 }
 
 function ensureSafeObject(obj, fullExpression) {
@@ -13992,7 +13007,7 @@ Lexer.prototype = {
         this.readString(ch);
       } else if (this.isNumber(ch) || ch === '.' && this.isNumber(this.peek())) {
         this.readNumber();
-      } else if (this.isIdentifierStart(this.peekMultichar())) {
+      } else if (this.isIdent(ch)) {
         this.readIdent();
       } else if (this.is(ch, '(){}[].,;:?')) {
         this.tokens.push({index: this.index, text: ch});
@@ -14036,47 +13051,10 @@ Lexer.prototype = {
             ch === '\n' || ch === '\v' || ch === '\u00A0');
   },
 
-  isIdentifierStart: function(ch) {
-    return this.options.isIdentifierStart ?
-        this.options.isIdentifierStart(ch, this.codePointAt(ch)) :
-        this.isValidIdentifierStart(ch);
-  },
-
-  isValidIdentifierStart: function(ch) {
+  isIdent: function(ch) {
     return ('a' <= ch && ch <= 'z' ||
             'A' <= ch && ch <= 'Z' ||
             '_' === ch || ch === '$');
-  },
-
-  isIdentifierContinue: function(ch) {
-    return this.options.isIdentifierContinue ?
-        this.options.isIdentifierContinue(ch, this.codePointAt(ch)) :
-        this.isValidIdentifierContinue(ch);
-  },
-
-  isValidIdentifierContinue: function(ch, cp) {
-    return this.isValidIdentifierStart(ch, cp) || this.isNumber(ch);
-  },
-
-  codePointAt: function(ch) {
-    if (ch.length === 1) return ch.charCodeAt(0);
-    /*jshint bitwise: false*/
-    return (ch.charCodeAt(0) << 10) + ch.charCodeAt(1) - 0x35FDC00;
-    /*jshint bitwise: true*/
-  },
-
-  peekMultichar: function() {
-    var ch = this.text.charAt(this.index);
-    var peek = this.peek();
-    if (!peek) {
-      return ch;
-    }
-    var cp1 = ch.charCodeAt(0);
-    var cp2 = peek.charCodeAt(0);
-    if (cp1 >= 0xD800 && cp1 <= 0xDBFF && cp2 >= 0xDC00 && cp2 <= 0xDFFF) {
-      return ch + peek;
-    }
-    return ch;
   },
 
   isExpOperator: function(ch) {
@@ -14127,13 +13105,12 @@ Lexer.prototype = {
 
   readIdent: function() {
     var start = this.index;
-    this.index += this.peekMultichar().length;
     while (this.index < this.text.length) {
-      var ch = this.peekMultichar();
-      if (!this.isIdentifierContinue(ch)) {
+      var ch = this.text.charAt(this.index);
+      if (!(this.isIdent(ch) || this.isNumber(ch))) {
         break;
       }
-      this.index += ch.length;
+      this.index++;
     }
     this.tokens.push({
       index: start,
@@ -14204,7 +13181,6 @@ AST.ArrayExpression = 'ArrayExpression';
 AST.Property = 'Property';
 AST.ObjectExpression = 'ObjectExpression';
 AST.ThisExpression = 'ThisExpression';
-AST.LocalsExpression = 'LocalsExpression';
 
 // Internal use only
 AST.NGValueParameter = 'NGValueParameter';
@@ -14343,10 +13319,8 @@ AST.prototype = {
       primary = this.arrayDeclaration();
     } else if (this.expect('{')) {
       primary = this.object();
-    } else if (this.selfReferential.hasOwnProperty(this.peek().text)) {
-      primary = copy(this.selfReferential[this.consume().text]);
-    } else if (this.options.literals.hasOwnProperty(this.peek().text)) {
-      primary = { type: AST.Literal, value: this.options.literals[this.consume().text]};
+    } else if (this.constants.hasOwnProperty(this.peek().text)) {
+      primary = copy(this.constants[this.consume().text]);
     } else if (this.peek().identifier) {
       primary = this.identifier();
     } else if (this.peek().constant) {
@@ -14387,7 +13361,7 @@ AST.prototype = {
     var args = [];
     if (this.peekToken().text !== ')') {
       do {
-        args.push(this.filterChain());
+        args.push(this.expression());
       } while (this.expect(','));
     }
     return args;
@@ -14433,28 +13407,13 @@ AST.prototype = {
         property = {type: AST.Property, kind: 'init'};
         if (this.peek().constant) {
           property.key = this.constant();
-          property.computed = false;
-          this.consume(':');
-          property.value = this.expression();
         } else if (this.peek().identifier) {
           property.key = this.identifier();
-          property.computed = false;
-          if (this.peek(':')) {
-            this.consume(':');
-            property.value = this.expression();
-          } else {
-            property.value = property.key;
-          }
-        } else if (this.peek('[')) {
-          this.consume('[');
-          property.key = this.expression();
-          this.consume(']');
-          property.computed = true;
-          this.consume(':');
-          property.value = this.expression();
         } else {
           this.throwError("invalid key", this.peek());
         }
+        this.consume(':');
+        property.value = this.expression();
         properties.push(property);
       } while (this.expect(','));
     }
@@ -14513,9 +13472,16 @@ AST.prototype = {
     return false;
   },
 
-  selfReferential: {
-    'this': {type: AST.ThisExpression },
-    '$locals': {type: AST.LocalsExpression }
+
+  /* `undefined` is not a constant, it is an identifier,
+   * but using it as an identifier is not supported
+   */
+  constants: {
+    'true': { type: AST.Literal, value: true },
+    'false': { type: AST.Literal, value: false },
+    'null': { type: AST.Literal, value: null },
+    'undefined': {type: AST.Literal, value: undefined },
+    'this': {type: AST.ThisExpression }
   }
 };
 
@@ -14623,7 +13589,7 @@ function findConstantAndWatchExpressions(ast, $filter) {
     argsToWatch = [];
     forEach(ast.properties, function(property) {
       findConstantAndWatchExpressions(property.value, $filter);
-      allConstants = allConstants && property.value.constant && !property.computed;
+      allConstants = allConstants && property.value.constant;
       if (!property.value.constant) {
         argsToWatch.push.apply(argsToWatch, property.value.toWatch);
       }
@@ -14632,10 +13598,6 @@ function findConstantAndWatchExpressions(ast, $filter) {
     ast.toWatch = argsToWatch;
     break;
   case AST.ThisExpression:
-    ast.constant = false;
-    ast.toWatch = [];
-    break;
-  case AST.LocalsExpression:
     ast.constant = false;
     ast.toWatch = [];
     break;
@@ -14795,7 +13757,7 @@ ASTCompiler.prototype = {
   },
 
   recurse: function(ast, intoId, nameId, recursionFn, create, skipWatchIdCheck) {
-    var left, right, self = this, args, expression, computed;
+    var left, right, self = this, args, expression;
     recursionFn = recursionFn || noop;
     if (!skipWatchIdCheck && isDefined(ast.watchId)) {
       intoId = intoId || this.nextId();
@@ -14882,9 +13844,6 @@ ASTCompiler.prototype = {
       intoId = intoId || this.nextId();
       self.recurse(ast.object, left, undefined, function() {
         self.if_(self.notNull(left), function() {
-          if (create && create !== 1) {
-            self.addEnsureSafeAssignContext(left);
-          }
           if (ast.computed) {
             right = self.nextId();
             self.recurse(ast.property, right);
@@ -14992,49 +13951,21 @@ ASTCompiler.prototype = {
       break;
     case AST.ObjectExpression:
       args = [];
-      computed = false;
       forEach(ast.properties, function(property) {
-        if (property.computed) {
-          computed = true;
-        }
+        self.recurse(property.value, self.nextId(), undefined, function(expr) {
+          args.push(self.escape(
+              property.key.type === AST.Identifier ? property.key.name :
+                ('' + property.key.value)) +
+              ':' + expr);
+        });
       });
-      if (computed) {
-        intoId = intoId || this.nextId();
-        this.assign(intoId, '{}');
-        forEach(ast.properties, function(property) {
-          if (property.computed) {
-            left = self.nextId();
-            self.recurse(property.key, left);
-          } else {
-            left = property.key.type === AST.Identifier ?
-                       property.key.name :
-                       ('' + property.key.value);
-          }
-          right = self.nextId();
-          self.recurse(property.value, right);
-          self.assign(self.member(intoId, left, property.computed), right);
-        });
-      } else {
-        forEach(ast.properties, function(property) {
-          self.recurse(property.value, ast.constant ? undefined : self.nextId(), undefined, function(expr) {
-            args.push(self.escape(
-                property.key.type === AST.Identifier ? property.key.name :
-                  ('' + property.key.value)) +
-                ':' + expr);
-          });
-        });
-        expression = '{' + args.join(',') + '}';
-        this.assign(intoId, expression);
-      }
-      recursionFn(intoId || expression);
+      expression = '{' + args.join(',') + '}';
+      this.assign(intoId, expression);
+      recursionFn(expression);
       break;
     case AST.ThisExpression:
       this.assign(intoId, 's');
       recursionFn('s');
-      break;
-    case AST.LocalsExpression:
-      this.assign(intoId, 'l');
-      recursionFn('l');
       break;
     case AST.NGValueParameter:
       this.assign(intoId, 'v');
@@ -15102,13 +14033,7 @@ ASTCompiler.prototype = {
   },
 
   nonComputedMember: function(left, right) {
-    var SAFE_IDENTIFIER = /[$_a-zA-Z][$_a-zA-Z0-9]*/;
-    var UNSAFE_CHARACTERS = /[^$_a-zA-Z0-9]/g;
-    if (SAFE_IDENTIFIER.test(right)) {
-      return left + '.' + right;
-    } else {
-      return left  + '["' + right.replace(UNSAFE_CHARACTERS, this.stringEscapeFn) + '"]';
-    }
+    return left + '.' + right;
   },
 
   computedMember: function(left, right) {
@@ -15149,7 +14074,7 @@ ASTCompiler.prototype = {
   },
 
   getStringValue: function(item) {
-    this.assign(item, 'getStringValue(' + item + ')');
+    this.assign(item, 'getStringValue(' + item + ',text)');
   },
 
   ensureSafeAssignContext: function(item) {
@@ -15233,7 +14158,7 @@ ASTInterpreter.prototype = {
     forEach(ast.body, function(expression) {
       expressions.push(self.recurse(expression.expression));
     });
-    var fn = ast.body.length === 0 ? noop :
+    var fn = ast.body.length === 0 ? function() {} :
              ast.body.length === 1 ? expressions[0] :
              function(scope, locals) {
                var lastValue;
@@ -15352,28 +14277,16 @@ ASTInterpreter.prototype = {
     case AST.ObjectExpression:
       args = [];
       forEach(ast.properties, function(property) {
-        if (property.computed) {
-          args.push({key: self.recurse(property.key),
-                     computed: true,
-                     value: self.recurse(property.value)
-          });
-        } else {
-          args.push({key: property.key.type === AST.Identifier ?
-                          property.key.name :
-                          ('' + property.key.value),
-                     computed: false,
-                     value: self.recurse(property.value)
-          });
-        }
+        args.push({key: property.key.type === AST.Identifier ?
+                        property.key.name :
+                        ('' + property.key.value),
+                   value: self.recurse(property.value)
+        });
       });
       return function(scope, locals, assign, inputs) {
         var value = {};
         for (var i = 0; i < args.length; ++i) {
-          if (args[i].computed) {
-            value[args[i].key(scope, locals, assign, inputs)] = args[i].value(scope, locals, assign, inputs);
-          } else {
-            value[args[i].key] = args[i].value(scope, locals, assign, inputs);
-          }
+          value[args[i].key] = args[i].value(scope, locals, assign, inputs);
         }
         return context ? {value: value} : value;
       };
@@ -15381,12 +14294,8 @@ ASTInterpreter.prototype = {
       return function(scope) {
         return context ? {value: scope} : scope;
       };
-    case AST.LocalsExpression:
-      return function(scope, locals) {
-        return context ? {value: locals} : locals;
-      };
     case AST.NGValueParameter:
-      return function(scope, locals, assign) {
+      return function(scope, locals, assign, inputs) {
         return context ? {value: assign} : assign;
       };
     }
@@ -15549,11 +14458,8 @@ ASTInterpreter.prototype = {
         rhs = right(scope, locals, assign, inputs);
         rhs = getStringValue(rhs);
         ensureSafeMemberName(rhs, expression);
-        if (create && create !== 1) {
-          ensureSafeAssignContext(lhs);
-          if (lhs && !(lhs[rhs])) {
-            lhs[rhs] = {};
-          }
+        if (create && create !== 1 && lhs && !(lhs[rhs])) {
+          lhs[rhs] = {};
         }
         value = lhs[rhs];
         ensureSafeObject(value, expression);
@@ -15568,11 +14474,8 @@ ASTInterpreter.prototype = {
   nonComputedMember: function(left, right, expensiveChecks, context, create, expression) {
     return function(scope, locals, assign, inputs) {
       var lhs = left(scope, locals, assign, inputs);
-      if (create && create !== 1) {
-        ensureSafeAssignContext(lhs);
-        if (lhs && !(lhs[right])) {
-          lhs[right] = {};
-        }
+      if (create && create !== 1 && lhs && !(lhs[right])) {
+        lhs[right] = {};
       }
       var value = lhs != null ? lhs[right] : undefined;
       if (expensiveChecks || isPossiblyDangerousMemberName(right)) {
@@ -15600,7 +14503,7 @@ var Parser = function(lexer, $filter, options) {
   this.lexer = lexer;
   this.$filter = $filter;
   this.options = options;
-  this.ast = new AST(lexer, options);
+  this.ast = new AST(this.lexer);
   this.astCompiler = options.csp ? new ASTInterpreter(this.ast, $filter) :
                                    new ASTCompiler(this.ast, $filter);
 };
@@ -15677,86 +14580,20 @@ function getValueOf(value) {
 function $ParseProvider() {
   var cacheDefault = createMap();
   var cacheExpensive = createMap();
-  var literals = {
-    'true': true,
-    'false': false,
-    'null': null,
-    'undefined': undefined
-  };
-  var identStart, identContinue;
-
-  /**
-   * @ngdoc method
-   * @name $parseProvider#addLiteral
-   * @description
-   *
-   * Configure $parse service to add literal values that will be present as literal at expressions.
-   *
-   * @param {string} literalName Token for the literal value. The literal name value must be a valid literal name.
-   * @param {*} literalValue Value for this literal. All literal values must be primitives or `undefined`.
-   *
-   **/
-  this.addLiteral = function(literalName, literalValue) {
-    literals[literalName] = literalValue;
-  };
-
- /**
-  * @ngdoc method
-  * @name $parseProvider#setIdentifierFns
-  * @description
-  *
-  * Allows defining the set of characters that are allowed in Angular expressions. The function
-  * `identifierStart` will get called to know if a given character is a valid character to be the
-  * first character for an identifier. The function `identifierContinue` will get called to know if
-  * a given character is a valid character to be a follow-up identifier character. The functions
-  * `identifierStart` and `identifierContinue` will receive as arguments the single character to be
-  * identifier and the character code point. These arguments will be `string` and `numeric`. Keep in
-  * mind that the `string` parameter can be two characters long depending on the character
-  * representation. It is expected for the function to return `true` or `false`, whether that
-  * character is allowed or not.
-  *
-  * Since this function will be called extensivelly, keep the implementation of these functions fast,
-  * as the performance of these functions have a direct impact on the expressions parsing speed.
-  *
-  * @param {function=} identifierStart The function that will decide whether the given character is
-  *   a valid identifier start character.
-  * @param {function=} identifierContinue The function that will decide whether the given character is
-  *   a valid identifier continue character.
-  */
-  this.setIdentifierFns = function(identifierStart, identifierContinue) {
-    identStart = identifierStart;
-    identContinue = identifierContinue;
-    return this;
-  };
 
   this.$get = ['$filter', function($filter) {
     var noUnsafeEval = csp().noUnsafeEval;
     var $parseOptions = {
           csp: noUnsafeEval,
-          expensiveChecks: false,
-          literals: copy(literals),
-          isIdentifierStart: isFunction(identStart) && identStart,
-          isIdentifierContinue: isFunction(identContinue) && identContinue
+          expensiveChecks: false
         },
         $parseOptionsExpensive = {
           csp: noUnsafeEval,
-          expensiveChecks: true,
-          literals: copy(literals),
-          isIdentifierStart: isFunction(identStart) && identStart,
-          isIdentifierContinue: isFunction(identContinue) && identContinue
+          expensiveChecks: true
         };
-    var runningChecksEnabled = false;
 
-    $parse.$$runningExpensiveChecks = function() {
-      return runningChecksEnabled;
-    };
-
-    return $parse;
-
-    function $parse(exp, interceptorFn, expensiveChecks) {
+    return function $parse(exp, interceptorFn, expensiveChecks) {
       var parsedExpression, oneTime, cacheKey;
-
-      expensiveChecks = expensiveChecks || runningChecksEnabled;
 
       switch (typeof exp) {
         case 'string':
@@ -15783,9 +14620,6 @@ function $ParseProvider() {
             } else if (parsedExpression.inputs) {
               parsedExpression.$$watchDelegate = inputsWatchDelegate;
             }
-            if (expensiveChecks) {
-              parsedExpression = expensiveChecksInterceptor(parsedExpression);
-            }
             cache[cacheKey] = parsedExpression;
           }
           return addInterceptor(parsedExpression, interceptorFn);
@@ -15796,31 +14630,7 @@ function $ParseProvider() {
         default:
           return addInterceptor(noop, interceptorFn);
       }
-    }
-
-    function expensiveChecksInterceptor(fn) {
-      if (!fn) return fn;
-      expensiveCheckFn.$$watchDelegate = fn.$$watchDelegate;
-      expensiveCheckFn.assign = expensiveChecksInterceptor(fn.assign);
-      expensiveCheckFn.constant = fn.constant;
-      expensiveCheckFn.literal = fn.literal;
-      for (var i = 0; fn.inputs && i < fn.inputs.length; ++i) {
-        fn.inputs[i] = expensiveChecksInterceptor(fn.inputs[i]);
-      }
-      expensiveCheckFn.inputs = fn.inputs;
-
-      return expensiveCheckFn;
-
-      function expensiveCheckFn(scope, locals, assign, inputs) {
-        var expensiveCheckOldValue = runningChecksEnabled;
-        runningChecksEnabled = true;
-        try {
-          return fn(scope, locals, assign, inputs);
-        } finally {
-          runningChecksEnabled = expensiveCheckOldValue;
-        }
-      }
-    }
+    };
 
     function expressionInputDirtyCheck(newValue, oldValueOfValue) {
 
@@ -15937,9 +14747,13 @@ function $ParseProvider() {
     function constantWatchDelegate(scope, listener, objectEquality, parsedExpression) {
       var unwatch;
       return unwatch = scope.$watch(function constantWatch(scope) {
-        unwatch();
         return parsedExpression(scope);
-      }, listener, objectEquality);
+      }, function constantListener(value, old, scope) {
+        if (isFunction(listener)) {
+          listener.apply(this, arguments);
+        }
+        unwatch();
+      }, objectEquality);
     }
 
     function addInterceptor(parsedExpression, interceptorFn) {
@@ -15992,15 +14806,15 @@ function $ParseProvider() {
  * [Kris Kowal's Q](https://github.com/kriskowal/q).
  *
  * $q can be used in two fashions --- one which is more similar to Kris Kowal's Q or jQuery's Deferred
- * implementations, and the other which resembles ES6 (ES2015) promises to some degree.
+ * implementations, and the other which resembles ES6 promises to some degree.
  *
  * # $q constructor
  *
  * The streamlined ES6 style promise is essentially just using $q as a constructor which takes a `resolver`
- * function as the first argument. This is similar to the native Promise implementation from ES6,
+ * function as the first argument. This is similar to the native Promise implementation from ES6 Harmony,
  * see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
  *
- * While the constructor-style use is supported, not all of the supporting methods from ES6 promises are
+ * While the constructor-style use is supported, not all of the supporting methods from ES6 Harmony promises are
  * available yet.
  *
  * It can be used like so:
@@ -16032,7 +14846,7 @@ function $ParseProvider() {
  *
  * Note: progress/notify callbacks are not currently supported via the ES6-style interface.
  *
- * Note: unlike ES6 behavior, an exception thrown in the constructor function will NOT implicitly reject the promise.
+ * Note: unlike ES6 behaviour, an exception thrown in the constructor function will NOT implicitly reject the promise.
  *
  * However, the more traditional CommonJS-style usage is still available, and documented below.
  *
@@ -16165,7 +14979,7 @@ function $ParseProvider() {
  * - Q has many more features than $q, but that comes at a cost of bytes. $q is tiny, but contains
  *   all the important functionality needed for common async tasks.
  *
- * # Testing
+ *  # Testing
  *
  *  ```js
  *    it('should simulate promise', inject(function($q, $rootScope) {
@@ -16222,6 +15036,18 @@ function $$QProvider() {
  */
 function qFactory(nextTick, exceptionHandler) {
   var $qMinErr = minErr('$q', TypeError);
+  function callOnce(self, resolveFn, rejectFn) {
+    var called = false;
+    function wrap(fn) {
+      return function(value) {
+        if (called) return;
+        called = true;
+        fn.call(self, value);
+      };
+    }
+
+    return [wrap(resolveFn), wrap(rejectFn)];
+  }
 
   /**
    * @ngdoc method
@@ -16234,12 +15060,7 @@ function qFactory(nextTick, exceptionHandler) {
    * @returns {Deferred} Returns a new instance of deferred.
    */
   var defer = function() {
-    var d = new Deferred();
-    //Necessary to support unbound execution :/
-    d.resolve = simpleBind(d, d.resolve);
-    d.reject = simpleBind(d, d.reject);
-    d.notify = simpleBind(d, d.notify);
-    return d;
+    return new Deferred();
   };
 
   function Promise() {
@@ -16312,6 +15133,10 @@ function qFactory(nextTick, exceptionHandler) {
 
   function Deferred() {
     this.promise = new Promise();
+    //Necessary to support unbound execution :/
+    this.resolve = simpleBind(this, this.resolve);
+    this.reject = simpleBind(this, this.reject);
+    this.notify = simpleBind(this, this.notify);
   }
 
   extend(Deferred.prototype, {
@@ -16329,33 +15154,22 @@ function qFactory(nextTick, exceptionHandler) {
     },
 
     $$resolve: function(val) {
-      var then;
-      var that = this;
-      var done = false;
+      var then, fns;
+
+      fns = callOnce(this, this.$$resolve, this.$$reject);
       try {
         if ((isObject(val) || isFunction(val))) then = val && val.then;
         if (isFunction(then)) {
           this.promise.$$state.status = -1;
-          then.call(val, resolvePromise, rejectPromise, simpleBind(this, this.notify));
+          then.call(val, fns[0], fns[1], this.notify);
         } else {
           this.promise.$$state.value = val;
           this.promise.$$state.status = 1;
           scheduleProcessQueue(this.promise.$$state);
         }
       } catch (e) {
-        rejectPromise(e);
+        fns[1](e);
         exceptionHandler(e);
-      }
-
-      function resolvePromise(val) {
-        if (done) return;
-        done = true;
-        that.$$resolve(val);
-      }
-      function rejectPromise(val) {
-        if (done) return;
-        done = true;
-        that.$$reject(val);
       }
     },
 
@@ -16545,6 +15359,11 @@ function qFactory(nextTick, exceptionHandler) {
       throw $qMinErr('norslvr', "Expected resolverFn, got '{0}'", resolver);
     }
 
+    if (!(this instanceof Q)) {
+      // More useful when $Q is the Promise itself.
+      return new Q(resolver);
+    }
+
     var deferred = new Deferred();
 
     function resolveFn(value) {
@@ -16559,10 +15378,6 @@ function qFactory(nextTick, exceptionHandler) {
 
     return deferred.promise;
   };
-
-  // Let's make the instanceof operator work for promises, so that
-  // `new $q(fn) instanceof $q` would evaluate to true.
-  $Q.prototype = Promise.prototype;
 
   $Q.defer = defer;
   $Q.reject = reject;
@@ -16697,8 +15512,8 @@ function $RootScopeProvider() {
     return ChildScope;
   }
 
-  this.$get = ['$exceptionHandler', '$parse', '$browser',
-      function($exceptionHandler, $parse, $browser) {
+  this.$get = ['$injector', '$exceptionHandler', '$parse', '$browser',
+      function($injector, $exceptionHandler, $parse, $browser) {
 
     function destroyChildScope($event) {
         $event.currentScope.$$destroyed = true;
@@ -16982,7 +15797,7 @@ function $RootScopeProvider() {
        *    - `newVal` contains the current value of the `watchExpression`
        *    - `oldVal` contains the previous value of the `watchExpression`
        *    - `scope` refers to the current scope
-       * @param {boolean=} [objectEquality=false] Compare for object equality using {@link angular.equals} instead of
+       * @param {boolean=} objectEquality Compare for object equality using {@link angular.equals} instead of
        *     comparing for reference equality.
        * @returns {function()} Returns a deregistration function for this listener.
        */
@@ -17347,13 +16162,13 @@ function $RootScopeProvider() {
        *
        */
       $digest: function() {
-        var watch, value, last, fn, get,
+        var watch, value, last,
             watchers,
             length,
             dirty, ttl = TTL,
             next, current, target = this,
             watchLog = [],
-            logIdx, asyncTask;
+            logIdx, logMsg, asyncTask;
 
         beginPhase('$digest');
         // Check for changes to browser url that happened in sync before the call to $digest
@@ -17372,19 +16187,15 @@ function $RootScopeProvider() {
           dirty = false;
           current = target;
 
-          // It's safe for asyncQueuePosition to be a local variable here because this loop can't
-          // be reentered recursively. Calling $digest from a function passed to $applyAsync would
-          // lead to a '$digest already in progress' error.
-          for (var asyncQueuePosition = 0; asyncQueuePosition < asyncQueue.length; asyncQueuePosition++) {
+          while (asyncQueue.length) {
             try {
-              asyncTask = asyncQueue[asyncQueuePosition];
+              asyncTask = asyncQueue.shift();
               asyncTask.scope.$eval(asyncTask.expression, asyncTask.locals);
             } catch (e) {
               $exceptionHandler(e);
             }
             lastDirtyWatch = null;
           }
-          asyncQueue.length = 0;
 
           traverseScopesLoop:
           do { // "traverse the scopes" loop
@@ -17397,8 +16208,7 @@ function $RootScopeProvider() {
                   // Most common watches are on primitives, in which case we can short
                   // circuit it with === operator, only when === fails do we use .equals
                   if (watch) {
-                    get = watch.get;
-                    if ((value = get(current)) !== (last = watch.last) &&
+                    if ((value = watch.get(current)) !== (last = watch.last) &&
                         !(watch.eq
                             ? equals(value, last)
                             : (typeof value === 'number' && typeof last === 'number'
@@ -17406,8 +16216,7 @@ function $RootScopeProvider() {
                       dirty = true;
                       lastDirtyWatch = watch;
                       watch.last = watch.eq ? copy(value, null) : value;
-                      fn = watch.fn;
-                      fn(value, ((last === initWatchVal) ? value : last), current);
+                      watch.fn(value, ((last === initWatchVal) ? value : last), current);
                       if (ttl < 5) {
                         logIdx = 4 - ttl;
                         if (!watchLog[logIdx]) watchLog[logIdx] = [];
@@ -17455,15 +16264,13 @@ function $RootScopeProvider() {
 
         clearPhase();
 
-        // postDigestQueuePosition isn't local here because this loop can be reentered recursively.
-        while (postDigestQueuePosition < postDigestQueue.length) {
+        while (postDigestQueue.length) {
           try {
-            postDigestQueue[postDigestQueuePosition++]();
+            postDigestQueue.shift()();
           } catch (e) {
             $exceptionHandler(e);
           }
         }
-        postDigestQueue.length = postDigestQueuePosition = 0;
       },
 
 
@@ -17609,7 +16416,7 @@ function $RootScopeProvider() {
           });
         }
 
-        asyncQueue.push({scope: this, expression: $parse(expr), locals: locals});
+        asyncQueue.push({scope: this, expression: expr, locals: locals});
       },
 
       $$postDigest: function(fn) {
@@ -17701,7 +16508,6 @@ function $RootScopeProvider() {
       $applyAsync: function(expr) {
         var scope = this;
         expr && applyAsyncQueue.push($applyAsyncExpression);
-        expr = $parse(expr);
         scheduleApplyAsync();
 
         function $applyAsyncExpression() {
@@ -17917,8 +16723,6 @@ function $RootScopeProvider() {
     var asyncQueue = $rootScope.$$asyncQueue = [];
     var postDigestQueue = $rootScope.$$postDigestQueue = [];
     var applyAsyncQueue = $rootScope.$$applyAsyncQueue = [];
-
-    var postDigestQueuePosition = 0;
 
     return $rootScope;
 
@@ -18207,15 +17011,13 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} whitelist When provided, replaces the resourceUrlWhitelist with the value
-   *    provided.  This must be an array or null.  A snapshot of this array is used so further
-   *    changes to the array are ignored.
+   *     provided.  This must be an array or null.  A snapshot of this array is used so further
+   *     changes to the array are ignored.
    *
-   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *    allowed in this array.
+   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *     allowed in this array.
    *
-   *    <div class="alert alert-warning">
-   *    **Note:** an empty whitelist array will block all URLs!
-   *    </div>
+   *     Note: **an empty whitelist array will block all URLs**!
    *
    * @return {Array} the currently set whitelist array.
    *
@@ -18238,17 +17040,17 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} blacklist When provided, replaces the resourceUrlBlacklist with the value
-   *    provided.  This must be an array or null.  A snapshot of this array is used so further
-   *    changes to the array are ignored.
+   *     provided.  This must be an array or null.  A snapshot of this array is used so further
+   *     changes to the array are ignored.
    *
-   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *    allowed in this array.
+   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *     allowed in this array.
    *
-   *    The typical usage for the blacklist is to **block
-   *    [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
-   *    these would otherwise be trusted but actually return content from the redirected domain.
+   *     The typical usage for the blacklist is to **block
+   *     [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
+   *     these would otherwise be trusted but actually return content from the redirected domain.
    *
-   *    Finally, **the blacklist overrides the whitelist** and has the final say.
+   *     Finally, **the blacklist overrides the whitelist** and has the final say.
    *
    * @return {Array} the currently set blacklist array.
    *
@@ -18407,11 +17209,6 @@ function $SceDelegateProvider() {
      * returns the originally supplied value if the queried context type is a supertype of the
      * created type.  If this condition isn't satisfied, throws an exception.
      *
-     * <div class="alert alert-danger">
-     * Disabling auto-escaping is extremely dangerous, it usually creates a Cross Site Scripting
-     * (XSS) vulnerability in your application.
-     * </div>
-     *
      * @param {string} type The kind of context in which this value is to be used.
      * @param {*} maybeTrusted The result of a prior {@link ng.$sceDelegate#trustAs
      *     `$sceDelegate.trustAs`} call.
@@ -18488,7 +17285,7 @@ function $SceDelegateProvider() {
  * You can ensure your document is in standards mode and not quirks mode by adding `<!doctype html>`
  * to the top of your HTML document.
  *
- * SCE assists in writing code in a way that (a) is secure by default and (b) makes auditing for
+ * SCE assists in writing code in way that (a) is secure by default and (b) makes auditing for
  * security vulnerabilities such as XSS, clickjacking, etc. a lot easier.
  *
  * Here's an example of a binding in a privileged context:
@@ -19146,10 +17943,6 @@ function $SceProvider() {
 function $SnifferProvider() {
   this.$get = ['$window', '$document', function($window, $document) {
     var eventSupport = {},
-        // Chrome Packaged Apps are not allowed to access `history.pushState`. They can be detected by
-        // the presence of `chrome.app.runtime` (see https://developer.chrome.com/apps/api_index)
-        isChromePackagedApp = $window.chrome && $window.chrome.app && $window.chrome.app.runtime,
-        hasHistoryPushState = !isChromePackagedApp && $window.history && $window.history.pushState,
         android =
           toInt((/android (\d+)/.exec(lowercase(($window.navigator || {}).userAgent)) || [])[1]),
         boxee = /Boxee/i.test(($window.navigator || {}).userAgent),
@@ -19165,7 +17958,7 @@ function $SnifferProvider() {
       for (var prop in bodyStyle) {
         if (match = vendorRegex.exec(prop)) {
           vendorPrefix = match[0];
-          vendorPrefix = vendorPrefix[0].toUpperCase() + vendorPrefix.substr(1);
+          vendorPrefix = vendorPrefix.substr(0, 1).toUpperCase() + vendorPrefix.substr(1);
           break;
         }
       }
@@ -19194,7 +17987,7 @@ function $SnifferProvider() {
       // so let's not use the history API also
       // We are purposefully using `!(android < 4)` to cover the case when `android` is undefined
       // jshint -W018
-      history: !!(hasHistoryPushState && !(android < 4) && !boxee),
+      history: !!($window.history && $window.history.pushState && !(android < 4) && !boxee),
       // jshint +W018
       hasEvent: function(event) {
         // IE9 implements 'input' event it's so fubared that we rather pretend that it doesn't have
@@ -19220,66 +18013,29 @@ function $SnifferProvider() {
   }];
 }
 
-var $templateRequestMinErr = minErr('$compile');
+var $compileMinErr = minErr('$compile');
 
 /**
- * @ngdoc provider
- * @name $templateRequestProvider
- * @description
- * Used to configure the options passed to the {@link $http} service when making a template request.
+ * @ngdoc service
+ * @name $templateRequest
  *
- * For example, it can be used for specifying the "Accept" header that is sent to the server, when
- * requesting a template.
+ * @description
+ * The `$templateRequest` service runs security checks then downloads the provided template using
+ * `$http` and, upon success, stores the contents inside of `$templateCache`. If the HTTP request
+ * fails or the response data of the HTTP request is empty, a `$compile` error will be thrown (the
+ * exception can be thwarted by setting the 2nd parameter of the function to true). Note that the
+ * contents of `$templateCache` are trusted, so the call to `$sce.getTrustedUrl(tpl)` is omitted
+ * when `tpl` is of type string and `$templateCache` has the matching entry.
+ *
+ * @param {string|TrustedResourceUrl} tpl The HTTP request template URL
+ * @param {boolean=} ignoreRequestError Whether or not to ignore the exception when the request fails or the template is empty
+ *
+ * @return {Promise} a promise for the HTTP response data of the given URL.
+ *
+ * @property {number} totalPendingRequests total amount of pending template requests being downloaded.
  */
 function $TemplateRequestProvider() {
-
-  var httpOptions;
-
-  /**
-   * @ngdoc method
-   * @name $templateRequestProvider#httpOptions
-   * @description
-   * The options to be passed to the {@link $http} service when making the request.
-   * You can use this to override options such as the "Accept" header for template requests.
-   *
-   * The {@link $templateRequest} will set the `cache` and the `transformResponse` properties of the
-   * options if not overridden here.
-   *
-   * @param {string=} value new value for the {@link $http} options.
-   * @returns {string|self} Returns the {@link $http} options when used as getter and self if used as setter.
-   */
-  this.httpOptions = function(val) {
-    if (val) {
-      httpOptions = val;
-      return this;
-    }
-    return httpOptions;
-  };
-
-  /**
-   * @ngdoc service
-   * @name $templateRequest
-   *
-   * @description
-   * The `$templateRequest` service runs security checks then downloads the provided template using
-   * `$http` and, upon success, stores the contents inside of `$templateCache`. If the HTTP request
-   * fails or the response data of the HTTP request is empty, a `$compile` error will be thrown (the
-   * exception can be thwarted by setting the 2nd parameter of the function to true). Note that the
-   * contents of `$templateCache` are trusted, so the call to `$sce.getTrustedUrl(tpl)` is omitted
-   * when `tpl` is of type string and `$templateCache` has the matching entry.
-   *
-   * If you want to pass custom options to the `$http` service, such as setting the Accept header you
-   * can configure this via {@link $templateRequestProvider#httpOptions}.
-   *
-   * @param {string|TrustedResourceUrl} tpl The HTTP request template URL
-   * @param {boolean=} ignoreRequestError Whether or not to ignore the exception when the request fails or the template is empty
-   *
-   * @return {Promise} a promise for the HTTP response data of the given URL.
-   *
-   * @property {number} totalPendingRequests total amount of pending template requests being downloaded.
-   */
   this.$get = ['$templateCache', '$http', '$q', '$sce', function($templateCache, $http, $q, $sce) {
-
     function handleRequestFn(tpl, ignoreRequestError) {
       handleRequestFn.totalPendingRequests++;
 
@@ -19288,7 +18044,7 @@ function $TemplateRequestProvider() {
       // are included in there. This also makes Angular accept any script
       // directive, no matter its name. However, we still need to unwrap trusted
       // types.
-      if (!isString(tpl) || isUndefined($templateCache.get(tpl))) {
+      if (!isString(tpl) || !$templateCache.get(tpl)) {
         tpl = $sce.getTrustedResourceUrl(tpl);
       }
 
@@ -19302,10 +18058,12 @@ function $TemplateRequestProvider() {
         transformResponse = null;
       }
 
-      return $http.get(tpl, extend({
-          cache: $templateCache,
-          transformResponse: transformResponse
-        }, httpOptions))
+      var httpOptions = {
+        cache: $templateCache,
+        transformResponse: transformResponse
+      };
+
+      return $http.get(tpl, httpOptions)
         ['finally'](function() {
           handleRequestFn.totalPendingRequests--;
         })
@@ -19316,7 +18074,7 @@ function $TemplateRequestProvider() {
 
       function handleError(resp) {
         if (!ignoreRequestError) {
-          throw $templateRequestMinErr('tpload', 'Failed to load template: {0} (HTTP status: {1} {2})',
+          throw $compileMinErr('tpload', 'Failed to load template: {0} (HTTP status: {1} {2})',
             tpl, resp.status, resp.statusText);
         }
         return $q.reject(resp);
@@ -19546,7 +18304,7 @@ function $TimeoutProvider() {
 // doesn't know about mocked locations and resolves URLs to the real document - which is
 // exactly the behavior needed here.  There is little value is mocking these out for this
 // service.
-var urlParsingNode = window.document.createElement("a");
+var urlParsingNode = document.createElement("a");
 var originUrl = urlResolve(window.location.href);
 
 
@@ -20238,7 +18996,7 @@ function currencyFilter($locale) {
  * Formats a number as text.
  *
  * If the input is null or undefined, it will just be returned.
- * If the input is infinite (Infinity or -Infinity), the Infinity symbol '∞' or '-∞' is returned, respectively.
+ * If the input is infinite (Infinity/-Infinity) the Infinity symbol '∞' is returned.
  * If the input is not a number an empty string is returned.
  *
  *
@@ -20246,9 +19004,7 @@ function currencyFilter($locale) {
  * @param {(number|string)=} fractionSize Number of decimal places to round the number to.
  * If this is not provided then the fraction size is computed from the current locale's number
  * formatting pattern. In the case of the default locale, it will be 3.
- * @returns {string} Number rounded to `fractionSize` appropriately formatted based on the current
- *                   locale (e.g., in the en_US locale it will have "." as the decimal separator and
- *                   include "," group separators after each third digit).
+ * @returns {string} Number rounded to fractionSize and places a “,” after each third digit.
  *
  * @example
    <example module="numberFilterExample">
@@ -20330,7 +19086,7 @@ function parse(numStr) {
   }
 
   // Count the number of leading zeros.
-  for (i = 0; numStr.charAt(i) == ZERO_CHAR; i++) {/* jshint noempty: false */}
+  for (i = 0; numStr.charAt(i) == ZERO_CHAR; i++);
 
   if (i == (zeros = numStr.length)) {
     // The digits are all zero.
@@ -20376,37 +19132,18 @@ function roundNumber(parsedNumber, fractionSize, minFrac, maxFrac) {
     var digit = digits[roundAt];
 
     if (roundAt > 0) {
-      // Drop fractional digits beyond `roundAt`
-      digits.splice(Math.max(parsedNumber.i, roundAt));
-
-      // Set non-fractional digits beyond `roundAt` to 0
-      for (var j = roundAt; j < digits.length; j++) {
-        digits[j] = 0;
-      }
+      digits.splice(roundAt);
     } else {
       // We rounded to zero so reset the parsedNumber
-      fractionLen = Math.max(0, fractionLen);
       parsedNumber.i = 1;
-      digits.length = Math.max(1, roundAt = fractionSize + 1);
-      digits[0] = 0;
-      for (var i = 1; i < roundAt; i++) digits[i] = 0;
+      digits.length = roundAt = fractionSize + 1;
+      for (var i=0; i < roundAt; i++) digits[i] = 0;
     }
 
-    if (digit >= 5) {
-      if (roundAt - 1 < 0) {
-        for (var k = 0; k > roundAt; k--) {
-          digits.unshift(0);
-          parsedNumber.i++;
-        }
-        digits.unshift(1);
-        parsedNumber.i++;
-      } else {
-        digits[roundAt - 1]++;
-      }
-    }
+    if (digit >= 5) digits[roundAt - 1]++;
 
     // Pad out with zeros to get the required fraction length
-    for (; fractionLen < Math.max(0, fractionSize); fractionLen++) digits.push(0);
+    for (; fractionLen < fractionSize; fractionLen++) digits.push(0);
 
 
     // Do any carrying, e.g. a digit was rounded up to 10
@@ -20470,7 +19207,7 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
 
     // extract decimals digits
     if (integerLen > 0) {
-      decimals = digits.splice(integerLen, digits.length);
+      decimals = digits.splice(integerLen);
     } else {
       decimals = digits;
       digits = [0];
@@ -20478,11 +19215,11 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
 
     // format the integer digits with grouping separators
     var groups = [];
-    if (digits.length >= pattern.lgSize) {
-      groups.unshift(digits.splice(-pattern.lgSize, digits.length).join(''));
+    if (digits.length > pattern.lgSize) {
+      groups.unshift(digits.splice(-pattern.lgSize).join(''));
     }
     while (digits.length > pattern.gSize) {
-      groups.unshift(digits.splice(-pattern.gSize, digits.length).join(''));
+      groups.unshift(digits.splice(-pattern.gSize).join(''));
     }
     if (digits.length) {
       groups.unshift(digits.join(''));
@@ -20505,15 +19242,11 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
   }
 }
 
-function padNumber(num, digits, trim, negWrap) {
+function padNumber(num, digits, trim) {
   var neg = '';
-  if (num < 0 || (negWrap && num <= 0)) {
-    if (negWrap) {
-      num = -num + 1;
-    } else {
-      num = -num;
-      neg = '-';
-    }
+  if (num < 0) {
+    neg =  '-';
+    num = -num;
   }
   num = '' + num;
   while (num.length < digits) num = ZERO_CHAR + num;
@@ -20524,7 +19257,7 @@ function padNumber(num, digits, trim, negWrap) {
 }
 
 
-function dateGetter(name, size, offset, trim, negWrap) {
+function dateGetter(name, size, offset, trim) {
   offset = offset || 0;
   return function(date) {
     var value = date['get' + name]();
@@ -20532,15 +19265,14 @@ function dateGetter(name, size, offset, trim, negWrap) {
       value += offset;
     }
     if (value === 0 && offset == -12) value = 12;
-    return padNumber(value, size, trim, negWrap);
+    return padNumber(value, size, trim);
   };
 }
 
-function dateStrGetter(name, shortForm, standAlone) {
+function dateStrGetter(name, shortForm) {
   return function(date, formats) {
     var value = date['get' + name]();
-    var propPrefix = (standAlone ? 'STANDALONE' : '') + (shortForm ? 'SHORT' : '');
-    var get = uppercase(propPrefix + name);
+    var get = uppercase(shortForm ? ('SHORT' + name) : name);
 
     return formats[get][value];
   };
@@ -20595,14 +19327,13 @@ function longEraGetter(date, formats) {
 }
 
 var DATE_FORMATS = {
-  yyyy: dateGetter('FullYear', 4, 0, false, true),
-    yy: dateGetter('FullYear', 2, 0, true, true),
-     y: dateGetter('FullYear', 1, 0, false, true),
+  yyyy: dateGetter('FullYear', 4),
+    yy: dateGetter('FullYear', 2, 0, true),
+     y: dateGetter('FullYear', 1),
   MMMM: dateStrGetter('Month'),
    MMM: dateStrGetter('Month', true),
     MM: dateGetter('Month', 2, 1),
      M: dateGetter('Month', 1, 1),
-  LLLL: dateStrGetter('Month', false, true),
     dd: dateGetter('Date', 2),
      d: dateGetter('Date', 1),
     HH: dateGetter('Hours', 2),
@@ -20628,7 +19359,7 @@ var DATE_FORMATS = {
      GGGG: longEraGetter
 };
 
-var DATE_FORMATS_SPLIT = /((?:[^yMLdHhmsaZEwG']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|L+|d+|H+|h+|m+|s+|a|Z|G+|w+))(.*)/,
+var DATE_FORMATS_SPLIT = /((?:[^yMdHhmsaZEwG']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+|d+|H+|h+|m+|s+|a|Z|G+|w+))(.*)/,
     NUMBER_STRING = /^\-?\d+$/;
 
 /**
@@ -20648,7 +19379,6 @@ var DATE_FORMATS_SPLIT = /((?:[^yMLdHhmsaZEwG']+)|(?:'(?:[^']|'')*')|(?:E+|y+|M+
  *   * `'MMM'`: Month in year (Jan-Dec)
  *   * `'MM'`: Month in year, padded (01-12)
  *   * `'M'`: Month in year (1-12)
- *   * `'LLLL'`: Stand-alone month in year (January-December)
  *   * `'dd'`: Day in month, padded (01-31)
  *   * `'d'`: Day in month (1-31)
  *   * `'EEEE'`: Day in Week,(Sunday-Saturday)
@@ -20788,13 +19518,13 @@ function dateFilter($locale) {
 
     var dateTimezoneOffset = date.getTimezoneOffset();
     if (timezone) {
-      dateTimezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
+      dateTimezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
       date = convertTimezoneToLocal(date, timezone, true);
     }
     forEach(parts, function(value) {
       fn = DATE_FORMATS[value];
       text += fn ? fn(date, $locale.DATETIME_FORMATS, dateTimezoneOffset)
-                 : value === "''" ? "'" : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
+                 : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
     });
 
     return text;
@@ -20870,22 +19600,21 @@ var uppercaseFilter = valueFn(uppercase);
  * @kind function
  *
  * @description
- * Creates a new array or string containing only a specified number of elements. The elements are
- * taken from either the beginning or the end of the source array, string or number, as specified by
- * the value and sign (positive or negative) of `limit`. Other array-like objects are also supported
- * (e.g. array subclasses, NodeLists, jqLite/jQuery collections etc). If a number is used as input,
- * it is converted to a string.
+ * Creates a new array or string containing only a specified number of elements. The elements
+ * are taken from either the beginning or the end of the source array, string or number, as specified by
+ * the value and sign (positive or negative) of `limit`. If a number is used as input, it is
+ * converted to a string.
  *
- * @param {Array|ArrayLike|string|number} input - Array/array-like, string or number to be limited.
- * @param {string|number} limit - The length of the returned array or string. If the `limit` number
+ * @param {Array|string|number} input Source array, string or number to be limited.
+ * @param {string|number} limit The length of the returned array or string. If the `limit` number
  *     is positive, `limit` number of items from the beginning of the source array/string are copied.
  *     If the number is negative, `limit` number  of items from the end of the source array/string
  *     are copied. The `limit` will be trimmed if it exceeds `array.length`. If `limit` is undefined,
  *     the input will be returned unchanged.
- * @param {(string|number)=} begin - Index at which to begin limitation. As a negative index,
- *     `begin` indicates an offset from the end of `input`. Defaults to `0`.
- * @returns {Array|string} A new sub-array or substring of length `limit` or less if the input had
- *     less than `limit` elements.
+ * @param {(string|number)=} begin Index at which to begin limitation. As a negative index, `begin`
+ *     indicates an offset from the end of `input`. Defaults to `0`.
+ * @returns {Array|string} A new sub-array or substring of length `limit` or less if input array
+ *     had less than `limit` elements.
  *
  * @example
    <example module="limitToExample">
@@ -20973,27 +19702,21 @@ function limitToFilter() {
     if (isNaN(limit)) return input;
 
     if (isNumber(input)) input = input.toString();
-    if (!isArrayLike(input)) return input;
+    if (!isArray(input) && !isString(input)) return input;
 
     begin = (!begin || isNaN(begin)) ? 0 : toInt(begin);
     begin = (begin < 0) ? Math.max(0, input.length + begin) : begin;
 
     if (limit >= 0) {
-      return sliceFn(input, begin, begin + limit);
+      return input.slice(begin, begin + limit);
     } else {
       if (begin === 0) {
-        return sliceFn(input, limit, input.length);
+        return input.slice(limit, input.length);
       } else {
-        return sliceFn(input, Math.max(0, begin + limit), begin);
+        return input.slice(Math.max(0, begin + limit), begin);
       }
     }
   };
-}
-
-function sliceFn(input, begin, end) {
-  if (isString(input)) return input.slice(begin, end);
-
-  return slice.call(input, begin, end);
 }
 
 /**
@@ -21002,128 +19725,43 @@ function sliceFn(input, begin, end) {
  * @kind function
  *
  * @description
- * Returns an array containing the items from the specified `collection`, ordered by a `comparator`
- * function based on the values computed using the `expression` predicate.
+ * Orders a specified `array` by the `expression` predicate. It is ordered alphabetically
+ * for strings and numerically for numbers. Note: if you notice numbers are not being sorted
+ * as expected, make sure they are actually being saved as numbers and not strings.
  *
- * For example, `[{id: 'foo'}, {id: 'bar'}] | orderBy:'id'` would result in
- * `[{id: 'bar'}, {id: 'foo'}]`.
- *
- * The `collection` can be an Array or array-like object (e.g. NodeList, jQuery object, TypedArray,
- * String, etc).
- *
- * The `expression` can be a single predicate, or a list of predicates each serving as a tie-breaker
- * for the preceeding one. The `expression` is evaluated against each item and the output is used
- * for comparing with other items.
- *
- * You can change the sorting order by setting `reverse` to `true`. By default, items are sorted in
- * ascending order.
- *
- * The comparison is done using the `comparator` function. If none is specified, a default, built-in
- * comparator is used (see below for details - in a nutshell, it compares numbers numerically and
- * strings alphabetically).
- *
- * ### Under the hood
- *
- * Ordering the specified `collection` happens in two phases:
- *
- * 1. All items are passed through the predicate (or predicates), and the returned values are saved
- *    along with their type (`string`, `number` etc). For example, an item `{label: 'foo'}`, passed
- *    through a predicate that extracts the value of the `label` property, would be transformed to:
- *    ```
- *    {
- *      value: 'foo',
- *      type: 'string',
- *      index: ...
- *    }
- *    ```
- * 2. The comparator function is used to sort the items, based on the derived values, types and
- *    indices.
- *
- * If you use a custom comparator, it will be called with pairs of objects of the form
- * `{value: ..., type: '...', index: ...}` and is expected to return `0` if the objects are equal
- * (as far as the comparator is concerned), `-1` if the 1st one should be ranked higher than the
- * second, or `1` otherwise.
- *
- * In order to ensure that the sorting will be deterministic across platforms, if none of the
- * specified predicates can distinguish between two items, `orderBy` will automatically introduce a
- * dummy predicate that returns the item's index as `value`.
- * (If you are using a custom comparator, make sure it can handle this predicate as well.)
- *
- * Finally, in an attempt to simplify things, if a predicate returns an object as the extracted
- * value for an item, `orderBy` will try to convert that object to a primitive value, before passing
- * it to the comparator. The following rules govern the conversion:
- *
- * 1. If the object has a `valueOf()` method that returns a primitive, its return value will be
- *    used instead.<br />
- *    (If the object has a `valueOf()` method that returns another object, then the returned object
- *    will be used in subsequent steps.)
- * 2. If the object has a custom `toString()` method (i.e. not the one inherited from `Object`) that
- *    returns a primitive, its return value will be used instead.<br />
- *    (If the object has a `toString()` method that returns another object, then the returned object
- *    will be used in subsequent steps.)
- * 3. No conversion; the object itself is used.
- *
- * ### The default comparator
- *
- * The default, built-in comparator should be sufficient for most usecases. In short, it compares
- * numbers numerically, strings alphabetically (and case-insensitively), for objects falls back to
- * using their index in the original collection, and sorts values of different types by type.
- *
- * More specifically, it follows these steps to determine the relative order of items:
- *
- * 1. If the compared values are of different types, compare the types themselves alphabetically.
- * 2. If both values are of type `string`, compare them alphabetically in a case- and
- *    locale-insensitive way.
- * 3. If both values are objects, compare their indices instead.
- * 4. Otherwise, return:
- *    -  `0`, if the values are equal (by strict equality comparison, i.e. using `===`).
- *    - `-1`, if the 1st value is "less than" the 2nd value (compared using the `<` operator).
- *    -  `1`, otherwise.
- *
- * **Note:** If you notice numbers not being sorted as expected, make sure they are actually being
- *           saved as numbers and not strings.
- *
- * @param {Array|ArrayLike} collection - The collection (array or array-like object) to sort.
- * @param {(Function|string|Array.<Function|string>)=} expression - A predicate (or list of
- *    predicates) to be used by the comparator to determine the order of elements.
+ * @param {Array} array The array to sort.
+ * @param {function(*)|string|Array.<(function(*)|string)>=} expression A predicate to be
+ *    used by the comparator to determine the order of elements.
  *
  *    Can be one of:
  *
- *    - `Function`: A getter function. This function will be called with each item as argument and
- *      the return value will be used for sorting.
- *    - `string`: An Angular expression. This expression will be evaluated against each item and the
- *      result will be used for sorting. For example, use `'label'` to sort by a property called
- *      `label` or `'label.substring(0, 3)'` to sort by the first 3 characters of the `label`
- *      property.<br />
- *      (The result of a constant expression is interpreted as a property name to be used for
- *      comparison. For example, use `'"special name"'` (note the extra pair of quotes) to sort by a
- *      property called `special name`.)<br />
- *      An expression can be optionally prefixed with `+` or `-` to control the sorting direction,
- *      ascending or descending. For example, `'+label'` or `'-label'`. If no property is provided,
- *      (e.g. `'+'` or `'-'`), the collection element itself is used in comparisons.
- *    - `Array`: An array of function and/or string predicates. If a predicate cannot determine the
- *      relative order of two items, the next predicate is used as a tie-breaker.
+ *    - `function`: Getter function. The result of this function will be sorted using the
+ *      `<`, `===`, `>` operator.
+ *    - `string`: An Angular expression. The result of this expression is used to compare elements
+ *      (for example `name` to sort by a property called `name` or `name.substr(0, 3)` to sort by
+ *      3 first characters of a property called `name`). The result of a constant expression
+ *      is interpreted as a property name to be used in comparisons (for example `"special name"`
+ *      to sort object by the value of their `special name` property). An expression can be
+ *      optionally prefixed with `+` or `-` to control ascending or descending sort order
+ *      (for example, `+name` or `-name`). If no property is provided, (e.g. `'+'`) then the array
+ *      element itself is used to compare where sorting.
+ *    - `Array`: An array of function or string predicates. The first predicate in the array
+ *      is used for sorting, but when two items are equivalent, the next predicate is used.
  *
- * **Note:** If the predicate is missing or empty then it defaults to `'+'`.
+ *    If the predicate is missing or empty then it defaults to `'+'`.
  *
- * @param {boolean=} reverse - If `true`, reverse the sorting order.
- * @param {(Function)=} comparator - The comparator function used to determine the relative order of
- *    value pairs. If omitted, the built-in comparator will be used.
- *
- * @returns {Array} - The sorted array.
+ * @param {boolean=} reverse Reverse the order of the array.
+ * @returns {Array} Sorted copy of the source array.
  *
  *
  * @example
- * ### Ordering a table with `ngRepeat`
- *
- * The example below demonstrates a simple {@link ngRepeat ngRepeat}, where the data is sorted by
- * age in descending order (expression is set to `'-age'`). The `comparator` is not set, which means
- * it defaults to the built-in comparator.
- *
-   <example name="orderBy-static" module="orderByExample1">
+ * The example below demonstrates a simple ngRepeat, where the data is sorted
+ * by age in descending order (predicate is set to `'-age'`).
+ * `reverse` is not set, which means it defaults to `false`.
+   <example module="orderByExample">
      <file name="index.html">
        <div ng-controller="ExampleController">
-         <table class="friends">
+         <table class="friend">
            <tr>
              <th>Name</th>
              <th>Phone Number</th>
@@ -21138,77 +19776,43 @@ function sliceFn(input, begin, end) {
        </div>
      </file>
      <file name="script.js">
-       angular.module('orderByExample1', [])
+       angular.module('orderByExample', [])
          .controller('ExampleController', ['$scope', function($scope) {
-           $scope.friends = [
-             {name: 'John',   phone: '555-1212',  age: 10},
-             {name: 'Mary',   phone: '555-9876',  age: 19},
-             {name: 'Mike',   phone: '555-4321',  age: 21},
-             {name: 'Adam',   phone: '555-5678',  age: 35},
-             {name: 'Julie',  phone: '555-8765',  age: 29}
-           ];
+           $scope.friends =
+               [{name:'John', phone:'555-1212', age:10},
+                {name:'Mary', phone:'555-9876', age:19},
+                {name:'Mike', phone:'555-4321', age:21},
+                {name:'Adam', phone:'555-5678', age:35},
+                {name:'Julie', phone:'555-8765', age:29}];
          }]);
      </file>
-     <file name="style.css">
-       .friends {
-         border-collapse: collapse;
-       }
-
-       .friends th {
-         border-bottom: 1px solid;
-       }
-       .friends td, .friends th {
-         border-left: 1px solid;
-         padding: 5px 10px;
-       }
-       .friends td:first-child, .friends th:first-child {
-         border-left: none;
-       }
-     </file>
-     <file name="protractor.js" type="protractor">
-       // Element locators
-       var names = element.all(by.repeater('friends').column('friend.name'));
-
-       it('should sort friends by age in reverse order', function() {
-         expect(names.get(0).getText()).toBe('Adam');
-         expect(names.get(1).getText()).toBe('Julie');
-         expect(names.get(2).getText()).toBe('Mike');
-         expect(names.get(3).getText()).toBe('Mary');
-         expect(names.get(4).getText()).toBe('John');
-       });
-     </file>
    </example>
- * <hr />
  *
+ * The predicate and reverse parameters can be controlled dynamically through scope properties,
+ * as shown in the next example.
  * @example
- * ### Changing parameters dynamically
- *
- * All parameters can be changed dynamically. The next example shows how you can make the columns of
- * a table sortable, by binding the `expression` and `reverse` parameters to scope properties.
- *
-   <example name="orderBy-dynamic" module="orderByExample2">
+   <example module="orderByExample">
      <file name="index.html">
        <div ng-controller="ExampleController">
-         <pre>Sort by = {{propertyName}}; reverse = {{reverse}}</pre>
+         <pre>Sorting predicate = {{predicate}}; reverse = {{reverse}}</pre>
          <hr/>
-         <button ng-click="propertyName = null; reverse = false">Set to unsorted</button>
-         <hr/>
-         <table class="friends">
+         <button ng-click="predicate=''">Set to unsorted</button>
+         <table class="friend">
            <tr>
-             <th>
-               <button ng-click="sortBy('name')">Name</button>
-               <span class="sortorder" ng-show="propertyName === 'name'" ng-class="{reverse: reverse}"></span>
-             </th>
-             <th>
-               <button ng-click="sortBy('phone')">Phone Number</button>
-               <span class="sortorder" ng-show="propertyName === 'phone'" ng-class="{reverse: reverse}"></span>
-             </th>
-             <th>
-               <button ng-click="sortBy('age')">Age</button>
-               <span class="sortorder" ng-show="propertyName === 'age'" ng-class="{reverse: reverse}"></span>
-             </th>
+            <th>
+                <button ng-click="order('name')">Name</button>
+                <span class="sortorder" ng-show="predicate === 'name'" ng-class="{reverse:reverse}"></span>
+            </th>
+            <th>
+                <button ng-click="order('phone')">Phone Number</button>
+                <span class="sortorder" ng-show="predicate === 'phone'" ng-class="{reverse:reverse}"></span>
+            </th>
+            <th>
+                <button ng-click="order('age')">Age</button>
+                <span class="sortorder" ng-show="predicate === 'age'" ng-class="{reverse:reverse}"></span>
+            </th>
            </tr>
-           <tr ng-repeat="friend in friends | orderBy:propertyName:reverse">
+           <tr ng-repeat="friend in friends | orderBy:predicate:reverse">
              <td>{{friend.name}}</td>
              <td>{{friend.phone}}</td>
              <td>{{friend.age}}</td>
@@ -21217,350 +19821,111 @@ function sliceFn(input, begin, end) {
        </div>
      </file>
      <file name="script.js">
-       angular.module('orderByExample2', [])
+       angular.module('orderByExample', [])
          .controller('ExampleController', ['$scope', function($scope) {
-           var friends = [
-             {name: 'John',   phone: '555-1212',  age: 10},
-             {name: 'Mary',   phone: '555-9876',  age: 19},
-             {name: 'Mike',   phone: '555-4321',  age: 21},
-             {name: 'Adam',   phone: '555-5678',  age: 35},
-             {name: 'Julie',  phone: '555-8765',  age: 29}
-           ];
-
-           $scope.propertyName = 'age';
+           $scope.friends =
+               [{name:'John', phone:'555-1212', age:10},
+                {name:'Mary', phone:'555-9876', age:19},
+                {name:'Mike', phone:'555-4321', age:21},
+                {name:'Adam', phone:'555-5678', age:35},
+                {name:'Julie', phone:'555-8765', age:29}];
+           $scope.predicate = 'age';
            $scope.reverse = true;
-           $scope.friends = friends;
-
-           $scope.sortBy = function(propertyName) {
-             $scope.reverse = ($scope.propertyName === propertyName) ? !$scope.reverse : false;
-             $scope.propertyName = propertyName;
+           $scope.order = function(predicate) {
+             $scope.reverse = ($scope.predicate === predicate) ? !$scope.reverse : false;
+             $scope.predicate = predicate;
            };
          }]);
-     </file>
+      </file>
      <file name="style.css">
-       .friends {
-         border-collapse: collapse;
-       }
-
-       .friends th {
-         border-bottom: 1px solid;
-       }
-       .friends td, .friends th {
-         border-left: 1px solid;
-         padding: 5px 10px;
-       }
-       .friends td:first-child, .friends th:first-child {
-         border-left: none;
-       }
-
        .sortorder:after {
-         content: '\25b2';   // BLACK UP-POINTING TRIANGLE
+         content: '\25b2';
        }
        .sortorder.reverse:after {
-         content: '\25bc';   // BLACK DOWN-POINTING TRIANGLE
+         content: '\25bc';
        }
-     </file>
-     <file name="protractor.js" type="protractor">
-       // Element locators
-       var unsortButton = element(by.partialButtonText('unsorted'));
-       var nameHeader = element(by.partialButtonText('Name'));
-       var phoneHeader = element(by.partialButtonText('Phone'));
-       var ageHeader = element(by.partialButtonText('Age'));
-       var firstName = element(by.repeater('friends').column('friend.name').row(0));
-       var lastName = element(by.repeater('friends').column('friend.name').row(4));
-
-       it('should sort friends by some property, when clicking on the column header', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         phoneHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Mary');
-
-         nameHeader.click();
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('Mike');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Adam');
-       });
-
-       it('should sort friends in reverse order, when clicking on the same column', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Adam');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-       });
-
-       it('should restore the original order, when clicking "Set to unsorted"', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         unsortButton.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Julie');
-       });
      </file>
    </example>
- * <hr />
+ *
+ * It's also possible to call the orderBy filter manually, by injecting `$filter`, retrieving the
+ * filter routine with `$filter('orderBy')`, and calling the returned filter routine with the
+ * desired parameters.
+ *
+ * Example:
  *
  * @example
- * ### Using `orderBy` inside a controller
- *
- * It is also possible to call the `orderBy` filter manually, by injecting `orderByFilter`, and
- * calling it with the desired parameters. (Alternatively, you could inject the `$filter` factory
- * and retrieve the `orderBy` filter with `$filter('orderBy')`.)
- *
-   <example name="orderBy-call-manually" module="orderByExample3">
-     <file name="index.html">
-       <div ng-controller="ExampleController">
-         <pre>Sort by = {{propertyName}}; reverse = {{reverse}}</pre>
-         <hr/>
-         <button ng-click="sortBy(null)">Set to unsorted</button>
-         <hr/>
-         <table class="friends">
-           <tr>
-             <th>
-               <button ng-click="sortBy('name')">Name</button>
-               <span class="sortorder" ng-show="propertyName === 'name'" ng-class="{reverse: reverse}"></span>
-             </th>
-             <th>
-               <button ng-click="sortBy('phone')">Phone Number</button>
-               <span class="sortorder" ng-show="propertyName === 'phone'" ng-class="{reverse: reverse}"></span>
-             </th>
-             <th>
-               <button ng-click="sortBy('age')">Age</button>
-               <span class="sortorder" ng-show="propertyName === 'age'" ng-class="{reverse: reverse}"></span>
-             </th>
-           </tr>
-           <tr ng-repeat="friend in friends">
-             <td>{{friend.name}}</td>
-             <td>{{friend.phone}}</td>
-             <td>{{friend.age}}</td>
-           </tr>
-         </table>
-       </div>
-     </file>
-     <file name="script.js">
-       angular.module('orderByExample3', [])
-         .controller('ExampleController', ['$scope', 'orderByFilter', function($scope, orderBy) {
-           var friends = [
-             {name: 'John',   phone: '555-1212',  age: 10},
-             {name: 'Mary',   phone: '555-9876',  age: 19},
-             {name: 'Mike',   phone: '555-4321',  age: 21},
-             {name: 'Adam',   phone: '555-5678',  age: 35},
-             {name: 'Julie',  phone: '555-8765',  age: 29}
-           ];
+  <example module="orderByExample">
+    <file name="index.html">
+    <div ng-controller="ExampleController">
+      <pre>Sorting predicate = {{predicate}}; reverse = {{reverse}}</pre>
+      <table class="friend">
+        <tr>
+          <th>
+              <button ng-click="order('name')">Name</button>
+              <span class="sortorder" ng-show="predicate === 'name'" ng-class="{reverse:reverse}"></span>
+          </th>
+          <th>
+              <button ng-click="order('phone')">Phone Number</button>
+              <span class="sortorder" ng-show="predicate === 'phone'" ng-class="{reverse:reverse}"></span>
+          </th>
+          <th>
+              <button ng-click="order('age')">Age</button>
+              <span class="sortorder" ng-show="predicate === 'age'" ng-class="{reverse:reverse}"></span>
+          </th>
+        </tr>
+        <tr ng-repeat="friend in friends">
+          <td>{{friend.name}}</td>
+          <td>{{friend.phone}}</td>
+          <td>{{friend.age}}</td>
+        </tr>
+      </table>
+    </div>
+    </file>
 
-           $scope.propertyName = 'age';
-           $scope.reverse = true;
-           $scope.friends = orderBy(friends, $scope.propertyName, $scope.reverse);
+    <file name="script.js">
+      angular.module('orderByExample', [])
+        .controller('ExampleController', ['$scope', '$filter', function($scope, $filter) {
+          var orderBy = $filter('orderBy');
+          $scope.friends = [
+            { name: 'John',    phone: '555-1212',    age: 10 },
+            { name: 'Mary',    phone: '555-9876',    age: 19 },
+            { name: 'Mike',    phone: '555-4321',    age: 21 },
+            { name: 'Adam',    phone: '555-5678',    age: 35 },
+            { name: 'Julie',   phone: '555-8765',    age: 29 }
+          ];
+          $scope.order = function(predicate) {
+            $scope.predicate = predicate;
+            $scope.reverse = ($scope.predicate === predicate) ? !$scope.reverse : false;
+            $scope.friends = orderBy($scope.friends, predicate, $scope.reverse);
+          };
+          $scope.order('age', true);
+        }]);
+    </file>
 
-           $scope.sortBy = function(propertyName) {
-             $scope.reverse = (propertyName !== null && $scope.propertyName === propertyName)
-                 ? !$scope.reverse : false;
-             $scope.propertyName = propertyName;
-             $scope.friends = orderBy(friends, $scope.propertyName, $scope.reverse);
-           };
-         }]);
-     </file>
-     <file name="style.css">
-       .friends {
-         border-collapse: collapse;
-       }
-
-       .friends th {
-         border-bottom: 1px solid;
-       }
-       .friends td, .friends th {
-         border-left: 1px solid;
-         padding: 5px 10px;
-       }
-       .friends td:first-child, .friends th:first-child {
-         border-left: none;
-       }
-
+    <file name="style.css">
        .sortorder:after {
-         content: '\25b2';   // BLACK UP-POINTING TRIANGLE
+         content: '\25b2';
        }
        .sortorder.reverse:after {
-         content: '\25bc';   // BLACK DOWN-POINTING TRIANGLE
+         content: '\25bc';
        }
-     </file>
-     <file name="protractor.js" type="protractor">
-       // Element locators
-       var unsortButton = element(by.partialButtonText('unsorted'));
-       var nameHeader = element(by.partialButtonText('Name'));
-       var phoneHeader = element(by.partialButtonText('Phone'));
-       var ageHeader = element(by.partialButtonText('Age'));
-       var firstName = element(by.repeater('friends').column('friend.name').row(0));
-       var lastName = element(by.repeater('friends').column('friend.name').row(4));
-
-       it('should sort friends by some property, when clicking on the column header', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         phoneHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Mary');
-
-         nameHeader.click();
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('Mike');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Adam');
-       });
-
-       it('should sort friends in reverse order, when clicking on the same column', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Adam');
-
-         ageHeader.click();
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-       });
-
-       it('should restore the original order, when clicking "Set to unsorted"', function() {
-         expect(firstName.getText()).toBe('Adam');
-         expect(lastName.getText()).toBe('John');
-
-         unsortButton.click();
-         expect(firstName.getText()).toBe('John');
-         expect(lastName.getText()).toBe('Julie');
-       });
-     </file>
-   </example>
- * <hr />
- *
- * @example
- * ### Using a custom comparator
- *
- * If you have very specific requirements about the way items are sorted, you can pass your own
- * comparator function. For example, you might need to compare some strings in a locale-sensitive
- * way. (When specifying a custom comparator, you also need to pass a value for the `reverse`
- * argument - passing `false` retains the default sorting order, i.e. ascending.)
- *
-   <example name="orderBy-custom-comparator" module="orderByExample4">
-     <file name="index.html">
-       <div ng-controller="ExampleController">
-         <div class="friends-container custom-comparator">
-           <h3>Locale-sensitive Comparator</h3>
-           <table class="friends">
-             <tr>
-               <th>Name</th>
-               <th>Favorite Letter</th>
-             </tr>
-             <tr ng-repeat="friend in friends | orderBy:'favoriteLetter':false:localeSensitiveComparator">
-               <td>{{friend.name}}</td>
-               <td>{{friend.favoriteLetter}}</td>
-             </tr>
-           </table>
-         </div>
-         <div class="friends-container default-comparator">
-           <h3>Default Comparator</h3>
-           <table class="friends">
-             <tr>
-               <th>Name</th>
-               <th>Favorite Letter</th>
-             </tr>
-             <tr ng-repeat="friend in friends | orderBy:'favoriteLetter'">
-               <td>{{friend.name}}</td>
-               <td>{{friend.favoriteLetter}}</td>
-             </tr>
-           </table>
-         </div>
-       </div>
-     </file>
-     <file name="script.js">
-       angular.module('orderByExample4', [])
-         .controller('ExampleController', ['$scope', function($scope) {
-           $scope.friends = [
-             {name: 'John',   favoriteLetter: 'Ä'},
-             {name: 'Mary',   favoriteLetter: 'Ü'},
-             {name: 'Mike',   favoriteLetter: 'Ö'},
-             {name: 'Adam',   favoriteLetter: 'H'},
-             {name: 'Julie',  favoriteLetter: 'Z'}
-           ];
-
-           $scope.localeSensitiveComparator = function(v1, v2) {
-             // If we don't get strings, just compare by index
-             if (v1.type !== 'string' || v2.type !== 'string') {
-               return (v1.index < v2.index) ? -1 : 1;
-             }
-
-             // Compare strings alphabetically, taking locale into account
-             return v1.value.localeCompare(v2.value);
-           };
-         }]);
-     </file>
-     <file name="style.css">
-       .friends-container {
-         display: inline-block;
-         margin: 0 30px;
-       }
-
-       .friends {
-         border-collapse: collapse;
-       }
-
-       .friends th {
-         border-bottom: 1px solid;
-       }
-       .friends td, .friends th {
-         border-left: 1px solid;
-         padding: 5px 10px;
-       }
-       .friends td:first-child, .friends th:first-child {
-         border-left: none;
-       }
-     </file>
-     <file name="protractor.js" type="protractor">
-       // Element locators
-       var container = element(by.css('.custom-comparator'));
-       var names = container.all(by.repeater('friends').column('friend.name'));
-
-       it('should sort friends by favorite letter (in correct alphabetical order)', function() {
-         expect(names.get(0).getText()).toBe('John');
-         expect(names.get(1).getText()).toBe('Adam');
-         expect(names.get(2).getText()).toBe('Mike');
-         expect(names.get(3).getText()).toBe('Mary');
-         expect(names.get(4).getText()).toBe('Julie');
-       });
-     </file>
-   </example>
- *
+    </file>
+</example>
  */
 orderByFilter.$inject = ['$parse'];
 function orderByFilter($parse) {
-  return function(array, sortPredicate, reverseOrder, compareFn) {
+  return function(array, sortPredicate, reverseOrder) {
 
-    if (array == null) return array;
-    if (!isArrayLike(array)) {
-      throw minErr('orderBy')('notarray', 'Expected array but received: {0}', array);
-    }
+    if (!(isArrayLike(array))) return array;
 
     if (!isArray(sortPredicate)) { sortPredicate = [sortPredicate]; }
     if (sortPredicate.length === 0) { sortPredicate = ['+']; }
 
-    var predicates = processPredicates(sortPredicate);
-
-    var descending = reverseOrder ? -1 : 1;
-
-    // Define the `compare()` function. Use a default comparator if none is specified.
-    var compare = isFunction(compareFn) ? compareFn : defaultCompare;
+    var predicates = processPredicates(sortPredicate, reverseOrder);
+    // Add a predicate at the end that evaluates to the element index. This makes the
+    // sort stable as it works as a tie-breaker when all the input predicates cannot
+    // distinguish between two elements.
+    predicates.push({ get: function() { return {}; }, descending: reverseOrder ? -1 : 1});
 
     // The next three lines are a version of a Swartzian Transform idiom from Perl
     // (sometimes called the Decorate-Sort-Undecorate idiom)
@@ -21572,12 +19937,8 @@ function orderByFilter($parse) {
     return array;
 
     function getComparisonObject(value, index) {
-      // NOTE: We are adding an extra `tieBreaker` value based on the element's index.
-      // This will be used to keep the sort stable when none of the input predicates can
-      // distinguish between two elements.
       return {
         value: value,
-        tieBreaker: {value: index, type: 'number', index: index},
         predicateValues: predicates.map(function(predicate) {
           return getPredicateValue(predicate.get(value), index);
         })
@@ -21585,19 +19946,18 @@ function orderByFilter($parse) {
     }
 
     function doComparison(v1, v2) {
-      for (var i = 0, ii = predicates.length; i < ii; i++) {
-        var result = compare(v1.predicateValues[i], v2.predicateValues[i]);
-        if (result) {
-          return result * predicates[i].descending * descending;
-        }
+      var result = 0;
+      for (var index=0, length = predicates.length; index < length; ++index) {
+        result = compare(v1.predicateValues[index], v2.predicateValues[index]) * predicates[index].descending;
+        if (result) break;
       }
-
-      return compare(v1.tieBreaker, v2.tieBreaker) * descending;
+      return result;
     }
   };
 
-  function processPredicates(sortPredicates) {
-    return sortPredicates.map(function(predicate) {
+  function processPredicates(sortPredicate, reverseOrder) {
+    reverseOrder = reverseOrder ? -1 : 1;
+    return sortPredicate.map(function(predicate) {
       var descending = 1, get = identity;
 
       if (isFunction(predicate)) {
@@ -21615,7 +19975,7 @@ function orderByFilter($parse) {
           }
         }
       }
-      return {get: get, descending: descending};
+      return { get: get, descending: descending * reverseOrder };
     });
   }
 
@@ -21630,9 +19990,9 @@ function orderByFilter($parse) {
     }
   }
 
-  function objectValue(value) {
+  function objectValue(value, index) {
     // If `valueOf` is a valid function use that
-    if (isFunction(value.valueOf)) {
+    if (typeof value.valueOf === 'function') {
       value = value.valueOf();
       if (isPrimitive(value)) return value;
     }
@@ -21641,8 +20001,8 @@ function orderByFilter($parse) {
       value = value.toString();
       if (isPrimitive(value)) return value;
     }
-
-    return value;
+    // We have a basic object so we use the position of the object in the collection
+    return index;
   }
 
   function getPredicateValue(value, index) {
@@ -21650,39 +20010,23 @@ function orderByFilter($parse) {
     if (value === null) {
       type = 'string';
       value = 'null';
+    } else if (type === 'string') {
+      value = value.toLowerCase();
     } else if (type === 'object') {
-      value = objectValue(value);
+      value = objectValue(value, index);
     }
-    return {value: value, type: type, index: index};
+    return { value: value, type: type };
   }
 
-  function defaultCompare(v1, v2) {
+  function compare(v1, v2) {
     var result = 0;
-    var type1 = v1.type;
-    var type2 = v2.type;
-
-    if (type1 === type2) {
-      var value1 = v1.value;
-      var value2 = v2.value;
-
-      if (type1 === 'string') {
-        // Compare strings case-insensitively
-        value1 = value1.toLowerCase();
-        value2 = value2.toLowerCase();
-      } else if (type1 === 'object') {
-        // For basic objects, use the position of the object
-        // in the collection instead of the value
-        if (isObject(value1)) value1 = v1.index;
-        if (isObject(value2)) value2 = v2.index;
-      }
-
-      if (value1 !== value2) {
-        result = value1 < value2 ? -1 : 1;
+    if (v1.type === v2.type) {
+      if (v1.value !== v2.value) {
+        result = v1.value < v2.value ? -1 : 1;
       }
     } else {
-      result = type1 < type2 ? -1 : 1;
+      result = v1.type < v2.type ? -1 : 1;
     }
-
     return result;
   }
 }
@@ -22282,7 +20626,7 @@ function FormController(element, attrs, $scope, $animate, $interpolate) {
    *
    * However, if the method is used programmatically, for example by adding dynamically created controls,
    * or controls that have been previously removed without destroying their corresponding DOM element,
-   * it's the developers responsibility to make sure the current state propagates to the parent form.
+   * it's the developers responsiblity to make sure the current state propagates to the parent form.
    *
    * For example, if an input control is added that is already `$dirty` and has `$error` properties,
    * calling `$setDirty()` and `$validate()` afterwards will propagate the state to the parent form.
@@ -22712,8 +21056,8 @@ var ngFormDirective = formDirectiveFactory(true);
   ngModelMinErr: false,
 */
 
-// Regex code was initially obtained from SO prior to modification: https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime#answer-3143231
-var ISO_DATE_REGEXP = /^\d{4,}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-][0-2]\d:[0-5]\d|Z)$/;
+// Regex code is obtained from SO: https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime#answer-3143231
+var ISO_DATE_REGEXP = /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/;
 // See valid URLs in RFC3987 (http://tools.ietf.org/html/rfc3987)
 // Note: We are being more lenient, because browsers are too.
 //   1. Scheme
@@ -22727,21 +21071,13 @@ var ISO_DATE_REGEXP = /^\d{4,}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+(?:[+-
 //   9. Fragment
 //                 1111111111111111 222   333333    44444        555555555555555555555555    666     77777777     8888888     999
 var URL_REGEXP = /^[a-z][a-z\d.+-]*:\/*(?:[^:@]+(?::[^@]+)?@)?(?:[^\s:/?#]+|\[[a-f\d:]+\])(?::\d+)?(?:\/[^?#]*)?(?:\?[^#]*)?(?:#.*)?$/i;
-/* jshint maxlen:220 */
-var EMAIL_REGEXP = /^(?=.{1,254}$)(?=.{1,64}@)[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$/;
-/* jshint maxlen:200 */
+var EMAIL_REGEXP = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
 var NUMBER_REGEXP = /^\s*(\-|\+)?(\d+|(\d*(\.\d*)))([eE][+-]?\d+)?\s*$/;
-var DATE_REGEXP = /^(\d{4,})-(\d{2})-(\d{2})$/;
-var DATETIMELOCAL_REGEXP = /^(\d{4,})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d)(\.\d{1,3})?)?$/;
-var WEEK_REGEXP = /^(\d{4,})-W(\d\d)$/;
-var MONTH_REGEXP = /^(\d{4,})-(\d\d)$/;
+var DATE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})$/;
+var DATETIMELOCAL_REGEXP = /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d)(\.\d{1,3})?)?$/;
+var WEEK_REGEXP = /^(\d{4})-W(\d\d)$/;
+var MONTH_REGEXP = /^(\d{4})-(\d\d)$/;
 var TIME_REGEXP = /^(\d\d):(\d\d)(?::(\d\d)(\.\d{1,3})?)?$/;
-
-var PARTIAL_VALIDATION_EVENTS = 'keydown wheel mousedown';
-var PARTIAL_VALIDATION_TYPES = createMap();
-forEach('date,datetime-local,month,time,week'.split(','), function(type) {
-  PARTIAL_VALIDATION_TYPES[type] = true;
-});
 
 var inputType = {
 
@@ -22767,8 +21103,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
-   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+   *    a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -22805,11 +21141,11 @@ var inputType = {
              <span class="error" ng-show="myForm.input.$error.pattern">
                Single word only!</span>
            </div>
-           <code>text = {{example.text}}</code><br/>
-           <code>myForm.input.$valid = {{myForm.input.$valid}}</code><br/>
-           <code>myForm.input.$error = {{myForm.input.$error}}</code><br/>
-           <code>myForm.$valid = {{myForm.$valid}}</code><br/>
-           <code>myForm.$error.required = {{!!myForm.$error.required}}</code><br/>
+           <tt>text = {{example.text}}</tt><br/>
+           <tt>myForm.input.$valid = {{myForm.input.$valid}}</tt><br/>
+           <tt>myForm.input.$error = {{myForm.input.$error}}</tt><br/>
+           <tt>myForm.$valid = {{myForm.$valid}}</tt><br/>
+           <tt>myForm.$error.required = {{!!myForm.$error.required}}</tt><br/>
           </form>
         </file>
         <file name="protractor.js" type="protractor">
@@ -23055,7 +21391,7 @@ var inputType = {
    *
    * @description
    * Input with time validation and transformation. In browsers that do not yet support
-   * the HTML5 time input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
+   * the HTML5 date input, a text element will be used. In that case, the text must be entered in a valid ISO-8601
    * local time format (HH:mm:ss), for example: `14:57:00`. Model must be a Date object. This binding will always output a
    * Date object to the model of January 1, 1970, or local date `new Date(1970, 0, 1, HH, mm, ss)`.
    *
@@ -23098,7 +21434,7 @@ var inputType = {
         }]);
      </script>
      <form name="myForm" ng-controller="DateController as dateCtrl">
-        <label for="exampleInput">Pick a time between 8am and 5pm:</label>
+        <label for="exampleInput">Pick a between 8am and 5pm:</label>
         <input type="time" id="exampleInput" name="input" ng-model="example.value"
             placeholder="HH:mm:ss" min="08:00:00" max="17:00:00" required />
         <div role="alert">
@@ -23402,8 +21738,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
-   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+   *    a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -23500,8 +21836,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
-   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+   *    a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -23599,8 +21935,8 @@ var inputType = {
    * @param {string=} pattern Similar to `ngPattern` except that the attribute value is the actual string
    *    that contains the regular expression body that will be converted to a regular expression
    *    as in the ngPattern directive.
-   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
-   *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+   * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+   *    a RegExp found by evaluating the Angular expression given in the attribute value.
    *    If the expression evaluates to a RegExp object, then this is used directly.
    *    If the expression evaluates to a string, then it will be converted to a RegExp
    *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -23819,7 +22155,7 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   if (!$sniffer.android) {
     var composing = false;
 
-    element.on('compositionstart', function() {
+    element.on('compositionstart', function(data) {
       composing = true;
     });
 
@@ -23828,8 +22164,6 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
       listener();
     });
   }
-
-  var timeout;
 
   var listener = function(ev) {
     if (timeout) {
@@ -23860,6 +22194,8 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   if ($sniffer.hasEvent('input')) {
     element.on('input', listener);
   } else {
+    var timeout;
+
     var deferListener = function(ev, input, origValue) {
       if (!timeout) {
         timeout = $browser.defer(function() {
@@ -23890,26 +22226,6 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   // if user paste into input using mouse on older browser
   // or form autocomplete on newer browser, we need "change" event to catch it
   element.on('change', listener);
-
-  // Some native input types (date-family) have the ability to change validity without
-  // firing any input/change events.
-  // For these event types, when native validators are present and the browser supports the type,
-  // check for validity changes on various DOM events.
-  if (PARTIAL_VALIDATION_TYPES[type] && ctrl.$$hasNativeValidators && type === attr.type) {
-    element.on(PARTIAL_VALIDATION_EVENTS, function(ev) {
-      if (!timeout) {
-        var validity = this[VALIDITY_STATE_PROPERTY];
-        var origBadInput = validity.badInput;
-        var origTypeMismatch = validity.typeMismatch;
-        timeout = $browser.defer(function() {
-          timeout = null;
-          if (validity.badInput !== origBadInput || validity.typeMismatch !== origTypeMismatch) {
-            listener(ev);
-          }
-        });
-      }
-    });
-  }
 
   ctrl.$render = function() {
     // Workaround for Firefox validation #12102.
@@ -24080,7 +22396,11 @@ function badInputChecker(scope, element, attr, ctrl) {
   if (nativeValidation) {
     ctrl.$parsers.push(function(value) {
       var validity = element.prop(VALIDITY_STATE_PROPERTY) || {};
-      return validity.badInput || validity.typeMismatch ? undefined : value;
+      // Detect bug in FF35 for input[email] (https://bugzilla.mozilla.org/show_bug.cgi?id=1064430):
+      // - also sets validity.badInput (should only be validity.typeMismatch).
+      // - see http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#e-mail-state-(type=email)
+      // - can ignore this case as we can still read out the erroneous email...
+      return validity.badInput && !validity.typeMismatch ? undefined : value;
     });
   }
 }
@@ -24252,8 +22572,8 @@ function checkboxInputType(scope, element, attr, ctrl, $sniffer, $browser, $filt
  * @param {number=} ngMaxlength Sets `maxlength` validation error key if the value is longer than
  *    maxlength. Setting the attribute to a negative or non-numeric value, allows view values of any
  *    length.
- * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
- *    does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+ * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+ *    a RegExp found by evaluating the Angular expression given in the attribute value.
  *    If the expression evaluates to a RegExp object, then this is used directly.
  *    If the expression evaluates to a string, then it will be converted to a RegExp
  *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -24291,8 +22611,8 @@ function checkboxInputType(scope, element, attr, ctrl, $sniffer, $browser, $filt
  * @param {number=} ngMaxlength Sets `maxlength` validation error key if the value is longer than
  *    maxlength. Setting the attribute to a negative or non-numeric value, allows view values of any
  *    length.
- * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel {@link ngModel.NgModelController#$viewValue $viewValue}
- *    value does not match a RegExp found by evaluating the Angular expression given in the attribute value.
+ * @param {string=} ngPattern Sets `pattern` validation error key if the ngModel value does not match
+ *    a RegExp found by evaluating the Angular expression given in the attribute value.
  *    If the expression evaluates to a RegExp object, then this is used directly.
  *    If the expression evaluates to a string, then it will be converted to a RegExp
  *    after wrapping it in `^` and `$` characters. For instance, `"abc"` will be converted to
@@ -24688,9 +23008,8 @@ var ngBindHtmlDirective = ['$sce', '$parse', '$compile', function($sce, $parse, 
     restrict: 'A',
     compile: function ngBindHtmlCompile(tElement, tAttrs) {
       var ngBindHtmlGetter = $parse(tAttrs.ngBindHtml);
-      var ngBindHtmlWatch = $parse(tAttrs.ngBindHtml, function sceValueOf(val) {
-        // Unwrap the value to compare the actual inner safe value, not the wrapper object.
-        return $sce.valueOf(val);
+      var ngBindHtmlWatch = $parse(tAttrs.ngBindHtml, function getStringValue(value) {
+        return (value || '').toString();
       });
       $compile.$$addBindingClass(tElement);
 
@@ -24698,9 +23017,9 @@ var ngBindHtmlDirective = ['$sce', '$parse', '$compile', function($sce, $parse, 
         $compile.$$addBindingInfo(element, attr.ngBindHtml);
 
         scope.$watch(ngBindHtmlWatch, function ngBindHtmlWatchAction() {
-          // The watched value is the unwrapped value. To avoid re-escaping, use the direct getter.
-          var value = ngBindHtmlGetter(scope);
-          element.html($sce.getTrustedHtml(value) || '');
+          // we re-evaluate the expr because we want a TrustedValueHolderType
+          // for $sce, not a string
+          element.html($sce.getTrustedHtml(ngBindHtmlGetter(scope)) || '');
         });
       };
     }
@@ -24853,9 +23172,7 @@ function classDirective(name, selector) {
         }
 
         function ngClassWatchAction(newVal) {
-          // jshint bitwise: false
-          if (selector === true || (scope.$index & 1) === selector) {
-          // jshint bitwise: true
+          if (selector === true || scope.$index % 2 === selector) {
             var newClasses = arrayClasses(newVal || []);
             if (!oldVal) {
               addClasses(newClasses);
@@ -24864,11 +23181,7 @@ function classDirective(name, selector) {
               updateClasses(oldClasses, newClasses);
             }
           }
-          if (isArray(newVal)) {
-            oldVal = newVal.map(function(v) { return shallowCopy(v); });
-          } else {
-            oldVal = shallowCopy(newVal);
-          }
+          oldVal = shallowCopy(newVal);
         }
       }
     };
@@ -24938,10 +23251,9 @@ function classDirective(name, selector) {
  * new classes added.
  *
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link ng.$animate#addClass addClass}       | just before the class is applied to the element   |
- * | {@link ng.$animate#removeClass removeClass} | just before the class is removed from the element |
+ * **add** - happens just before the class is applied to the elements
+ *
+ * **remove** - happens just before the class is removed from the element
  *
  * @element ANY
  * @param {expression} ngClass {@link guide/expression Expression} to eval. The result
@@ -25526,7 +23838,7 @@ var ngControllerDirective = [function() {
  *
  * * no-inline-style: this stops Angular from injecting CSS styles into the DOM
  *
- * * no-unsafe-eval: this stops Angular from optimizing $parse with unsafe eval of strings
+ * * no-unsafe-eval: this stops Angular from optimising $parse with unsafe eval of strings
  *
  * You can use these values in the following combinations:
  *
@@ -25543,7 +23855,7 @@ var ngControllerDirective = [function() {
  * inline styles. E.g. `<body ng-csp="no-unsafe-eval">`.
  *
  * * Specifying only `no-inline-style` tells Angular that we must not inject styles, but that we can
- * run eval - no automatic check for unsafe eval will occur. E.g. `<body ng-csp="no-inline-style">`
+ * run eval - no automcatic check for unsafe eval will occur. E.g. `<body ng-csp="no-inline-style">`
  *
  * * Specifying both `no-unsafe-eval` and `no-inline-style` tells Angular that we must not inject
  * styles nor use eval, which is the same as an empty: ng-csp.
@@ -26200,10 +24512,8 @@ forEach(
  * and `leave` effects.
  *
  * @animations
- * | Animation                        | Occurs                               |
- * |----------------------------------|-------------------------------------|
- * | {@link ng.$animate#enter enter}  | just after the `ngIf` contents change and a new DOM element is created and injected into the `ngIf` container |
- * | {@link ng.$animate#leave leave}  | just before the `ngIf` contents are removed from the DOM |
+ * enter - happens just after the `ngIf` contents change and a new DOM element is created and injected into the `ngIf` container
+ * leave - happens just before the `ngIf` contents are removed from the DOM
  *
  * @element ANY
  * @scope
@@ -26244,7 +24554,7 @@ forEach(
     </file>
   </example>
  */
-var ngIfDirective = ['$animate', '$compile', function($animate, $compile) {
+var ngIfDirective = ['$animate', function($animate) {
   return {
     multiElement: true,
     transclude: 'element',
@@ -26260,7 +24570,7 @@ var ngIfDirective = ['$animate', '$compile', function($animate, $compile) {
             if (!childScope) {
               $transclude(function(clone, newScope) {
                 childScope = newScope;
-                clone[clone.length++] = $compile.$$createComment('end ngIf', $attr.ngIf);
+                clone[clone.length++] = document.createComment(' end ngIf: ' + $attr.ngIf + ' ');
                 // Note: We only need the first/last node of the cloned nodes.
                 // However, we need to keep the reference to the jqlite wrapper as it might be changed later
                 // by a directive with templateUrl when its template arrives.
@@ -26315,10 +24625,8 @@ var ngIfDirective = ['$animate', '$compile', function($animate, $compile) {
  * access on some browsers.
  *
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link ng.$animate#enter enter}  | when the expression changes, on the new include |
- * | {@link ng.$animate#leave leave}  | when the expression changes, on the old include |
+ * enter - animation is used to bring new content into the browser.
+ * leave - animation is used to animate existing content away.
  *
  * The enter and leave animation occur concurrently.
  *
@@ -26579,12 +24887,12 @@ var ngIncludeFillContentDirective = ['$compile',
       priority: -400,
       require: 'ngInclude',
       link: function(scope, $element, $attr, ctrl) {
-        if (toString.call($element[0]).match(/SVG/)) {
+        if (/SVG/.test($element[0].toString())) {
           // WebKit: https://bugs.webkit.org/show_bug.cgi?id=135698 --- SVG elements do not
           // support innerHTML, so detect this here and try to generate the contents
           // specially.
           $element.empty();
-          $compile(jqLiteBuildFragment(ctrl.template, window.document).childNodes)(scope,
+          $compile(jqLiteBuildFragment(ctrl.template, document).childNodes)(scope,
               function namespaceAdaptedClone(clone) {
             $element.append(clone);
           }, {futureParentElement: $element});
@@ -26808,9 +25116,7 @@ var VALID_CLASS = 'ng-valid',
     DIRTY_CLASS = 'ng-dirty',
     UNTOUCHED_CLASS = 'ng-untouched',
     TOUCHED_CLASS = 'ng-touched',
-    PENDING_CLASS = 'ng-pending',
-    EMPTY_CLASS = 'ng-empty',
-    NOT_EMPTY_CLASS = 'ng-not-empty';
+    PENDING_CLASS = 'ng-pending';
 
 var ngModelMinErr = minErr('ngModel');
 
@@ -27059,9 +25365,9 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
       };
       ngModelSet = function($scope, newValue) {
         if (isFunction(parsedNgModel($scope))) {
-          invokeModelSetter($scope, {$$$p: newValue});
+          invokeModelSetter($scope, {$$$p: ctrl.$modelValue});
         } else {
-          parsedNgModelAssign($scope, newValue);
+          parsedNgModelAssign($scope, ctrl.$modelValue);
         }
       };
     } else if (!parsedNgModel.assign) {
@@ -27086,7 +25392,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
    *   the `$viewValue` are different from last time.
    *
    * Since `ng-model` does not do a deep watch, `$render()` is only invoked if the values of
-   * `$modelValue` and `$viewValue` are actually different from their previous values. If `$modelValue`
+   * `$modelValue` and `$viewValue` are actually different from their previous value. If `$modelValue`
    * or `$viewValue` are objects (rather than a string or number) then `$render()` will not be
    * invoked if you only change a property on the objects.
    */
@@ -27113,17 +25419,6 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
   this.$isEmpty = function(value) {
     return isUndefined(value) || value === '' || value === null || value !== value;
   };
-
-  this.$$updateEmptyClasses = function(value) {
-    if (ctrl.$isEmpty(value)) {
-      $animate.removeClass($element, NOT_EMPTY_CLASS);
-      $animate.addClass($element, EMPTY_CLASS);
-    } else {
-      $animate.removeClass($element, EMPTY_CLASS);
-      $animate.addClass($element, NOT_EMPTY_CLASS);
-    }
-  };
-
 
   var currentValidationRunId = 0;
 
@@ -27438,7 +25733,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
         setValidity(name, undefined);
         validatorPromises.push(promise.then(function() {
           setValidity(name, true);
-        }, function() {
+        }, function(error) {
           allValid = false;
           setValidity(name, false);
         }));
@@ -27488,7 +25783,6 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
     if (ctrl.$$lastCommittedViewValue === viewValue && (viewValue !== '' || !ctrl.$$hasNativeValidators)) {
       return;
     }
-    ctrl.$$updateEmptyClasses(viewValue);
     ctrl.$$lastCommittedViewValue = viewValue;
 
     // change to dirty
@@ -27587,7 +25881,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
    * However, custom controls might also pass objects to this method. In this case, we should make
    * a copy of the object before passing it to `$setViewValue`. This is because `ngModel` does not
    * perform a deep watch of objects, it only looks for a change of identity. If you only change
-   * the property of the object then ngModel will not realize that the object has changed and
+   * the property of the object then ngModel will not realise that the object has changed and
    * will not invoke the `$parsers` and `$validators` pipelines. For this reason, you should
    * not change properties of the copy once it has been passed to `$setViewValue`.
    * Otherwise you may cause the model value on the scope to change incorrectly.
@@ -27671,7 +25965,6 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
         viewValue = formatters[idx](viewValue);
       }
       if (ctrl.$viewValue !== viewValue) {
-        ctrl.$$updateEmptyClasses(viewValue);
         ctrl.$viewValue = ctrl.$$lastCommittedViewValue = viewValue;
         ctrl.$render();
 
@@ -27702,8 +25995,7 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *   require.
  * - Providing validation behavior (i.e. required, number, email, url).
  * - Keeping the state of the control (valid/invalid, dirty/pristine, touched/untouched, validation errors).
- * - Setting related css classes on the element (`ng-valid`, `ng-invalid`, `ng-dirty`, `ng-pristine`, `ng-touched`,
- *   `ng-untouched`, `ng-empty`, `ng-not-empty`) including animations.
+ * - Setting related css classes on the element (`ng-valid`, `ng-invalid`, `ng-dirty`, `ng-pristine`, `ng-touched`, `ng-untouched`) including animations.
  * - Registering the control with its parent {@link ng.directive:form form}.
  *
  * Note: `ngModel` will try to bind to the property given by evaluating the expression on the
@@ -27731,22 +26023,6 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *  - {@link ng.directive:select select}
  *  - {@link ng.directive:textarea textarea}
  *
- * # Complex Models (objects or collections)
- *
- * By default, `ngModel` watches the model by reference, not value. This is important to know when
- * binding inputs to models that are objects (e.g. `Date`) or collections (e.g. arrays). If only properties of the
- * object or collection change, `ngModel` will not be notified and so the input will not be  re-rendered.
- *
- * The model must be assigned an entirely new object or collection before a re-rendering will occur.
- *
- * Some directives have options that will cause them to use a custom `$watchCollection` on the model expression
- * - for example, `ngOptions` will do so when a `track by` clause is included in the comprehension expression or
- * if the select is given the `multiple` attribute.
- *
- * The `$watchCollection()` method only does a shallow comparison, meaning that changing properties deeper than the
- * first level of the object (or only changing the properties of an item in the collection if it's an array) will still
- * not trigger a re-rendering of the model.
- *
  * # CSS classes
  * The following CSS classes are added and removed on the associated input/select/textarea element
  * depending on the validity of the model.
@@ -27760,16 +26036,13 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *  - `ng-touched`: the control has been blurred
  *  - `ng-untouched`: the control hasn't been blurred
  *  - `ng-pending`: any `$asyncValidators` are unfulfilled
- *  - `ng-empty`: the view does not contain a value or the value is deemed "empty", as defined
- *     by the {@link ngModel.NgModelController#$isEmpty} method
- *  - `ng-not-empty`: the view contains a non-empty value
  *
  * Keep in mind that ngAnimate can detect each of these classes when added and removed.
  *
  * ## Animation Hooks
  *
  * Animations within models are triggered when any of the associated CSS classes are added and removed
- * on the input element which is attached to the model. These classes include: `.ng-pristine`, `.ng-dirty`,
+ * on the input element which is attached to the model. These classes are: `.ng-pristine`, `.ng-dirty`,
  * `.ng-invalid` and `.ng-valid` as well as any other validations that are performed on the model itself.
  * The animations that are triggered within ngModel are similar to how they work in ngClass and
  * animations can be hooked into using CSS transitions, keyframes as well as JS animations.
@@ -27912,7 +26185,7 @@ var ngModelDirective = ['$rootScope', function($rootScope) {
             });
           }
 
-          element.on('blur', function() {
+          element.on('blur', function(ev) {
             if (modelCtrl.$touched) return;
 
             if ($rootScope.$$phase) {
@@ -28498,7 +26771,7 @@ var NG_OPTIONS_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+group\s+by\s
 // jshint maxlen: 100
 
 
-var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, $document, $parse) {
+var ngOptionsDirective = ['$compile', '$parse', function($compile, $parse) {
 
   function parseOptionsExpression(optionsExp, selectElement, scope) {
 
@@ -28595,8 +26868,8 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
           var key = (optionValues === optionValuesKeys) ? index : optionValuesKeys[index];
           var value = optionValues[key];
 
-          var locals = getLocals(value, key);
-          var selectValue = getTrackByValueFn(value, locals);
+          var locals = getLocals(optionValues[key], key);
+          var selectValue = getTrackByValueFn(optionValues[key], locals);
           watchedArray.push(selectValue);
 
           // Only need to watch the displayFn if there is a specific label expression
@@ -28659,13 +26932,17 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
 
   // we can't just jqLite('<option>') since jqLite is not smart enough
   // to create it in <select> and IE barfs otherwise.
-  var optionTemplate = window.document.createElement('option'),
-      optGroupTemplate = window.document.createElement('optgroup');
+  var optionTemplate = document.createElement('option'),
+      optGroupTemplate = document.createElement('optgroup');
+
 
     function ngOptionsPostLink(scope, selectElement, attr, ctrls) {
 
-      var selectCtrl = ctrls[0];
+      // if ngModel is not defined, we don't need to do anything
       var ngModelCtrl = ctrls[1];
+      if (!ngModelCtrl) return;
+
+      var selectCtrl = ctrls[0];
       var multiple = attr.multiple;
 
       // The emptyOption allows the application developer to provide their own custom "empty"
@@ -28685,10 +26962,7 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
 
       var options;
       var ngOptions = parseOptionsExpression(attr.ngOptions, selectElement, scope);
-      // This stores the newly created options before they are appended to the select.
-      // Since the contents are removed from the fragment when it is appended,
-      // we only need to create it once.
-      var listFragment = $document[0].createDocumentFragment();
+
 
       var renderEmptyOption = function() {
         if (!providedEmptyOption) {
@@ -28723,21 +26997,15 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
         selectCtrl.writeValue = function writeNgOptionsValue(value) {
           var option = options.getOptionFromViewValue(value);
 
-          if (option) {
-            // Don't update the option when it is already selected.
-            // For example, the browser will select the first option by default. In that case,
-            // most properties are set automatically - except the `selected` attribute, which we
-            // set always
-
+          if (option && !option.disabled) {
             if (selectElement[0].value !== option.selectValue) {
               removeUnknownOption();
               removeEmptyOption();
 
               selectElement[0].value = option.selectValue;
               option.element.selected = true;
+              option.element.setAttribute('selected', 'selected');
             }
-
-            option.element.setAttribute('selected', 'selected');
           } else {
             if (value === null || providedEmptyOption) {
               removeUnknownOption();
@@ -28785,7 +27053,7 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
           if (value) {
             value.forEach(function(item) {
               var option = options.getOptionFromViewValue(item);
-              if (option) option.element.selected = true;
+              if (option && !option.disabled) option.element.selected = true;
             });
           }
         };
@@ -28837,8 +27105,6 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
         emptyOption = jqLite(optionTemplate.cloneNode(false));
       }
 
-      selectElement.empty();
-
       // We need to do this here to ensure that the options object is defined
       // when we first hit it in writeNgOptionsValue
       updateOptions();
@@ -28847,12 +27113,6 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
       scope.$watchCollection(ngOptions.getWatchables, updateOptions);
 
       // ------------------------------------------------------------------ //
-
-      function addOptionElement(option, parent) {
-        var optionElement = optionTemplate.cloneNode(false);
-        parent.appendChild(optionElement);
-        updateOptionElement(option, optionElement);
-      }
 
 
       function updateOptionElement(option, element) {
@@ -28870,66 +27130,133 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
         if (option.value !== element.value) element.value = option.selectValue;
       }
 
-      function updateOptions() {
-        var previousValue = options && selectCtrl.readValue();
-
-        // We must remove all current options, but cannot simply set innerHTML = null
-        // since the providedEmptyOption might have an ngIf on it that inserts comments which we
-        // must preserve.
-        // Instead, iterate over the current option elements and remove them or their optgroup
-        // parents
-        if (options) {
-
-          for (var i = options.items.length - 1; i >= 0; i--) {
-            var option = options.items[i];
-            if (option.group) {
-              jqLiteRemove(option.element.parentNode);
-            } else {
-              jqLiteRemove(option.element);
-            }
+      function addOrReuseElement(parent, current, type, templateElement) {
+        var element;
+        // Check whether we can reuse the next element
+        if (current && lowercase(current.nodeName) === type) {
+          // The next element is the right type so reuse it
+          element = current;
+        } else {
+          // The next element is not the right type so create a new one
+          element = templateElement.cloneNode(false);
+          if (!current) {
+            // There are no more elements so just append it to the select
+            parent.appendChild(element);
+          } else {
+            // The next element is not a group so insert the new one
+            parent.insertBefore(element, current);
           }
         }
+        return element;
+      }
+
+
+      function removeExcessElements(current) {
+        var next;
+        while (current) {
+          next = current.nextSibling;
+          jqLiteRemove(current);
+          current = next;
+        }
+      }
+
+
+      function skipEmptyAndUnknownOptions(current) {
+        var emptyOption_ = emptyOption && emptyOption[0];
+        var unknownOption_ = unknownOption && unknownOption[0];
+
+        // We cannot rely on the extracted empty option being the same as the compiled empty option,
+        // because the compiled empty option might have been replaced by a comment because
+        // it had an "element" transclusion directive on it (such as ngIf)
+        if (emptyOption_ || unknownOption_) {
+          while (current &&
+                (current === emptyOption_ ||
+                current === unknownOption_ ||
+                current.nodeType === NODE_TYPE_COMMENT ||
+                (nodeName_(current) === 'option' && current.value === ''))) {
+            current = current.nextSibling;
+          }
+        }
+        return current;
+      }
+
+
+      function updateOptions() {
+
+        var previousValue = options && selectCtrl.readValue();
 
         options = ngOptions.getOptions();
 
-        var groupElementMap = {};
+        var groupMap = {};
+        var currentElement = selectElement[0].firstChild;
 
         // Ensure that the empty option is always there if it was explicitly provided
         if (providedEmptyOption) {
           selectElement.prepend(emptyOption);
         }
 
-        options.items.forEach(function addOption(option) {
-          var groupElement;
+        currentElement = skipEmptyAndUnknownOptions(currentElement);
 
-          if (isDefined(option.group)) {
+        options.items.forEach(function updateOption(option) {
+          var group;
+          var groupElement;
+          var optionElement;
+
+          if (option.group) {
 
             // This option is to live in a group
             // See if we have already created this group
-            groupElement = groupElementMap[option.group];
+            group = groupMap[option.group];
 
-            if (!groupElement) {
+            if (!group) {
 
-              groupElement = optGroupTemplate.cloneNode(false);
-              listFragment.appendChild(groupElement);
+              // We have not already created this group
+              groupElement = addOrReuseElement(selectElement[0],
+                                               currentElement,
+                                               'optgroup',
+                                               optGroupTemplate);
+              // Move to the next element
+              currentElement = groupElement.nextSibling;
 
               // Update the label on the group element
               groupElement.label = option.group;
 
               // Store it for use later
-              groupElementMap[option.group] = groupElement;
+              group = groupMap[option.group] = {
+                groupElement: groupElement,
+                currentOptionElement: groupElement.firstChild
+              };
+
             }
 
-            addOptionElement(option, groupElement);
+            // So now we have a group for this option we add the option to the group
+            optionElement = addOrReuseElement(group.groupElement,
+                                              group.currentOptionElement,
+                                              'option',
+                                              optionTemplate);
+            updateOptionElement(option, optionElement);
+            // Move to the next element
+            group.currentOptionElement = optionElement.nextSibling;
 
           } else {
 
             // This option is not in a group
-            addOptionElement(option, listFragment);
+            optionElement = addOrReuseElement(selectElement[0],
+                                              currentElement,
+                                              'option',
+                                              optionTemplate);
+            updateOptionElement(option, optionElement);
+            // Move to the next element
+            currentElement = optionElement.nextSibling;
           }
         });
 
-        selectElement[0].appendChild(listFragment);
+
+        // Now remove all excess options and group
+        Object.keys(groupMap).forEach(function(key) {
+          removeExcessElements(groupMap[key].currentOptionElement);
+        });
+        removeExcessElements(currentElement);
 
         ngModelCtrl.$render();
 
@@ -28949,7 +27276,7 @@ var ngOptionsDirective = ['$compile', '$document', '$parse', function($compile, 
   return {
     restrict: 'A',
     terminal: true,
-    require: ['select', 'ngModel'],
+    require: ['select', '?ngModel'],
     link: {
       pre: function ngOptionsPreLink(scope, selectElement, attr, ctrls) {
         // Deactivate the SelectController.register method to prevent
@@ -29177,7 +27504,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
         }
 
         // If both `count` and `lastCount` are NaN, we don't need to re-register a watch.
-        // In JS `NaN !== NaN`, so we have to explicitly check.
+        // In JS `NaN !== NaN`, so we have to exlicitly check.
         if ((count !== lastCount) && !(countIsNaN && isNumber(lastCount) && isNaN(lastCount))) {
           watchRemover();
           var whenExpFn = whensExpFns[count];
@@ -29237,23 +27564,17 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  * <div ng-repeat="(key, value) in myObj"> ... </div>
  * ```
  *
- * However, there are a limitations compared to array iteration:
+ * You need to be aware that the JavaScript specification does not define the order of keys
+ * returned for an object. (To mitigate this in Angular 1.3 the `ngRepeat` directive
+ * used to sort the keys alphabetically.)
  *
- * - The JavaScript specification does not define the order of keys
- *   returned for an object, so Angular relies on the order returned by the browser
- *   when running `for key in myObj`. Browsers generally follow the strategy of providing
- *   keys in the order in which they were defined, although there are exceptions when keys are deleted
- *   and reinstated. See the
- *   [MDN page on `delete` for more info](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete#Cross-browser_notes).
+ * Version 1.4 removed the alphabetic sorting. We now rely on the order returned by the browser
+ * when running `for key in myObj`. It seems that browsers generally follow the strategy of providing
+ * keys in the order in which they were defined, although there are exceptions when keys are deleted
+ * and reinstated. See the [MDN page on `delete` for more info](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete#Cross-browser_notes).
  *
- * - `ngRepeat` will silently *ignore* object keys starting with `$`, because
- *   it's a prefix used by Angular for public (`$`) and private (`$$`) properties.
- *
- * - The built-in filters {@link ng.orderBy orderBy} and {@link ng.filter filter} do not work with
- *   objects, and will throw an error if used with one.
- *
- * If you are hitting any of these limitations, the recommended workaround is to convert your object into an array
- * that is sorted into the order that you prefer before providing it to `ngRepeat`. You could
+ * If this is not desired, the recommended workaround is to convert your object into an array
+ * that is sorted into the order that you prefer before providing it to `ngRepeat`.  You could
  * do this with a filter such as [toArrayFilter](http://ngmodules.org/modules/angular-toArrayFilter)
  * or implement a `$watch` on the object yourself.
  *
@@ -29300,7 +27621,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  * by the identifier instead of the whole object. Should you reload your data later, `ngRepeat`
  * will not have to rebuild the DOM elements for items it has already rendered, even if the
  * JavaScript objects in the collection have been substituted for new ones. For large collections,
- * this significantly improves rendering performance. If you don't have a unique identifier,
+ * this signifincantly improves rendering performance. If you don't have a unique identifier,
  * `track by $index` can also provide a performance boost.
  * </div>
  * ```html
@@ -29371,13 +27692,11 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  * as **data-ng-repeat-start**, **x-ng-repeat-start** and **ng:repeat-start**).
  *
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link ng.$animate#enter enter} | when a new item is added to the list or when an item is revealed after a filter |
- * | {@link ng.$animate#leave leave} | when an item is removed from the list or when an item is filtered out |
- * | {@link ng.$animate#move move } | when an adjacent item is filtered out causing a reorder or when the item contents are reordered |
+ * **.enter** - when a new item is added to the list or when an item is revealed after a filter
  *
- * See the example below for defining CSS animations with ngRepeat.
+ * **.leave** - when an item is removed from the list or when an item is filtered out
+ *
+ * **.move** - when an adjacent item is filtered out causing a reorder or when the item contents are reordered
  *
  * @element ANY
  * @scope
@@ -29431,11 +27750,22 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
  *     For example: `item in items | filter : x | orderBy : order | limitTo : limit as results` .
  *
  * @example
- * This example uses `ngRepeat` to display a list of people. A filter is used to restrict the displayed
- * results by name. New (entering) and removed (leaving) items are animated.
-  <example module="ngRepeat" name="ngRepeat" deps="angular-animate.js" animations="true">
+ * This example initializes the scope to a list of names and
+ * then uses `ngRepeat` to display every person:
+  <example module="ngAnimate" deps="angular-animate.js" animations="true">
     <file name="index.html">
-      <div ng-controller="repeatController">
+      <div ng-init="friends = [
+        {name:'John', age:25, gender:'boy'},
+        {name:'Jessie', age:30, gender:'girl'},
+        {name:'Johanna', age:28, gender:'girl'},
+        {name:'Joy', age:15, gender:'girl'},
+        {name:'Mary', age:28, gender:'girl'},
+        {name:'Peter', age:95, gender:'boy'},
+        {name:'Sebastian', age:50, gender:'boy'},
+        {name:'Erika', age:27, gender:'girl'},
+        {name:'Patrick', age:40, gender:'boy'},
+        {name:'Samantha', age:60, gender:'girl'}
+      ]">
         I have {{friends.length}} friends. They are:
         <input type="search" ng-model="q" placeholder="filter friends..." aria-label="filter friends" />
         <ul class="example-animate-container">
@@ -29448,22 +27778,6 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
         </ul>
       </div>
     </file>
-    <file name="script.js">
-      angular.module('ngRepeat', ['ngAnimate']).controller('repeatController', function($scope) {
-        $scope.friends = [
-          {name:'John', age:25, gender:'boy'},
-          {name:'Jessie', age:30, gender:'girl'},
-          {name:'Johanna', age:28, gender:'girl'},
-          {name:'Joy', age:15, gender:'girl'},
-          {name:'Mary', age:28, gender:'girl'},
-          {name:'Peter', age:95, gender:'boy'},
-          {name:'Sebastian', age:50, gender:'boy'},
-          {name:'Erika', age:27, gender:'girl'},
-          {name:'Patrick', age:40, gender:'boy'},
-          {name:'Samantha', age:60, gender:'girl'}
-        ];
-      });
-    </file>
     <file name="animations.css">
       .example-animate-container {
         background:white;
@@ -29474,7 +27788,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
       }
 
       .animate-repeat {
-        line-height:30px;
+        line-height:40px;
         list-style:none;
         box-sizing:border-box;
       }
@@ -29496,7 +27810,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
       .animate-repeat.ng-move.ng-move-active,
       .animate-repeat.ng-enter.ng-enter-active {
         opacity:1;
-        max-height:30px;
+        max-height:40px;
       }
     </file>
     <file name="protractor.js" type="protractor">
@@ -29523,7 +27837,7 @@ var ngPluralizeDirective = ['$locale', '$interpolate', '$log', function($locale,
       </file>
     </example>
  */
-var ngRepeatDirective = ['$parse', '$animate', '$compile', function($parse, $animate, $compile) {
+var ngRepeatDirective = ['$parse', '$animate', function($parse, $animate) {
   var NG_REMOVED = '$$NG_REMOVED';
   var ngRepeatMinErr = minErr('ngRepeat');
 
@@ -29558,7 +27872,7 @@ var ngRepeatDirective = ['$parse', '$animate', '$compile', function($parse, $ani
     $$tlb: true,
     compile: function ngRepeatCompile($element, $attr) {
       var expression = $attr.ngRepeat;
-      var ngRepeatEndComment = $compile.$$createComment('end ngRepeat', expression);
+      var ngRepeatEndComment = document.createComment(' end ngRepeat: ' + expression + ' ');
 
       var match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+as\s+([\s\S]+?))?(?:\s+track\s+by\s+([\s\S]+?))?\s*$/);
 
@@ -29722,7 +28036,7 @@ var ngRepeatDirective = ['$parse', '$animate', '$compile', function($parse, $ani
 
               if (getBlockStart(block) != nextNode) {
                 // existing item which got moved
-                $animate.move(getBlockNodes(block.clone), null, previousNode);
+                $animate.move(getBlockNodes(block.clone), null, jqLite(previousNode));
               }
               previousNode = getBlockEnd(block);
               updateScope(block.scope, index, valueIdentifier, value, keyIdentifier, key, collectionLength);
@@ -29734,7 +28048,8 @@ var ngRepeatDirective = ['$parse', '$animate', '$compile', function($parse, $ani
                 var endNode = ngRepeatEndComment.cloneNode(false);
                 clone[clone.length++] = endNode;
 
-                $animate.enter(clone, null, previousNode);
+                // TODO(perf): support naked previousNode in `enter` to avoid creation of jqLite wrapper?
+                $animate.enter(clone, null, jqLite(previousNode));
                 previousNode = endNode;
                 // Note: We only need the first/last node of the cloned nodes.
                 // However, we need to keep the reference to the jqlite wrapper as it might be changed later
@@ -29837,14 +28152,12 @@ var NG_HIDE_IN_PROGRESS_CLASS = 'ng-hide-animate';
  * .my-element.ng-hide-remove.ng-hide-remove-active { ... }
  * ```
  *
- * Keep in mind that, as of AngularJS version 1.3, there is no need to change the display
+ * Keep in mind that, as of AngularJS version 1.3.0-beta.11, there is no need to change the display
  * property to block during animation states--ngAnimate will handle the style toggling automatically for you.
  *
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link $animate#addClass addClass} `.ng-hide`  | after the `ngShow` expression evaluates to a non truthy value and just before the contents are set to hidden |
- * | {@link $animate#removeClass removeClass}  `.ng-hide`  | after the `ngShow` expression evaluates to a truthy value and just before contents are set to visible |
+ * addClass: `.ng-hide` - happens after the `ngShow` expression evaluates to a truthy value and the just before contents are set to visible
+ * removeClass: `.ng-hide` - happens after the `ngShow` expression evaluates to a non truthy value and just before the contents are set to hidden
  *
  * @element ANY
  * @param {expression} ngShow If the {@link guide/expression expression} is truthy
@@ -30003,15 +28316,12 @@ var ngShowDirective = ['$animate', function($animate) {
  * .my-element.ng-hide-remove.ng-hide-remove-active { ... }
  * ```
  *
- * Keep in mind that, as of AngularJS version 1.3, there is no need to change the display
+ * Keep in mind that, as of AngularJS version 1.3.0-beta.11, there is no need to change the display
  * property to block during animation states--ngAnimate will handle the style toggling automatically for you.
  *
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link $animate#addClass addClass} `.ng-hide`  | after the `ngHide` expression evaluates to a truthy value and just before the contents are set to hidden |
- * | {@link $animate#removeClass removeClass}  `.ng-hide`  | after the `ngHide` expression evaluates to a non truthy value and just before contents are set to visible |
- *
+ * removeClass: `.ng-hide` - happens after the `ngHide` expression evaluates to a truthy value and just before the contents are set to hidden
+ * addClass: `.ng-hide` - happens after the `ngHide` expression evaluates to a non truthy value and just before the contents are set to visible
  *
  * @element ANY
  * @param {expression} ngHide If the {@link guide/expression expression} is truthy then
@@ -30173,10 +28483,8 @@ var ngStyleDirective = ngDirective(function(scope, element, attr) {
  * </div>
 
  * @animations
- * | Animation                        | Occurs                              |
- * |----------------------------------|-------------------------------------|
- * | {@link ng.$animate#enter enter}  | after the ngSwitch contents change and the matched child element is placed inside the container |
- * | {@link ng.$animate#leave leave}  | after the ngSwitch contents change and just before the former contents are removed from the DOM |
+ * enter - happens after the ngSwitch contents change and the matched child element is placed inside the container
+ * leave - happens just after the ngSwitch contents change and just before the former contents are removed from the DOM
  *
  * @usage
  *
@@ -30275,7 +28583,7 @@ var ngStyleDirective = ngDirective(function(scope, element, attr) {
     </file>
   </example>
  */
-var ngSwitchDirective = ['$animate', '$compile', function($animate, $compile) {
+var ngSwitchDirective = ['$animate', function($animate) {
   return {
     require: 'ngSwitch',
 
@@ -30316,7 +28624,7 @@ var ngSwitchDirective = ['$animate', '$compile', function($animate, $compile) {
             selectedTransclude.transclude(function(caseElement, selectedScope) {
               selectedScopes.push(selectedScope);
               var anchor = selectedTransclude.element;
-              caseElement[caseElement.length++] = $compile.$$createComment('end ngSwitchWhen');
+              caseElement[caseElement.length++] = document.createComment(' end ngSwitchWhen: ');
               var block = { clone: caseElement };
 
               selectedElements.push(block);
@@ -30359,186 +28667,67 @@ var ngSwitchDefaultDirective = ngDirective({
  * @description
  * Directive that marks the insertion point for the transcluded DOM of the nearest parent directive that uses transclusion.
  *
- * You can specify that you want to insert a named transclusion slot, instead of the default slot, by providing the slot name
- * as the value of the `ng-transclude` or `ng-transclude-slot` attribute.
- *
- * If the transcluded content is not empty (i.e. contains one or more DOM nodes, including whitespace text nodes), any existing
- * content of this element will be removed before the transcluded content is inserted.
- * If the transcluded content is empty, the existing content is left intact. This lets you provide fallback content in the case
- * that no transcluded content is provided.
+ * Any existing content of the element that this directive is placed on will be removed before the transcluded content is inserted.
  *
  * @element ANY
  *
- * @param {string} ngTransclude|ngTranscludeSlot the name of the slot to insert at this point. If this is not provided, is empty
- *                                               or its value is the same as the name of the attribute then the default slot is used.
- *
  * @example
- * ### Basic transclusion
- * This example demonstrates basic transclusion of content into a component directive.
- * <example name="simpleTranscludeExample" module="transcludeExample">
- *   <file name="index.html">
- *     <script>
- *       angular.module('transcludeExample', [])
- *        .directive('pane', function(){
- *           return {
- *             restrict: 'E',
- *             transclude: true,
- *             scope: { title:'@' },
- *             template: '<div style="border: 1px solid black;">' +
- *                         '<div style="background-color: gray">{{title}}</div>' +
- *                         '<ng-transclude></ng-transclude>' +
- *                       '</div>'
- *           };
- *       })
- *       .controller('ExampleController', ['$scope', function($scope) {
- *         $scope.title = 'Lorem Ipsum';
- *         $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
- *       }]);
- *     </script>
- *     <div ng-controller="ExampleController">
- *       <input ng-model="title" aria-label="title"> <br/>
- *       <textarea ng-model="text" aria-label="text"></textarea> <br/>
- *       <pane title="{{title}}">{{text}}</pane>
- *     </div>
- *   </file>
- *   <file name="protractor.js" type="protractor">
- *      it('should have transcluded', function() {
- *        var titleElement = element(by.model('title'));
- *        titleElement.clear();
- *        titleElement.sendKeys('TITLE');
- *        var textElement = element(by.model('text'));
- *        textElement.clear();
- *        textElement.sendKeys('TEXT');
- *        expect(element(by.binding('title')).getText()).toEqual('TITLE');
- *        expect(element(by.binding('text')).getText()).toEqual('TEXT');
- *      });
- *   </file>
- * </example>
+   <example module="transcludeExample">
+     <file name="index.html">
+       <script>
+         angular.module('transcludeExample', [])
+          .directive('pane', function(){
+             return {
+               restrict: 'E',
+               transclude: true,
+               scope: { title:'@' },
+               template: '<div style="border: 1px solid black;">' +
+                           '<div style="background-color: gray">{{title}}</div>' +
+                           '<ng-transclude></ng-transclude>' +
+                         '</div>'
+             };
+         })
+         .controller('ExampleController', ['$scope', function($scope) {
+           $scope.title = 'Lorem Ipsum';
+           $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
+         }]);
+       </script>
+       <div ng-controller="ExampleController">
+         <input ng-model="title" aria-label="title"> <br/>
+         <textarea ng-model="text" aria-label="text"></textarea> <br/>
+         <pane title="{{title}}">{{text}}</pane>
+       </div>
+     </file>
+     <file name="protractor.js" type="protractor">
+        it('should have transcluded', function() {
+          var titleElement = element(by.model('title'));
+          titleElement.clear();
+          titleElement.sendKeys('TITLE');
+          var textElement = element(by.model('text'));
+          textElement.clear();
+          textElement.sendKeys('TEXT');
+          expect(element(by.binding('title')).getText()).toEqual('TITLE');
+          expect(element(by.binding('text')).getText()).toEqual('TEXT');
+        });
+     </file>
+   </example>
  *
- * @example
- * ### Transclude fallback content
- * This example shows how to use `NgTransclude` with fallback content, that
- * is displayed if no transcluded content is provided.
- *
- * <example module="transcludeFallbackContentExample">
- * <file name="index.html">
- * <script>
- * angular.module('transcludeFallbackContentExample', [])
- * .directive('myButton', function(){
- *             return {
- *               restrict: 'E',
- *               transclude: true,
- *               scope: true,
- *               template: '<button style="cursor: pointer;">' +
- *                           '<ng-transclude>' +
- *                             '<b style="color: red;">Button1</b>' +
- *                           '</ng-transclude>' +
- *                         '</button>'
- *             };
- *         });
- * </script>
- * <!-- fallback button content -->
- * <my-button id="fallback"></my-button>
- * <!-- modified button content -->
- * <my-button id="modified">
- *   <i style="color: green;">Button2</i>
- * </my-button>
- * </file>
- * <file name="protractor.js" type="protractor">
- * it('should have different transclude element content', function() {
- *          expect(element(by.id('fallback')).getText()).toBe('Button1');
- *          expect(element(by.id('modified')).getText()).toBe('Button2');
- *        });
- * </file>
- * </example>
- *
- * @example
- * ### Multi-slot transclusion
- * This example demonstrates using multi-slot transclusion in a component directive.
- * <example name="multiSlotTranscludeExample" module="multiSlotTranscludeExample">
- *   <file name="index.html">
- *    <style>
- *      .title, .footer {
- *        background-color: gray
- *      }
- *    </style>
- *    <div ng-controller="ExampleController">
- *      <input ng-model="title" aria-label="title"> <br/>
- *      <textarea ng-model="text" aria-label="text"></textarea> <br/>
- *      <pane>
- *        <pane-title><a ng-href="{{link}}">{{title}}</a></pane-title>
- *        <pane-body><p>{{text}}</p></pane-body>
- *      </pane>
- *    </div>
- *   </file>
- *   <file name="app.js">
- *    angular.module('multiSlotTranscludeExample', [])
- *     .directive('pane', function(){
- *        return {
- *          restrict: 'E',
- *          transclude: {
- *            'title': '?paneTitle',
- *            'body': 'paneBody',
- *            'footer': '?paneFooter'
- *          },
- *          template: '<div style="border: 1px solid black;">' +
- *                      '<div class="title" ng-transclude="title">Fallback Title</div>' +
- *                      '<div ng-transclude="body"></div>' +
- *                      '<div class="footer" ng-transclude="footer">Fallback Footer</div>' +
- *                    '</div>'
- *        };
- *    })
- *    .controller('ExampleController', ['$scope', function($scope) {
- *      $scope.title = 'Lorem Ipsum';
- *      $scope.link = "https://google.com";
- *      $scope.text = 'Neque porro quisquam est qui dolorem ipsum quia dolor...';
- *    }]);
- *   </file>
- *   <file name="protractor.js" type="protractor">
- *      it('should have transcluded the title and the body', function() {
- *        var titleElement = element(by.model('title'));
- *        titleElement.clear();
- *        titleElement.sendKeys('TITLE');
- *        var textElement = element(by.model('text'));
- *        textElement.clear();
- *        textElement.sendKeys('TEXT');
- *        expect(element(by.css('.title')).getText()).toEqual('TITLE');
- *        expect(element(by.binding('text')).getText()).toEqual('TEXT');
- *        expect(element(by.css('.footer')).getText()).toEqual('Fallback Footer');
- *      });
- *   </file>
- * </example>
  */
-var ngTranscludeMinErr = minErr('ngTransclude');
 var ngTranscludeDirective = ngDirective({
   restrict: 'EAC',
   link: function($scope, $element, $attrs, controller, $transclude) {
-
-    if ($attrs.ngTransclude === $attrs.$attr.ngTransclude) {
-      // If the attribute is of the form: `ng-transclude="ng-transclude"`
-      // then treat it like the default
-      $attrs.ngTransclude = '';
-    }
-
-    function ngTranscludeCloneAttachFn(clone) {
-      if (clone.length) {
-        $element.empty();
-        $element.append(clone);
-      }
-    }
-
     if (!$transclude) {
-      throw ngTranscludeMinErr('orphan',
+      throw minErr('ngTransclude')('orphan',
        'Illegal use of ngTransclude directive in the template! ' +
        'No parent directive that requires a transclusion found. ' +
        'Element: {0}',
        startingTag($element));
     }
 
-    // If there is no slot name defined or the slot name is not optional
-    // then transclude the slot
-    var slotName = $attrs.ngTransclude || $attrs.ngTranscludeSlot;
-    $transclude(ngTranscludeCloneAttachFn, null, slotName);
+    $transclude(function(clone) {
+      $element.empty();
+      $element.append(clone);
+    });
   }
 });
 
@@ -30610,7 +28799,7 @@ function chromeHack(optionElement) {
  * added `<option>` elements, perhaps by an `ngRepeat` directive.
  */
 var SelectController =
-        ['$element', '$scope', function($element, $scope) {
+        ['$element', '$scope', '$attrs', function($element, $scope, $attrs) {
 
   var self = this,
       optionsMap = new HashMap();
@@ -30624,7 +28813,7 @@ var SelectController =
   //
   // We can't just jqLite('<option>') since jqLite is not smart enough
   // to create it in <select> and IE barfs otherwise.
-  self.unknownOption = jqLite(window.document.createElement('option'));
+  self.unknownOption = jqLite(document.createElement('option'));
   self.renderUnknownOption = function(val) {
     var unknownVal = '? ' + hashKey(val) + ' ?';
     self.unknownOption.val(unknownVal);
@@ -30670,9 +28859,6 @@ var SelectController =
 
   // Tell the select control that an option, with the given value, has been added
   self.addOption = function(value, element) {
-    // Skip comment nodes, as they only pollute the `optionsMap`
-    if (element[0].nodeType === NODE_TYPE_COMMENT) return;
-
     assertNotHasOwnProperty(value, '"option value"');
     if (value === '') {
       self.emptyOption = element;
@@ -30757,7 +28943,7 @@ var SelectController =
  *
  * <div class="alert alert-warning">
  * Note that the value of a `select` directive used without `ngOptions` is always a string.
- * When the model needs to be bound to a non-string value, you must either explicitly convert it
+ * When the model needs to be bound to a non-string value, you must either explictly convert it
  * using a directive (see example below) or use `ngOptions` to specify the set of options.
  * This is because an option element can only be bound to string values at present.
  * </div>
@@ -31045,6 +29231,7 @@ var optionDirective = ['$interpolate', function($interpolate) {
     restrict: 'E',
     priority: 100,
     compile: function(element, attr) {
+
       if (isDefined(attr.value)) {
         // If the value attribute is defined, check if it contains an interpolation
         var interpolateValueFn = $interpolate(attr.value, true);
@@ -31058,6 +29245,7 @@ var optionDirective = ['$interpolate', function($interpolate) {
       }
 
       return function(scope, element, attr) {
+
         // This is an optimization over using ^^ since we don't want to have to search
         // all the way to the root of the DOM for every single option element
         var selectCtrlName = '$selectController',
@@ -31081,7 +29269,6 @@ var styleDirective = valueFn({
 /**
  * @ngdoc directive
  * @name ngRequired
- * @restrict A
  *
  * @description
  *
@@ -31095,7 +29282,7 @@ var styleDirective = valueFn({
  * for more info.
  *
  * The validator will set the `required` error key to true if the `required` attribute is set and
- * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty`} with the
+ * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty` with the
  * {@link ngModel.NgModelController#$viewValue `ngModel.$viewValue`} returns `true`. For example, the
  * `$isEmpty()` implementation for `input[text]` checks the length of the `$viewValue`. When developing
  * custom controls, `$isEmpty()` can be overwritten to account for a $viewValue that is not string-based.
@@ -31433,9 +29620,7 @@ var minlengthDirective = function() {
 
 if (window.angular.bootstrap) {
   //AngularJS is already loaded, so we can return here...
-  if (window.console) {
-    console.log('WARNING: Tried to load angular more than once.');
-  }
+  console.log('WARNING: Tried to load angular more than once.');
   return;
 }
 
@@ -31583,16 +29768,15 @@ $provide.value("$locale", {
     ]
   },
   "id": "en-us",
-  "localeID": "en_US",
   "pluralCat": function(n, opt_precision) {  var i = n | 0;  var vf = getVF(n, opt_precision);  if (i == 1 && vf.v == 0) {    return PLURAL_CATEGORY.ONE;  }  return PLURAL_CATEGORY.OTHER;}
 });
 }]);
 
-  jqLite(window.document).ready(function() {
-    angularInit(window.document, bootstrap);
+  jqLite(document).ready(function() {
+    angularInit(document, bootstrap);
   });
 
-})(window);
+})(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
 /**
@@ -43216,7 +41400,7 @@ angular.module('ui.bootstrap.tooltip').run(function() {!angular.$$csp().noInline
 angular.module('ui.bootstrap.timepicker').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibTimepickerCss && angular.element(document).find('head').prepend('<style type="text/css">.uib-time input{width:50px;}</style>'); angular.$$uibTimepickerCss = true; });
 angular.module('ui.bootstrap.typeahead').run(function() {!angular.$$csp().noInlineStyle && !angular.$$uibTypeaheadCss && angular.element(document).find('head').prepend('<style type="text/css">[uib-typeahead-popup].dropdown-menu{display:block;}</style>'); angular.$$uibTypeaheadCss = true; });
 /**
- * @license AngularJS v1.5.7
+ * @license AngularJS v1.5.8
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -43251,9 +41435,10 @@ function shallowCopy(src, dst) {
 
 /* global shallowCopy: false */
 
-// There are necessary for `shallowCopy()` (included via `src/shallowCopy.js`)
-var isArray = angular.isArray;
-var isObject = angular.isObject;
+// There are necessary for `shallowCopy()` (included via `src/shallowCopy.js`).
+// They are initialized inside the `$RouteProvider`, to ensure `window.angular` is available.
+var isArray;
+var isObject;
 
 /**
  * @ngdoc module
@@ -43290,6 +41475,9 @@ var ngRouteModule = angular.module('ngRoute', ['ng']).
  * Requires the {@link ngRoute `ngRoute`} module to be installed.
  */
 function $RouteProvider() {
+  isArray = angular.isArray;
+  isObject = angular.isObject;
+
   function inherit(parent, extra) {
     return angular.extend(Object.create(parent), extra);
   }
@@ -44282,7 +42470,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 })(window, window.angular);
 
 /**
- * @license AngularJS v1.5.7
+ * @license AngularJS v1.5.8
  * (c) 2010-2016 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -44300,6 +42488,14 @@ function ngViewFillContentFactory($compile, $controller, $route) {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 var $sanitizeMinErr = angular.$$minErr('$sanitize');
+var bind;
+var extend;
+var forEach;
+var isDefined;
+var lowercase;
+var noop;
+var htmlParser;
+var htmlSanitizeWriter;
 
 /**
  * @ngdoc module
@@ -44432,7 +42628,7 @@ function $SanitizeProvider() {
 
   this.$get = ['$$sanitizeUri', function($$sanitizeUri) {
     if (svgEnabled) {
-      angular.extend(validElements, svgElements);
+      extend(validElements, svgElements);
     }
     return function(html) {
       var buf = [];
@@ -44475,333 +42671,343 @@ function $SanitizeProvider() {
    *    without an argument or self for chaining otherwise.
    */
   this.enableSvg = function(enableSvg) {
-    if (angular.isDefined(enableSvg)) {
+    if (isDefined(enableSvg)) {
       svgEnabled = enableSvg;
       return this;
     } else {
       return svgEnabled;
     }
   };
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Private stuff
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  bind = angular.bind;
+  extend = angular.extend;
+  forEach = angular.forEach;
+  isDefined = angular.isDefined;
+  lowercase = angular.lowercase;
+  noop = angular.noop;
+
+  htmlParser = htmlParserImpl;
+  htmlSanitizeWriter = htmlSanitizeWriterImpl;
+
+  // Regular Expressions for parsing tags and attributes
+  var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+    // Match everything outside of normal chars and " (quote character)
+    NON_ALPHANUMERIC_REGEXP = /([^\#-~ |!])/g;
+
+
+  // Good source of info about elements and attributes
+  // http://dev.w3.org/html5/spec/Overview.html#semantics
+  // http://simon.html5.org/html-elements
+
+  // Safe Void Elements - HTML5
+  // http://dev.w3.org/html5/spec/Overview.html#void-elements
+  var voidElements = toMap("area,br,col,hr,img,wbr");
+
+  // Elements that you can, intentionally, leave open (and which close themselves)
+  // http://dev.w3.org/html5/spec/Overview.html#optional-tags
+  var optionalEndTagBlockElements = toMap("colgroup,dd,dt,li,p,tbody,td,tfoot,th,thead,tr"),
+      optionalEndTagInlineElements = toMap("rp,rt"),
+      optionalEndTagElements = extend({},
+                                              optionalEndTagInlineElements,
+                                              optionalEndTagBlockElements);
+
+  // Safe Block Elements - HTML5
+  var blockElements = extend({}, optionalEndTagBlockElements, toMap("address,article," +
+          "aside,blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5," +
+          "h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,section,table,ul"));
+
+  // Inline Elements - HTML5
+  var inlineElements = extend({}, optionalEndTagInlineElements, toMap("a,abbr,acronym,b," +
+          "bdi,bdo,big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s," +
+          "samp,small,span,strike,strong,sub,sup,time,tt,u,var"));
+
+  // SVG Elements
+  // https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Elements
+  // Note: the elements animate,animateColor,animateMotion,animateTransform,set are intentionally omitted.
+  // They can potentially allow for arbitrary javascript to be executed. See #11290
+  var svgElements = toMap("circle,defs,desc,ellipse,font-face,font-face-name,font-face-src,g,glyph," +
+          "hkern,image,linearGradient,line,marker,metadata,missing-glyph,mpath,path,polygon,polyline," +
+          "radialGradient,rect,stop,svg,switch,text,title,tspan");
+
+  // Blocked Elements (will be stripped)
+  var blockedElements = toMap("script,style");
+
+  var validElements = extend({},
+                                     voidElements,
+                                     blockElements,
+                                     inlineElements,
+                                     optionalEndTagElements);
+
+  //Attributes that have href and hence need to be sanitized
+  var uriAttrs = toMap("background,cite,href,longdesc,src,xlink:href");
+
+  var htmlAttrs = toMap('abbr,align,alt,axis,bgcolor,border,cellpadding,cellspacing,class,clear,' +
+      'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,' +
+      'ismap,lang,language,nohref,nowrap,rel,rev,rows,rowspan,rules,' +
+      'scope,scrolling,shape,size,span,start,summary,tabindex,target,title,type,' +
+      'valign,value,vspace,width');
+
+  // SVG attributes (without "id" and "name" attributes)
+  // https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Attributes
+  var svgAttrs = toMap('accent-height,accumulate,additive,alphabetic,arabic-form,ascent,' +
+      'baseProfile,bbox,begin,by,calcMode,cap-height,class,color,color-rendering,content,' +
+      'cx,cy,d,dx,dy,descent,display,dur,end,fill,fill-rule,font-family,font-size,font-stretch,' +
+      'font-style,font-variant,font-weight,from,fx,fy,g1,g2,glyph-name,gradientUnits,hanging,' +
+      'height,horiz-adv-x,horiz-origin-x,ideographic,k,keyPoints,keySplines,keyTimes,lang,' +
+      'marker-end,marker-mid,marker-start,markerHeight,markerUnits,markerWidth,mathematical,' +
+      'max,min,offset,opacity,orient,origin,overline-position,overline-thickness,panose-1,' +
+      'path,pathLength,points,preserveAspectRatio,r,refX,refY,repeatCount,repeatDur,' +
+      'requiredExtensions,requiredFeatures,restart,rotate,rx,ry,slope,stemh,stemv,stop-color,' +
+      'stop-opacity,strikethrough-position,strikethrough-thickness,stroke,stroke-dasharray,' +
+      'stroke-dashoffset,stroke-linecap,stroke-linejoin,stroke-miterlimit,stroke-opacity,' +
+      'stroke-width,systemLanguage,target,text-anchor,to,transform,type,u1,u2,underline-position,' +
+      'underline-thickness,unicode,unicode-range,units-per-em,values,version,viewBox,visibility,' +
+      'width,widths,x,x-height,x1,x2,xlink:actuate,xlink:arcrole,xlink:role,xlink:show,xlink:title,' +
+      'xlink:type,xml:base,xml:lang,xml:space,xmlns,xmlns:xlink,y,y1,y2,zoomAndPan', true);
+
+  var validAttrs = extend({},
+                                  uriAttrs,
+                                  svgAttrs,
+                                  htmlAttrs);
+
+  function toMap(str, lowercaseKeys) {
+    var obj = {}, items = str.split(','), i;
+    for (i = 0; i < items.length; i++) {
+      obj[lowercaseKeys ? lowercase(items[i]) : items[i]] = true;
+    }
+    return obj;
+  }
+
+  var inertBodyElement;
+  (function(window) {
+    var doc;
+    if (window.document && window.document.implementation) {
+      doc = window.document.implementation.createHTMLDocument("inert");
+    } else {
+      throw $sanitizeMinErr('noinert', "Can't create an inert html document");
+    }
+    var docElement = doc.documentElement || doc.getDocumentElement();
+    var bodyElements = docElement.getElementsByTagName('body');
+
+    // usually there should be only one body element in the document, but IE doesn't have any, so we need to create one
+    if (bodyElements.length === 1) {
+      inertBodyElement = bodyElements[0];
+    } else {
+      var html = doc.createElement('html');
+      inertBodyElement = doc.createElement('body');
+      html.appendChild(inertBodyElement);
+      doc.appendChild(html);
+    }
+  })(window);
+
+  /**
+   * @example
+   * htmlParser(htmlString, {
+   *     start: function(tag, attrs) {},
+   *     end: function(tag) {},
+   *     chars: function(text) {},
+   *     comment: function(text) {}
+   * });
+   *
+   * @param {string} html string
+   * @param {object} handler
+   */
+  function htmlParserImpl(html, handler) {
+    if (html === null || html === undefined) {
+      html = '';
+    } else if (typeof html !== 'string') {
+      html = '' + html;
+    }
+    inertBodyElement.innerHTML = html;
+
+    //mXSS protection
+    var mXSSAttempts = 5;
+    do {
+      if (mXSSAttempts === 0) {
+        throw $sanitizeMinErr('uinput', "Failed to sanitize html because the input is unstable");
+      }
+      mXSSAttempts--;
+
+      // strip custom-namespaced attributes on IE<=11
+      if (window.document.documentMode) {
+        stripCustomNsAttrs(inertBodyElement);
+      }
+      html = inertBodyElement.innerHTML; //trigger mXSS
+      inertBodyElement.innerHTML = html;
+    } while (html !== inertBodyElement.innerHTML);
+
+    var node = inertBodyElement.firstChild;
+    while (node) {
+      switch (node.nodeType) {
+        case 1: // ELEMENT_NODE
+          handler.start(node.nodeName.toLowerCase(), attrToMap(node.attributes));
+          break;
+        case 3: // TEXT NODE
+          handler.chars(node.textContent);
+          break;
+      }
+
+      var nextNode;
+      if (!(nextNode = node.firstChild)) {
+      if (node.nodeType == 1) {
+          handler.end(node.nodeName.toLowerCase());
+        }
+        nextNode = node.nextSibling;
+        if (!nextNode) {
+          while (nextNode == null) {
+            node = node.parentNode;
+            if (node === inertBodyElement) break;
+            nextNode = node.nextSibling;
+          if (node.nodeType == 1) {
+              handler.end(node.nodeName.toLowerCase());
+            }
+          }
+        }
+      }
+      node = nextNode;
+    }
+
+    while (node = inertBodyElement.firstChild) {
+      inertBodyElement.removeChild(node);
+    }
+  }
+
+  function attrToMap(attrs) {
+    var map = {};
+    for (var i = 0, ii = attrs.length; i < ii; i++) {
+      var attr = attrs[i];
+      map[attr.name] = attr.value;
+    }
+    return map;
+  }
+
+
+  /**
+   * Escapes all potentially dangerous characters, so that the
+   * resulting string can be safely inserted into attribute or
+   * element text.
+   * @param value
+   * @returns {string} escaped text
+   */
+  function encodeEntities(value) {
+    return value.
+      replace(/&/g, '&amp;').
+      replace(SURROGATE_PAIR_REGEXP, function(value) {
+        var hi = value.charCodeAt(0);
+        var low = value.charCodeAt(1);
+        return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+      }).
+      replace(NON_ALPHANUMERIC_REGEXP, function(value) {
+        return '&#' + value.charCodeAt(0) + ';';
+      }).
+      replace(/</g, '&lt;').
+      replace(/>/g, '&gt;');
+  }
+
+  /**
+   * create an HTML/XML writer which writes to buffer
+   * @param {Array} buf use buf.join('') to get out sanitized html string
+   * @returns {object} in the form of {
+   *     start: function(tag, attrs) {},
+   *     end: function(tag) {},
+   *     chars: function(text) {},
+   *     comment: function(text) {}
+   * }
+   */
+  function htmlSanitizeWriterImpl(buf, uriValidator) {
+    var ignoreCurrentElement = false;
+    var out = bind(buf, buf.push);
+    return {
+      start: function(tag, attrs) {
+        tag = lowercase(tag);
+        if (!ignoreCurrentElement && blockedElements[tag]) {
+          ignoreCurrentElement = tag;
+        }
+        if (!ignoreCurrentElement && validElements[tag] === true) {
+          out('<');
+          out(tag);
+          forEach(attrs, function(value, key) {
+            var lkey = lowercase(key);
+            var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
+            if (validAttrs[lkey] === true &&
+              (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
+              out(' ');
+              out(key);
+              out('="');
+              out(encodeEntities(value));
+              out('"');
+            }
+          });
+          out('>');
+        }
+      },
+      end: function(tag) {
+        tag = lowercase(tag);
+        if (!ignoreCurrentElement && validElements[tag] === true && voidElements[tag] !== true) {
+          out('</');
+          out(tag);
+          out('>');
+        }
+        if (tag == ignoreCurrentElement) {
+          ignoreCurrentElement = false;
+        }
+      },
+      chars: function(chars) {
+        if (!ignoreCurrentElement) {
+          out(encodeEntities(chars));
+        }
+      }
+    };
+  }
+
+
+  /**
+   * When IE9-11 comes across an unknown namespaced attribute e.g. 'xlink:foo' it adds 'xmlns:ns1' attribute to declare
+   * ns1 namespace and prefixes the attribute with 'ns1' (e.g. 'ns1:xlink:foo'). This is undesirable since we don't want
+   * to allow any of these custom attributes. This method strips them all.
+   *
+   * @param node Root element to process
+   */
+  function stripCustomNsAttrs(node) {
+    if (node.nodeType === window.Node.ELEMENT_NODE) {
+      var attrs = node.attributes;
+      for (var i = 0, l = attrs.length; i < l; i++) {
+        var attrNode = attrs[i];
+        var attrName = attrNode.name.toLowerCase();
+        if (attrName === 'xmlns:ns1' || attrName.lastIndexOf('ns1:', 0) === 0) {
+          node.removeAttributeNode(attrNode);
+          i--;
+          l--;
+        }
+      }
+    }
+
+    var nextNode = node.firstChild;
+    if (nextNode) {
+      stripCustomNsAttrs(nextNode);
+    }
+
+    nextNode = node.nextSibling;
+    if (nextNode) {
+      stripCustomNsAttrs(nextNode);
+    }
+  }
 }
 
 function sanitizeText(chars) {
   var buf = [];
-  var writer = htmlSanitizeWriter(buf, angular.noop);
+  var writer = htmlSanitizeWriter(buf, noop);
   writer.chars(chars);
   return buf.join('');
 }
 
 
-// Regular Expressions for parsing tags and attributes
-var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
-  // Match everything outside of normal chars and " (quote character)
-  NON_ALPHANUMERIC_REGEXP = /([^\#-~ |!])/g;
-
-
-// Good source of info about elements and attributes
-// http://dev.w3.org/html5/spec/Overview.html#semantics
-// http://simon.html5.org/html-elements
-
-// Safe Void Elements - HTML5
-// http://dev.w3.org/html5/spec/Overview.html#void-elements
-var voidElements = toMap("area,br,col,hr,img,wbr");
-
-// Elements that you can, intentionally, leave open (and which close themselves)
-// http://dev.w3.org/html5/spec/Overview.html#optional-tags
-var optionalEndTagBlockElements = toMap("colgroup,dd,dt,li,p,tbody,td,tfoot,th,thead,tr"),
-    optionalEndTagInlineElements = toMap("rp,rt"),
-    optionalEndTagElements = angular.extend({},
-                                            optionalEndTagInlineElements,
-                                            optionalEndTagBlockElements);
-
-// Safe Block Elements - HTML5
-var blockElements = angular.extend({}, optionalEndTagBlockElements, toMap("address,article," +
-        "aside,blockquote,caption,center,del,dir,div,dl,figure,figcaption,footer,h1,h2,h3,h4,h5," +
-        "h6,header,hgroup,hr,ins,map,menu,nav,ol,pre,section,table,ul"));
-
-// Inline Elements - HTML5
-var inlineElements = angular.extend({}, optionalEndTagInlineElements, toMap("a,abbr,acronym,b," +
-        "bdi,bdo,big,br,cite,code,del,dfn,em,font,i,img,ins,kbd,label,map,mark,q,ruby,rp,rt,s," +
-        "samp,small,span,strike,strong,sub,sup,time,tt,u,var"));
-
-// SVG Elements
-// https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Elements
-// Note: the elements animate,animateColor,animateMotion,animateTransform,set are intentionally omitted.
-// They can potentially allow for arbitrary javascript to be executed. See #11290
-var svgElements = toMap("circle,defs,desc,ellipse,font-face,font-face-name,font-face-src,g,glyph," +
-        "hkern,image,linearGradient,line,marker,metadata,missing-glyph,mpath,path,polygon,polyline," +
-        "radialGradient,rect,stop,svg,switch,text,title,tspan");
-
-// Blocked Elements (will be stripped)
-var blockedElements = toMap("script,style");
-
-var validElements = angular.extend({},
-                                   voidElements,
-                                   blockElements,
-                                   inlineElements,
-                                   optionalEndTagElements);
-
-//Attributes that have href and hence need to be sanitized
-var uriAttrs = toMap("background,cite,href,longdesc,src,xlink:href");
-
-var htmlAttrs = toMap('abbr,align,alt,axis,bgcolor,border,cellpadding,cellspacing,class,clear,' +
-    'color,cols,colspan,compact,coords,dir,face,headers,height,hreflang,hspace,' +
-    'ismap,lang,language,nohref,nowrap,rel,rev,rows,rowspan,rules,' +
-    'scope,scrolling,shape,size,span,start,summary,tabindex,target,title,type,' +
-    'valign,value,vspace,width');
-
-// SVG attributes (without "id" and "name" attributes)
-// https://wiki.whatwg.org/wiki/Sanitization_rules#svg_Attributes
-var svgAttrs = toMap('accent-height,accumulate,additive,alphabetic,arabic-form,ascent,' +
-    'baseProfile,bbox,begin,by,calcMode,cap-height,class,color,color-rendering,content,' +
-    'cx,cy,d,dx,dy,descent,display,dur,end,fill,fill-rule,font-family,font-size,font-stretch,' +
-    'font-style,font-variant,font-weight,from,fx,fy,g1,g2,glyph-name,gradientUnits,hanging,' +
-    'height,horiz-adv-x,horiz-origin-x,ideographic,k,keyPoints,keySplines,keyTimes,lang,' +
-    'marker-end,marker-mid,marker-start,markerHeight,markerUnits,markerWidth,mathematical,' +
-    'max,min,offset,opacity,orient,origin,overline-position,overline-thickness,panose-1,' +
-    'path,pathLength,points,preserveAspectRatio,r,refX,refY,repeatCount,repeatDur,' +
-    'requiredExtensions,requiredFeatures,restart,rotate,rx,ry,slope,stemh,stemv,stop-color,' +
-    'stop-opacity,strikethrough-position,strikethrough-thickness,stroke,stroke-dasharray,' +
-    'stroke-dashoffset,stroke-linecap,stroke-linejoin,stroke-miterlimit,stroke-opacity,' +
-    'stroke-width,systemLanguage,target,text-anchor,to,transform,type,u1,u2,underline-position,' +
-    'underline-thickness,unicode,unicode-range,units-per-em,values,version,viewBox,visibility,' +
-    'width,widths,x,x-height,x1,x2,xlink:actuate,xlink:arcrole,xlink:role,xlink:show,xlink:title,' +
-    'xlink:type,xml:base,xml:lang,xml:space,xmlns,xmlns:xlink,y,y1,y2,zoomAndPan', true);
-
-var validAttrs = angular.extend({},
-                                uriAttrs,
-                                svgAttrs,
-                                htmlAttrs);
-
-function toMap(str, lowercaseKeys) {
-  var obj = {}, items = str.split(','), i;
-  for (i = 0; i < items.length; i++) {
-    obj[lowercaseKeys ? angular.lowercase(items[i]) : items[i]] = true;
-  }
-  return obj;
-}
-
-var inertBodyElement;
-(function(window) {
-  var doc;
-  if (window.document && window.document.implementation) {
-    doc = window.document.implementation.createHTMLDocument("inert");
-  } else {
-    throw $sanitizeMinErr('noinert', "Can't create an inert html document");
-  }
-  var docElement = doc.documentElement || doc.getDocumentElement();
-  var bodyElements = docElement.getElementsByTagName('body');
-
-  // usually there should be only one body element in the document, but IE doesn't have any, so we need to create one
-  if (bodyElements.length === 1) {
-    inertBodyElement = bodyElements[0];
-  } else {
-    var html = doc.createElement('html');
-    inertBodyElement = doc.createElement('body');
-    html.appendChild(inertBodyElement);
-    doc.appendChild(html);
-  }
-})(window);
-
-/**
- * @example
- * htmlParser(htmlString, {
- *     start: function(tag, attrs) {},
- *     end: function(tag) {},
- *     chars: function(text) {},
- *     comment: function(text) {}
- * });
- *
- * @param {string} html string
- * @param {object} handler
- */
-function htmlParser(html, handler) {
-  if (html === null || html === undefined) {
-    html = '';
-  } else if (typeof html !== 'string') {
-    html = '' + html;
-  }
-  inertBodyElement.innerHTML = html;
-
-  //mXSS protection
-  var mXSSAttempts = 5;
-  do {
-    if (mXSSAttempts === 0) {
-      throw $sanitizeMinErr('uinput', "Failed to sanitize html because the input is unstable");
-    }
-    mXSSAttempts--;
-
-    // strip custom-namespaced attributes on IE<=11
-    if (window.document.documentMode) {
-      stripCustomNsAttrs(inertBodyElement);
-    }
-    html = inertBodyElement.innerHTML; //trigger mXSS
-    inertBodyElement.innerHTML = html;
-  } while (html !== inertBodyElement.innerHTML);
-
-  var node = inertBodyElement.firstChild;
-  while (node) {
-    switch (node.nodeType) {
-      case 1: // ELEMENT_NODE
-        handler.start(node.nodeName.toLowerCase(), attrToMap(node.attributes));
-        break;
-      case 3: // TEXT NODE
-        handler.chars(node.textContent);
-        break;
-    }
-
-    var nextNode;
-    if (!(nextNode = node.firstChild)) {
-      if (node.nodeType == 1) {
-        handler.end(node.nodeName.toLowerCase());
-      }
-      nextNode = node.nextSibling;
-      if (!nextNode) {
-        while (nextNode == null) {
-          node = node.parentNode;
-          if (node === inertBodyElement) break;
-          nextNode = node.nextSibling;
-          if (node.nodeType == 1) {
-            handler.end(node.nodeName.toLowerCase());
-          }
-        }
-      }
-    }
-    node = nextNode;
-  }
-
-  while (node = inertBodyElement.firstChild) {
-    inertBodyElement.removeChild(node);
-  }
-}
-
-function attrToMap(attrs) {
-  var map = {};
-  for (var i = 0, ii = attrs.length; i < ii; i++) {
-    var attr = attrs[i];
-    map[attr.name] = attr.value;
-  }
-  return map;
-}
-
-
-/**
- * Escapes all potentially dangerous characters, so that the
- * resulting string can be safely inserted into attribute or
- * element text.
- * @param value
- * @returns {string} escaped text
- */
-function encodeEntities(value) {
-  return value.
-    replace(/&/g, '&amp;').
-    replace(SURROGATE_PAIR_REGEXP, function(value) {
-      var hi = value.charCodeAt(0);
-      var low = value.charCodeAt(1);
-      return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
-    }).
-    replace(NON_ALPHANUMERIC_REGEXP, function(value) {
-      return '&#' + value.charCodeAt(0) + ';';
-    }).
-    replace(/</g, '&lt;').
-    replace(/>/g, '&gt;');
-}
-
-/**
- * create an HTML/XML writer which writes to buffer
- * @param {Array} buf use buf.join('') to get out sanitized html string
- * @returns {object} in the form of {
- *     start: function(tag, attrs) {},
- *     end: function(tag) {},
- *     chars: function(text) {},
- *     comment: function(text) {}
- * }
- */
-function htmlSanitizeWriter(buf, uriValidator) {
-  var ignoreCurrentElement = false;
-  var out = angular.bind(buf, buf.push);
-  return {
-    start: function(tag, attrs) {
-      tag = angular.lowercase(tag);
-      if (!ignoreCurrentElement && blockedElements[tag]) {
-        ignoreCurrentElement = tag;
-      }
-      if (!ignoreCurrentElement && validElements[tag] === true) {
-        out('<');
-        out(tag);
-        angular.forEach(attrs, function(value, key) {
-          var lkey=angular.lowercase(key);
-          var isImage = (tag === 'img' && lkey === 'src') || (lkey === 'background');
-          if (validAttrs[lkey] === true &&
-            (uriAttrs[lkey] !== true || uriValidator(value, isImage))) {
-            out(' ');
-            out(key);
-            out('="');
-            out(encodeEntities(value));
-            out('"');
-          }
-        });
-        out('>');
-      }
-    },
-    end: function(tag) {
-      tag = angular.lowercase(tag);
-      if (!ignoreCurrentElement && validElements[tag] === true && voidElements[tag] !== true) {
-        out('</');
-        out(tag);
-        out('>');
-      }
-      if (tag == ignoreCurrentElement) {
-        ignoreCurrentElement = false;
-      }
-    },
-    chars: function(chars) {
-      if (!ignoreCurrentElement) {
-        out(encodeEntities(chars));
-      }
-    }
-  };
-}
-
-
-/**
- * When IE9-11 comes across an unknown namespaced attribute e.g. 'xlink:foo' it adds 'xmlns:ns1' attribute to declare
- * ns1 namespace and prefixes the attribute with 'ns1' (e.g. 'ns1:xlink:foo'). This is undesirable since we don't want
- * to allow any of these custom attributes. This method strips them all.
- *
- * @param node Root element to process
- */
-function stripCustomNsAttrs(node) {
-  if (node.nodeType === window.Node.ELEMENT_NODE) {
-    var attrs = node.attributes;
-    for (var i = 0, l = attrs.length; i < l; i++) {
-      var attrNode = attrs[i];
-      var attrName = attrNode.name.toLowerCase();
-      if (attrName === 'xmlns:ns1' || attrName.lastIndexOf('ns1:', 0) === 0) {
-        node.removeAttributeNode(attrNode);
-        i--;
-        l--;
-      }
-    }
-  }
-
-  var nextNode = node.firstChild;
-  if (nextNode) {
-    stripCustomNsAttrs(nextNode);
-  }
-
-  nextNode = node.nextSibling;
-  if (nextNode) {
-    stripCustomNsAttrs(nextNode);
-  }
-}
-
-
-
 // define ngSanitize module and register $sanitize service
 angular.module('ngSanitize', []).provider('$sanitize', $SanitizeProvider);
-
-/* global sanitizeText: false */
 
 /**
  * @ngdoc filter
@@ -44936,6 +43142,9 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
       MAILTO_REGEXP = /^mailto:/i;
 
   var linkyMinErr = angular.$$minErr('linky');
+  var isDefined = angular.isDefined;
+  var isFunction = angular.isFunction;
+  var isObject = angular.isObject;
   var isString = angular.isString;
 
   return function(text, target, attributes) {
@@ -44943,8 +43152,8 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
     if (!isString(text)) throw linkyMinErr('notstring', 'Expected string but received: {0}', text);
 
     var attributesFn =
-      angular.isFunction(attributes) ? attributes :
-      angular.isObject(attributes) ? function getAttributesObject() {return attributes;} :
+      isFunction(attributes) ? attributes :
+      isObject(attributes) ? function getAttributesObject() {return attributes;} :
       function getEmptyAttributesObject() {return {};};
 
     var match;
@@ -44982,7 +43191,7 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
         html.push(key + '="' + linkAttributes[key] + '" ');
       }
 
-      if (angular.isDefined(target) && !('target' in linkAttributes)) {
+      if (isDefined(target) && !('target' in linkAttributes)) {
         html.push('target="',
                   target,
                   '" ');
@@ -45000,7 +43209,7 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
 })(window, window.angular);
 
 /*!
- * ui-grid - v3.2.1 - 2016-06-28
+ * ui-grid - v3.2.9 - 2016-09-21
  * Copyright (c) 2016 ; License: MIT 
  */
 
@@ -45011,6 +43220,15 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
 })();
 (function () {
   'use strict';
+
+  /**
+   * @ngdoc object
+   * @name ui.grid.service:uiGridConstants
+   * @description Constants for use across many grid features
+   *
+   */
+
+
   angular.module('ui.grid').constant('uiGridConstants', {
     LOG_DEBUG_MESSAGES: true,
     LOG_WARN_MESSAGES: true,
@@ -45026,6 +43244,7 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
     APOS_REGEXP: /'/g,
     BRACKET_REGEXP: /^(.*)((?:\s*\[\s*\d+\s*\]\s*)|(?:\s*\[\s*"(?:[^"\\]|\\.)*"\s*\]\s*)|(?:\s*\[\s*'(?:[^'\\]|\\.)*'\s*\]\s*))(.*)$/,
     COL_CLASS_PREFIX: 'ui-grid-col',
+    ENTITY_BINDING: '$$this',
     events: {
       GRID_SCROLL: 'uiGridScroll',
       COLUMN_MENU_SHOWN: 'uiGridColMenuShown',
@@ -45073,8 +43292,52 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
       F11: 122,
       F12: 123
     },
+     /**
+     * @ngdoc object
+     * @name ASC
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used in {@link ui.grid.class:GridOptions.columnDef#properties_sort columnDef.sort} and
+     * {@link ui.grid.class:GridOptions.columnDef#properties_sortDirectionCycle columnDef.sortDirectionCycle}
+     * to configure the sorting direction of the column
+     */
     ASC: 'asc',
+     /**
+     * @ngdoc object
+     * @name DESC
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used in {@link ui.grid.class:GridOptions.columnDef#properties_sort columnDef.sort} and
+     * {@link ui.grid.class:GridOptions.columnDef#properties_sortDirectionCycle columnDef.sortDirectionCycle}
+     * to configure the sorting direction of the column
+     */
     DESC: 'desc',
+
+
+     /**
+     * @ngdoc object
+     * @name filter
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used in {@link ui.grid.class:GridOptions.columnDef#properties_filter columnDef.filter}
+     * to configure filtering on the column
+     *
+     * `SELECT` and `INPUT` are used with the `type` property of the filter, the rest are used to specify
+     * one of the built-in conditions.
+     *
+     * Available `condition` options are:
+     * - `uiGridConstants.filter.STARTS_WITH`
+     * - `uiGridConstants.filter.ENDS_WITH`
+     * - `uiGridConstants.filter.CONTAINS`
+     * - `uiGridConstants.filter.GREATER_THAN`
+     * - `uiGridConstants.filter.GREATER_THAN_OR_EQUAL`
+     * - `uiGridConstants.filter.LESS_THAN`
+     * - `uiGridConstants.filter.LESS_THAN_OR_EQUAL`
+     * - `uiGridConstants.filter.NOT_EQUAL`
+     * - `uiGridConstants.filter.STARTS_WITH`
+     *
+     *
+     * Available `type` options are:
+     * - `uiGridConstants.filter.SELECT` - use a dropdown box for the cell header filter field
+     * - `uiGridConstants.filter.INPUT` - use a text box for the cell header filter field
+     */
     filter: {
       STARTS_WITH: 2,
       ENDS_WITH: 4,
@@ -45089,6 +43352,20 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
       INPUT: 'input'
     },
 
+    /**
+     * @ngdoc object
+     * @name aggregationTypes
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used in {@link ui.grid.class:GridOptions.columnDef#properties_aggregationType columnDef.aggregationType}
+     * to specify the type of built-in aggregation the column should use.
+     *
+     * Available options are:
+     * - `uiGridConstants.aggregationTypes.sum` - add the values in this column to produce the aggregated value
+     * - `uiGridConstants.aggregationTypes.count` - count the number of rows to produce the aggregated value
+     * - `uiGridConstants.aggregationTypes.avg` - average the values in this column to produce the aggregated value
+     * - `uiGridConstants.aggregationTypes.min` - use the minimum value in this column as the aggregated value
+     * - `uiGridConstants.aggregationTypes.max` - use the maximum value in this column as the aggregated value
+     */
     aggregationTypes: {
       sum: 2,
       count: 4,
@@ -45100,6 +43377,20 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
     // TODO(c0bra): Create full list of these somehow. NOTE: do any allow a space before or after them?
     CURRENCY_SYMBOLS: ['ƒ', '$', '£', '$', '¤', '¥', '៛', '₩', '₱', '฿', '₫'],
 
+    /**
+     * @ngdoc object
+     * @name scrollDirection
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Set on {@link ui.grid.class:Grid#properties_scrollDirection Grid.scrollDirection},
+     * to indicate the direction the grid is currently scrolling in
+     *
+     * Available options are:
+     * - `uiGridConstants.scrollDirection.UP` - set when the grid is scrolling up
+     * - `uiGridConstants.scrollDirection.DOWN` - set when the grid is scrolling down
+     * - `uiGridConstants.scrollDirection.LEFT` - set when the grid is scrolling left
+     * - `uiGridConstants.scrollDirection.RIGHT` - set when the grid is scrolling right
+     * - `uiGridConstants.scrollDirection.NONE` - set when the grid is not scrolling, this is the default
+     */
     scrollDirection: {
       UP: 'up',
       DOWN: 'down',
@@ -45109,6 +43400,22 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
 
     },
 
+    /**
+     * @ngdoc object
+     * @name dataChange
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used with {@link ui.grid.core.api:PublicApi#methods_notifyDataChange PublicApi.notifyDataChange},
+     * {@link ui.grid.class:Grid#methods_callDataChangeCallbacks Grid.callDataChangeCallbacks},
+     * and {@link ui.grid.class:Grid#methods_registerDataChangeCallback Grid.registerDataChangeCallback}
+     * to specify the type of the event(s).
+     *
+     * Available options are:
+     * - `uiGridConstants.dataChange.ALL` - listeners fired on any of these events, fires listeners on all events.
+     * - `uiGridConstants.dataChange.EDIT` - fired when the data in a cell is edited
+     * - `uiGridConstants.dataChange.ROW` - fired when a row is added or removed
+     * - `uiGridConstants.dataChange.COLUMN` - fired when the column definitions are modified
+     * - `uiGridConstants.dataChange.OPTIONS` - fired when the grid options are modified
+     */
     dataChange: {
       ALL: 'all',
       EDIT: 'edit',
@@ -45116,6 +43423,20 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
       COLUMN: 'column',
       OPTIONS: 'options'
     },
+
+    /**
+     * @ngdoc object
+     * @name scrollbars
+     * @propertyOf ui.grid.service:uiGridConstants
+     * @description Used with {@link ui.grid.class:GridOptions#properties_enableHorizontalScrollbar GridOptions.enableHorizontalScrollbar}
+     * and {@link ui.grid.class:GridOptions#properties_enableVerticalScrollbar GridOptions.enableVerticalScrollbar}
+     * to specify the scrollbar policy for that direction.
+     *
+     * Available options are:
+     * - `uiGridConstants.scrollbars.NEVER` - never show scrollbars in this direction
+     * - `uiGridConstants.scrollbars.ALWAYS` - always show scrollbars in this direction
+     */
+
     scrollbars: {
       NEVER: 0,
       ALWAYS: 1
@@ -45124,6 +43445,7 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
   });
 
 })();
+
 angular.module('ui.grid').directive('uiGridCell', ['$compile', '$parse', 'gridUtil', 'uiGridConstants', function ($compile, $parse, gridUtil, uiGridConstants) {
   var uiGridCell = {
     priority: 0,
@@ -46999,10 +45321,10 @@ function ($compile, $timeout, $window, $document, gridUtil, uiGridConstants, i18
       $scope.dynamicStyles = '';
 
       var setupHeightStyle = function(gridHeight) {
-        // magic number of 30 because the grid menu displays somewhat below
-        // the top of the grid. It is approximately 30px.
-        var gridMenuMaxHeight = gridHeight - 30;
-		$scope.dynamicStyles = [
+        //menu appears under header row, so substract that height from it's total
+        // additional 20px for general padding
+        var gridMenuMaxHeight = gridHeight - uiGridCtrl.grid.headerHeight - 20;
+        $scope.dynamicStyles = [
           '.grid' + uiGridCtrl.grid.id + ' .ui-grid-menu-mid {',
           'max-height: ' + gridMenuMaxHeight + 'px;',
           '}'
@@ -48686,8 +47008,9 @@ angular.module('ui.grid')
      * @ngdoc property
      * @name scrollDirection
      * @propertyOf ui.grid.class:Grid
-     * @description set one of the uiGridConstants.scrollDirection values (UP, DOWN, LEFT, RIGHT, NONE), which tells
-     * us which direction we are scrolling. Set to NONE via debounced method
+     * @description set one of the {@link ui.grid.service:uiGridConstants#properties_scrollDirection uiGridConstants.scrollDirection}
+     *  values (UP, DOWN, LEFT, RIGHT, NONE), which tells us which direction we are scrolling.
+     * Set to NONE via debounced method
      */
     self.scrollDirection = uiGridConstants.scrollDirection.NONE;
 
@@ -48988,8 +47311,8 @@ angular.module('ui.grid')
      * and you'd like cell classes to be re-evaluated, or changed config within
      * the columnDef and you'd like headerCellClasses to be re-evaluated.
      * @param {string} type one of the
-     * uiGridConstants.dataChange values (ALL, ROW, EDIT, COLUMN), which tells
-     * us which refreshes to fire.
+     * {@link ui.grid.service:uiGridConstants#properties_dataChange uiGridConstants.dataChange}
+     * values (ALL, ROW, EDIT, COLUMN), which tells us which refreshes to fire.
      *
      */
     self.api.registerMethod( 'core', 'notifyDataChange', this.notifyDataChange );
@@ -49121,8 +47444,8 @@ angular.module('ui.grid')
    *
    * @param {function(grid)} callback function to be called
    * @param {array} types the types of data change you want to be informed of.  Values from
-   * the uiGridConstants.dataChange values ( ALL, EDIT, ROW, COLUMN, OPTIONS ).  Optional and defaults to
-   * ALL
+   * the {@link ui.grid.service:uiGridConstants#properties_dataChange uiGridConstants.dataChange}
+   *  values ( ALL, EDIT, ROW, COLUMN, OPTIONS ).  Optional and defaults to ALL
    * @returns {function} deregister function - a function that can be called to deregister this callback
    */
   Grid.prototype.registerDataChangeCallback = function registerDataChangeCallback(callback, types, _this) {
@@ -49149,8 +47472,9 @@ angular.module('ui.grid')
    * @description Calls the callbacks based on the type of data change that
    * has occurred. Always calls the ALL callbacks, calls the ROW, EDIT, COLUMN and OPTIONS callbacks if the
    * event type is matching, or if the type is ALL.
-   * @param {number} type the type of event that occurred - one of the
-   * uiGridConstants.dataChange values (ALL, ROW, EDIT, COLUMN, OPTIONS)
+   * @param {string} type the type of event that occurred - one of the
+   * {@link ui.grid.service:uiGridConstants#properties_dataChange uiGridConstants.dataChange}
+   *  values (ALL, ROW, EDIT, COLUMN, OPTIONS)
    */
   Grid.prototype.callDataChangeCallbacks = function callDataChangeCallbacks(type, options) {
     angular.forEach( this.dataChangeCallbacks, function( callback, uid ){
@@ -49519,7 +47843,11 @@ angular.module('ui.grid')
    * @param {GridColumn} col col object
    */
   Grid.prototype.getQualifiedColField = function (col) {
-    return 'row.entity.' + gridUtil.preEval(col.field);
+    var base = 'row.entity';
+    if ( col.field === uiGridConstants.ENTITY_BINDING ) {
+      return base;
+    }
+    return gridUtil.preEval(base + '.' + col.field);
   };
 
   /**
@@ -49950,6 +48278,7 @@ angular.module('ui.grid')
         self.renderContainers[targetContainer].visibleRowCache.push(row);
       }
     }
+    self.api.core.raise.rowsVisibleChanged(this.api);
     self.api.core.raise.rowsRendered(this.api);
   };
 
@@ -50545,7 +48874,7 @@ angular.module('ui.grid')
       // Get the actual priority since there may be columns which have suppressRemoveSort set
       column.sort.priority = self.getNextColumnSortPriority();
     }
-    else if (!column.sort.priority){
+    else if (column.sort.priority === undefined){
       column.sort.priority = self.getNextColumnSortPriority();
     }
 
@@ -50563,7 +48892,7 @@ angular.module('ui.grid')
       if (column.sortDirectionCycle[i]) {
         column.sort.direction = column.sortDirectionCycle[i];
       } else {
-        column.sort = {};
+        removeSortOfColumn(column, self);
       }
     }
     else {
@@ -50573,6 +48902,18 @@ angular.module('ui.grid')
     self.api.core.raise.sortChanged( self, self.getColumnSorting() );
 
     return $q.when(column);
+  };
+
+  var removeSortOfColumn = function removeSortOfColumn(column, grid) {
+    //Decrease priority for every col where priority is higher than the removed sort's priority.
+    grid.columns.forEach(function (col) {
+      if (col.sort && col.sort.priority !== undefined && col.sort.priority > column.sort.priority) {
+        col.sort.priority -= 1;
+      }
+    });
+
+    //Remove sort
+    column.sort = {};
   };
 
   /**
@@ -51573,6 +49914,8 @@ angular.module('ui.grid')
    * @name filter
    * @propertyOf ui.grid.class:GridColumn
    * @description Filter on this column.
+   *
+   * Available built-in conditions and types are listed under {@link jui.grid.service:uiGridConstants#properties_filter uiGridOptions.filter}
    * @example
    * <pre>{ term: 'text', condition: uiGridConstants.filter.STARTS_WITH, placeholder: 'type to filter...', ariaLabel: 'Filter for text', flags: { caseSensitive: false }, type: uiGridConstants.filter.SELECT, [ { value: 1, label: 'male' }, { value: 2, label: 'female' } ] }</pre>
    *
@@ -51608,7 +49951,9 @@ angular.module('ui.grid')
        * @name aggregationType
        * @propertyOf ui.grid.class:GridOptions.columnDef
        * @description The aggregation that you'd like to show in the columnFooter for this
-       * column.  Valid values are in uiGridConstants, and currently include `uiGridConstants.aggregationTypes.count`,
+       * column.  Valid values are in
+       * {@link ui.grid.service:uiGridConstants#properties_aggregationTypes uiGridConstants.aggregationTypes},
+       * and currently include `uiGridConstants.aggregationTypes.count`,
        * `uiGridConstants.aggregationTypes.sum`, `uiGridConstants.aggregationTypes.avg`, `uiGridConstants.aggregationTypes.min`,
        * `uiGridConstants.aggregationTypes.max`.
        *
@@ -51776,7 +50121,8 @@ angular.module('ui.grid')
   * @propertyOf ui.grid.class:GridOptions.columnDef
   * @description An object of sort information, attributes are:
   *
-  * - direction: values are uiGridConstants.ASC or uiGridConstants.DESC
+  * - direction: values are {@link ui.grid.service:uiGridConstants#properties_ASC uiGridConstants.ASC}
+  *  or {@link ui.grid.service:uiGridConstants#properties_DESC uiGridConstants.DESC}
   * - ignoreSort: if set to true this sort is ignored (used by tree to manipulate the sort functionality)
   * - priority: says what order to sort the columns in (lower priority gets sorted first).
   * @example
@@ -52145,8 +50491,8 @@ angular.module('ui.grid')
      * @ngdoc property
      * @name sortDirectionCycle
      * @propertyOf ui.grid.class:GridOptions.columnDef
-     * @description (optional) An array of sort directions, specifying the order that they
-     * should cycle through as the user repeatedly clicks on the column heading.
+     * @description (optional) An array of {@link ui.grid.service:uiGridConstants#properties_ASC sort directions},
+     * specifying the order that they should cycle through as the user repeatedly clicks on the column heading.
      * The default is `[null, uiGridConstants.ASC, uiGridConstants.DESC]`. Null
      * refers to the unsorted state. This does not affect the initial sort
      * direction; use the {@link ui.grid.class:GridOptions.columnDef#sort sort}
@@ -52224,7 +50570,8 @@ angular.module('ui.grid')
      * A filter consists of a condition, a term, and a placeholder:
      *
      * - condition defines how rows are chosen as matching the filter term. This can be set to
-     * one of the constants in uiGridConstants.filter, or you can supply a custom filter function
+     * one of the constants in {@link ui.grid.service:uiGridConstants#properties_filter uiGridConstants.filter},
+     * or you can supply a custom filter function
      * that gets passed the following arguments: [searchTerm, cellValue, row, column].
      * - term: If set, the filter field will be pre-populated
      * with this value.
@@ -52232,9 +50579,12 @@ angular.module('ui.grid')
      * - ariaLabel: String that will be set to the `<input>.ariaLabel` attribute. This is what is read as a label to screen reader users.
      * - noTerm: set this to true if you have defined a custom function in condition, and
      * your custom function doesn't require a term (so it can run even when the term is null)
+     * - rawTerm: set this to true if you have defined a custom function in condition, and
+     * your custom function requires access to the raw unmodified search term that was entered
      * - flags: only flag currently available is `caseSensitive`, set to false if you don't want
      * case sensitive matching
-     * - type: defaults to uiGridConstants.filter.INPUT, which gives a text box.  If set to uiGridConstants.filter.SELECT
+     * - type: defaults to {@link ui.grid.service:uiGridConstants#properties_filter uiGridConstants.filter.INPUT},
+     * which gives a text box.  If set to {@link ui.grid.service:uiGridConstants#properties_filter uiGridConstants.filter.SELECT}
      * then a select box will be shown with options selectOptions
      * - selectOptions: options in the format `[ { value: 1, label: 'male' }]`.  No i18n filter is provided, you need
      * to perform the i18n on the values before you provide them
@@ -52840,7 +51190,8 @@ angular.module('ui.grid')
        * @ngdoc boolean
        * @name enableVerticalScrollbar
        * @propertyOf ui.grid.class:GridOptions
-       * @description uiGridConstants.scrollbars.ALWAYS by default. This settings controls the vertical scrollbar for the grid.
+       * @description {@link ui.grid.service:uiGridConstants#properties_scrollbars uiGridConstants.scrollbars.ALWAYS} by default.
+       * This settings controls the vertical scrollbar for the grid.
        * Supported values: uiGridConstants.scrollbars.ALWAYS, uiGridConstants.scrollbars.NEVER
        */
       baseOptions.enableVerticalScrollbar = typeof(baseOptions.enableVerticalScrollbar) !== "undefined" ? baseOptions.enableVerticalScrollbar : uiGridConstants.scrollbars.ALWAYS;
@@ -52849,7 +51200,8 @@ angular.module('ui.grid')
        * @ngdoc boolean
        * @name enableHorizontalScrollbar
        * @propertyOf ui.grid.class:GridOptions
-       * @description uiGridConstants.scrollbars.ALWAYS by default. This settings controls the horizontal scrollbar for the grid.
+       * @description {@link ui.grid.service:uiGridConstants#properties_scrollbars uiGridConstants.scrollbars.ALWAYS} by default.
+       * This settings controls the horizontal scrollbar for the grid.
        * Supported values: uiGridConstants.scrollbars.ALWAYS, uiGridConstants.scrollbars.NEVER
        */
       baseOptions.enableHorizontalScrollbar = typeof(baseOptions.enableHorizontalScrollbar) !== "undefined" ? baseOptions.enableHorizontalScrollbar : uiGridConstants.scrollbars.ALWAYS;
@@ -53756,7 +52108,7 @@ angular.module('ui.grid')
 (function(){
 
 angular.module('ui.grid')
-.factory('GridRow', ['gridUtil', function(gridUtil) {
+.factory('GridRow', ['gridUtil', 'uiGridConstants', function(gridUtil, uiGridConstants) {
 
    /**
    * @ngdoc function
@@ -53849,7 +52201,11 @@ angular.module('ui.grid')
      * @returns {string} resulting name that can be evaluated against a row
      */
   GridRow.prototype.getEntityQualifiedColField = function(col) {
-    return gridUtil.preEval('entity.' + col.field);
+    var base = 'entity';
+    if ( col.field === uiGridConstants.ENTITY_BINDING ) {
+      return base;
+    }
+    return gridUtil.preEval(base + '.' + col.field);
   };
   
   
@@ -54536,10 +52892,14 @@ module.service('rowSearcher', ['gridUtil', 'uiGridConstants', function (gridUtil
         }
     
         if ( !gridUtil.isNullOrUndefined(filter.term) ){
-          // it is possible to have noTerm.  We don't need to copy that across, it was just a flag to avoid
-          // getting the filter ignored if the filter was a function that didn't use a term
-          newFilter.term = rowSearcher.stripTerm(filter);
+          // it is possible to have noTerm.
+          if ( filter.rawTerm ){
+            newFilter.term = filter.term;
+          } else {
+            newFilter.term = rowSearcher.stripTerm(filter);
+          }
         }
+        newFilter.noTerm = filter.noTerm;
         
         if ( filter.condition ){
           newFilter.condition = filter.condition;
@@ -54808,8 +53168,8 @@ var module = angular.module('ui.grid');
 
 /**
  * @ngdoc object
- * @name ui.grid.class:RowSorter
- * @description RowSorter provides the default sorting mechanisms,
+ * @name ui.grid.class:rowSorter
+ * @description rowSorter provides the default sorting mechanisms,
  * including guessing column types and applying appropriate sort
  * algorithms
  *
@@ -54836,7 +53196,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name guessSortFn
    * @description Assigns a sort function to use based on the itemType in the column
    * @param {string} itemType one of 'number', 'boolean', 'string', 'date', 'object'.  And
@@ -54865,7 +53225,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name handleNulls
    * @description Sorts nulls and undefined to the bottom (top when
    * descending).  Called by each of the internal sorters before
@@ -54896,7 +53256,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name basicSort
    * @description Sorts any values that provide the < method, including strings
    * or numbers.  Handles nulls and undefined through calling handleNulls
@@ -54922,7 +53282,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sortNumber
    * @description Sorts numerical values.  Handles nulls and undefined through calling handleNulls
    * @param {object} a sort value a
@@ -54941,7 +53301,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sortNumberStr
    * @description Sorts numerical values that are stored in a string (i.e. parses them to numbers first).
    * Handles nulls and undefined through calling handleNulls
@@ -54995,7 +53355,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sortAlpha
    * @description Sorts string values. Handles nulls and undefined through calling handleNulls
    * @param {object} a sort value a
@@ -55017,7 +53377,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sortDate
    * @description Sorts date values. Handles nulls and undefined through calling handleNulls.
    * Handles date strings by converting to Date object if not already an instance of Date
@@ -55046,7 +53406,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sortBool
    * @description Sorts boolean values, true is considered larger than false.
    * Handles nulls and undefined through calling handleNulls
@@ -55075,7 +53435,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name getSortFn
    * @description Get the sort function for the column.  Looks first in
    * rowSorter.colSortFnCache using the column name, failing that it
@@ -55135,7 +53495,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
 
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name prioritySort
    * @description Used where multiple columns are present in the sort criteria,
    * we determine which column should take precedence in the sort by sorting
@@ -55188,7 +53548,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
    */
   /**
    * @ngdoc method
-   * @methodOf ui.grid.class:RowSorter
+   * @methodOf ui.grid.class:rowSorter
    * @name sort
    * @description sorts the grid
    * @param {Object} grid the grid itself
@@ -56880,6 +55240,19 @@ module.filter('px', function() {
           invalidCsv: 'File was unable to be processed, is it valid CSV?',
           invalidJson: 'File was unable to be processed, is it valid Json?',
           jsonNotArray: 'Imported json file must contain an array, aborting.'
+        },
+        pagination: {
+          aria: {
+            pageToFirst: 'Gå til første',
+            pageBack: 'Gå tilbage',
+            pageSelected: 'Valgte side',
+            pageForward: 'Gå frem',
+            pageToLast: 'Gå til sidste'
+          },
+          sizes: 'genstande per side',
+          totalItems: 'genstande',
+          through: 'gennem',
+          of: 'af'
         }
       });
       return $delegate;
@@ -57350,6 +55723,15 @@ module.filter('px', function() {
   angular.module('ui.grid').config(['$provide', function($provide) {
     $provide.decorator('i18nService', ['$delegate', function($delegate) {
       $delegate.add('fr', {
+        headerCell: {
+          aria: {
+            defaultFilterLabel: 'Filtre de la colonne',
+            removeFilter: 'Supprimer le filtre',
+            columnMenuButtonLabel: 'Menu de la colonne'
+          },
+          priority: 'Priorité:',
+          filterLabel: "Filtre de la colonne: "
+        },
         aggregate: {
           label: 'éléments'
         },
@@ -57373,6 +55755,7 @@ module.filter('px', function() {
         sort: {
           ascending: 'Trier par ordre croissant',
           descending: 'Trier par ordre décroissant',
+          none: 'Aucun tri',
           remove: 'Enlever le tri'
         },
         column: {
@@ -57390,7 +55773,13 @@ module.filter('px', function() {
           pinRight: 'Épingler à droite',
           unpin: 'Détacher'
         },
+        columnMenu: {
+          close: 'Fermer'
+        },
         gridMenu: {
+          aria: {
+            buttonLabel: 'Menu du tableau'
+          },
           columns: 'Colonnes:',
           importerTitle: 'Importer un fichier',
           exporterAllAsCsv: 'Exporter toutes les données en CSV',
@@ -57409,19 +55798,33 @@ module.filter('px', function() {
           jsonNotArray: 'Le fichier JSON importé doit contenir un tableau, abandon.'
         },
         pagination: {
+          aria: {
+            pageToFirst: 'Aller à la première page',
+            pageBack: 'Page précédente',
+            pageSelected: 'Page sélectionnée',
+            pageForward: 'Page suivante',
+            pageToLast: 'Aller à la dernière page'
+          },
           sizes: 'éléments par page',
           totalItems: 'éléments',
+          through: 'à',
           of: 'sur'
         },
         grouping: {
           group: 'Grouper',
           ungroup: 'Dégrouper',
-          aggregate_count: 'Agg: Compte',
+          aggregate_count: 'Agg: Compter',
           aggregate_sum: 'Agg: Somme',
           aggregate_max: 'Agg: Max',
           aggregate_min: 'Agg: Min',
           aggregate_avg: 'Agg: Moy',
           aggregate_remove: 'Agg: Retirer'
+        },
+        validate: {
+          error: 'Erreur:',
+          minLength: 'La valeur doit être supérieure ou égale à THRESHOLD caractères.',
+          maxLength: 'La valeur doit être inférieure ou égale à THRESHOLD caractères.',
+          required: 'Une valeur est nécéssaire.'
         }
       });
       return $delegate;
@@ -57621,6 +56024,19 @@ module.filter('px', function() {
           invalidCsv: 'Impossibile elaborare il file, sicuro che sia un CSV?',
           invalidJson: 'Impossibile elaborare il file, sicuro che sia un JSON valido?',
           jsonNotArray: 'Errore! Il file JSON da importare deve contenere un array.'
+        },
+        pagination: {
+          aria: {
+            pageToFirst: 'Prima',
+            pageBack: 'Indietro',
+            pageSelected: 'Pagina selezionata',
+            pageForward: 'Avanti',
+            pageToLast: 'Ultima'
+          },
+          sizes: 'elementi per pagina',
+          totalItems: 'elementi',
+          through: 'a',
+          of: 'di'
         },
         grouping: {
           group: 'Raggruppa',
@@ -58842,6 +57258,113 @@ module.filter('px', function() {
     }]);
   }]);
 })();
+(function () {
+  angular.module('ui.grid').config(['$provide', function($provide) {
+    $provide.decorator('i18nService', ['$delegate', function($delegate) {
+      $delegate.add('ua', {
+        headerCell: {
+          aria: {
+            defaultFilterLabel: 'Фільтр стовпчика',
+            removeFilter: 'Видалити фільтр',
+            columnMenuButtonLabel: 'Меню ствпчика'
+          },
+          priority: 'Пріоритет:',
+          filterLabel: "Фільтр стовпчика: "
+        },
+        aggregate: {
+          label: 'елементи'
+        },
+        groupPanel: {
+          description: 'Для групування за стовпчиком перетягніть сюди його назву.'
+        },
+        search: {
+          placeholder: 'Пошук...',
+          showingItems: 'Показати елементи:',
+          selectedItems: 'Обрані елементи:',
+          totalItems: 'Усього елементів:',
+          size: 'Розмір сторінки:',
+          first: 'Перша сторінка',
+          next: 'Наступна сторінка',
+          previous: 'Попередня сторінка',
+          last: 'Остання сторінка'
+        },
+        menu: {
+          text: 'Обрати ствпчики:'
+        },
+        sort: {
+          ascending: 'За зростанням',
+          descending: 'За спаданням',
+          none: 'Без сортування',
+          remove: 'Прибрати сортування'
+        },
+        column: {
+          hide: 'Приховати стовпчик'
+        },
+        aggregation: {
+          count: 'усього рядків: ',
+          sum: 'ітого: ',
+          avg: 'середнє: ',
+          min: 'мін: ',
+          max: 'макс: '
+        },
+				pinning: {
+					pinLeft: 'Закріпити ліворуч',
+					pinRight: 'Закріпити праворуч',
+					unpin: 'Відкріпити'
+				},
+        columnMenu: {
+          close: 'Закрити'
+        },
+        gridMenu: {
+          aria: {
+            buttonLabel: 'Меню'
+          },
+          columns: 'Стовпчики:',
+          importerTitle: 'Імпортувати файл',
+          exporterAllAsCsv: 'Експортувати все в CSV',
+          exporterVisibleAsCsv: 'Експортувати видимі дані в CSV',
+          exporterSelectedAsCsv: 'Експортувати обрані дані в CSV',
+          exporterAllAsPdf: 'Експортувати все в PDF',
+          exporterVisibleAsPdf: 'Експортувати видимі дані в PDF',
+          exporterSelectedAsPdf: 'Експортувати обрані дані в PDF',
+          clearAllFilters: 'Очистити всі фільтри'
+        },
+        importer: {
+          noHeaders: 'Не вдалося отримати назви стовпчиків, чи є в файлі заголовок?',
+          noObjects: 'Не вдалося отримати дані, чи є в файлі рядки окрім заголовка?',
+          invalidCsv: 'Не вдалося обробити файл, чи це коректний CSV-файл?',
+          invalidJson: 'Не вдалося обробити файл, чи це коректний JSON?',
+          jsonNotArray: 'JSON-файл що імпортується повинен містити масив, операцію скасовано.'
+        },
+        pagination: {
+          aria: {
+            pageToFirst: 'Перша сторінка',
+            pageBack: 'Попередня сторінка',
+            pageSelected: 'Обрана сторінка',
+            pageForward: 'Наступна сторінка',
+            pageToLast: 'Остання сторінка'
+          },
+          sizes: 'рядків на сторінку',
+          totalItems: 'рядків',
+          through: 'по',
+          of: 'з'
+        },
+        grouping: {
+          group: 'Групувати',
+          ungroup: 'Розгрупувати',
+          aggregate_count: 'Групувати: Кількість',
+          aggregate_sum: 'Для групи: Сума',
+          aggregate_max: 'Для групи: Максимум',
+          aggregate_min: 'Для групи: Мінімум',
+          aggregate_avg: 'Для групи: Серднє',
+          aggregate_remove: 'Для групи: Пусто'
+        }
+      });
+      return $delegate;
+    }]);
+  }]);
+})();
+
 /**
  * @ngdoc overview
  * @name ui.grid.i18n
@@ -61250,20 +59773,18 @@ module.filter('px', function() {
                 return;
               }
 
+              var modelField = $scope.row.getQualifiedColField($scope.col);
+              if ($scope.col.colDef.editModelField) {
+                modelField = gridUtil.preEval('row.entity.' + $scope.col.colDef.editModelField);
+              }
 
-              cellModel = $parse($scope.row.getQualifiedColField($scope.col));
+              cellModel = $parse(modelField);
+
               //get original value from the cell
               origCellValue = cellModel($scope);
 
               html = $scope.col.editableCellTemplate;
-
-              if ($scope.col.colDef.editModelField) {
-                html = html.replace(uiGridConstants.MODEL_COL_FIELD, gridUtil.preEval('row.entity.' + $scope.col.colDef.editModelField));
-              }
-              else {
-                html = html.replace(uiGridConstants.MODEL_COL_FIELD, $scope.row.getQualifiedColField($scope.col));
-              }
-
+              html = html.replace(uiGridConstants.MODEL_COL_FIELD, modelField);
               html = html.replace(uiGridConstants.COL_FIELD, 'grid.getCellValue(row, col)');
 
               var optionFilter = $scope.col.colDef.editDropdownFilter ? '|' + $scope.col.colDef.editDropdownFilter : '';
@@ -61456,7 +59977,7 @@ module.filter('px', function() {
                   $timeout(function () {
                     $elm[0].focus();
                     //only select text if it is not being replaced below in the cellNav viewPortKeyPress
-                    if ($elm[0].select && $scope.col.colDef.enableCellEditOnFocus || !(uiGridCtrl && uiGridCtrl.grid.api.cellNav)) {
+                    if ($elm[0].select && ($scope.col.colDef.enableCellEditOnFocus || !(uiGridCtrl && uiGridCtrl.grid.api.cellNav))) {
                       $elm[0].select();
                     }
                     else {
@@ -62245,8 +60766,9 @@ module.filter('px', function() {
                       }
                     }
                   }
-                  var expandedRowElement = $compile(template)($scope);
+                  var expandedRowElement = angular.element(template);
                   $elm.append(expandedRowElement);
+                  expandedRowElement = $compile(expandedRowElement)($scope);
                   $scope.row.expandedRendered = true;
               });
             },
@@ -63174,7 +61696,7 @@ module.filter('px', function() {
 
         /**
          * @ngdoc function
-         * @name formatAsCSV
+         * @name formatAsCsv
          * @methodOf  ui.grid.exporter.service:uiGridExporterService
          * @description Formats the column headers and data as a CSV,
          * and sends that data to the user
@@ -66380,13 +64902,14 @@ module.filter('px', function() {
         }
 
         //check columns in between move-range to make sure they are visible columns
-        var i0 = Math.min(originalPosition, newPosition);
-        for (i0; i0 < Math.max(originalPosition, newPosition);i0++) {
+        var pos = (originalPosition < newPosition) ? originalPosition + 1 : originalPosition - 1;
+        var i0 = Math.min(pos, newPosition);
+        for (i0; i0 <= Math.max(pos, newPosition); i0++) {
           if (columns[i0].visible) {
             break;
           }
         }
-        if (i0 === Math.max(originalPosition, newPosition)) {
+        if (i0 > Math.max(pos, newPosition)) {
           //no visible column found, column did not visibly move
           return;
         }
@@ -66528,7 +65051,7 @@ module.filter('px', function() {
                     gridLeft += $scope.grid.renderContainers.left.header[0].getBoundingClientRect().width;
                   }
 
-                  previousMouseX = event.pageX;
+                  previousMouseX = event.pageX || (event.originalEvent ? event.originalEvent.pageX : 0);
                   totalMouseMovement = 0;
                   rightMoveLimit = gridLeft + $scope.grid.getViewportWidth();
 
@@ -66542,7 +65065,8 @@ module.filter('px', function() {
                 };
 
                 var moveFn = function( event ) {
-                  var changeValue = event.pageX - previousMouseX;
+                  var pageX = event.pageX || (event.originalEvent ? event.originalEvent.pageX : 0);
+                  var changeValue = pageX - previousMouseX;
                   if ( changeValue === 0 ){ return; }
                   //Disable text selection in Chrome during column move
                   document.onselectstart = function() { return false; };
@@ -66554,7 +65078,7 @@ module.filter('px', function() {
                   }
                   else if (elmCloned) {
                     moveElement(changeValue);
-                    previousMouseX = event.pageX;
+                    previousMouseX = pageX;
                   }
                 };
 
@@ -69649,12 +68173,9 @@ module.filter('px', function() {
          * @param {bool} selected value to set
          */
         $delegate.prototype.setSelected = function(selected) {
-          this.isSelected = selected;
-          if (selected) {
-            this.grid.selection.selectedCount++;
-          }
-          else {
-            this.grid.selection.selectedCount--;
+          if (selected !== this.isSelected) {
+            this.isSelected = selected;
+            this.grid.selection.selectedCount += selected ? 1 : -1;
           }
         };
 
@@ -72766,16 +71287,21 @@ module.filter('px', function() {
           };
         };
 
+        var promises = [];
+
         for (var validatorName in colDef.validators) {
           service.clearError(rowEntity, colDef, validatorName);
           var msg;
           var validatorFunction = service.getValidator(validatorName, colDef.validators[validatorName]);
           // We pass the arguments as oldValue, newValue so they are in the same order 
           // as ng-model validators (modelValue, viewValue)
-          $q.when(validatorFunction(oldValue, newValue, rowEntity, colDef))
-            .then(validateClosureFactory(rowEntity, colDef, validatorName)
-          );
+          var promise = $q
+                        .when(validatorFunction(oldValue, newValue, rowEntity, colDef))
+                        .then(validateClosureFactory(rowEntity, colDef, validatorName));
+          promises.push(promise);
         }
+        
+        return $q.all(promises);
       },
 
       /**
@@ -72987,6 +71513,7 @@ module.filter('px', function() {
     };
   }]);
 })();
+
 angular.module('ui.grid').run(['$templateCache', function($templateCache) {
   'use strict';
 
@@ -73222,6 +71749,21 @@ angular.module('ui.grid').run(['$templateCache', function($templateCache) {
 
 }]);
 
+/*!
+ * ui-grid - v3.2.9 - 2016-09-21
+ * Copyright (c) 2016 ; License: MIT 
+ */
+
+!function(){"use strict";angular.module("ui.grid.i18n",[]),angular.module("ui.grid",["ui.grid.i18n"])}(),function(){"use strict";angular.module("ui.grid").constant("uiGridConstants",{LOG_DEBUG_MESSAGES:!0,LOG_WARN_MESSAGES:!0,LOG_ERROR_MESSAGES:!0,CUSTOM_FILTERS:/CUSTOM_FILTERS/g,COL_FIELD:/COL_FIELD/g,MODEL_COL_FIELD:/MODEL_COL_FIELD/g,TOOLTIP:/title=\"TOOLTIP\"/g,DISPLAY_CELL_TEMPLATE:/DISPLAY_CELL_TEMPLATE/g,TEMPLATE_REGEXP:/<.+>/,FUNC_REGEXP:/(\([^)]*\))?$/,DOT_REGEXP:/\./g,APOS_REGEXP:/'/g,BRACKET_REGEXP:/^(.*)((?:\s*\[\s*\d+\s*\]\s*)|(?:\s*\[\s*"(?:[^"\\]|\\.)*"\s*\]\s*)|(?:\s*\[\s*'(?:[^'\\]|\\.)*'\s*\]\s*))(.*)$/,COL_CLASS_PREFIX:"ui-grid-col",ENTITY_BINDING:"$$this",events:{GRID_SCROLL:"uiGridScroll",COLUMN_MENU_SHOWN:"uiGridColMenuShown",ITEM_DRAGGING:"uiGridItemDragStart",COLUMN_HEADER_CLICK:"uiGridColumnHeaderClick"},keymap:{TAB:9,STRG:17,CAPSLOCK:20,CTRL:17,CTRLRIGHT:18,CTRLR:18,SHIFT:16,RETURN:13,ENTER:13,BACKSPACE:8,BCKSP:8,ALT:18,ALTR:17,ALTRIGHT:17,SPACE:32,WIN:91,MAC:91,FN:null,PG_UP:33,PG_DOWN:34,UP:38,DOWN:40,LEFT:37,RIGHT:39,ESC:27,DEL:46,F1:112,F2:113,F3:114,F4:115,F5:116,F6:117,F7:118,F8:119,F9:120,F10:121,F11:122,F12:123},ASC:"asc",DESC:"desc",filter:{STARTS_WITH:2,ENDS_WITH:4,EXACT:8,CONTAINS:16,GREATER_THAN:32,GREATER_THAN_OR_EQUAL:64,LESS_THAN:128,LESS_THAN_OR_EQUAL:256,NOT_EQUAL:512,SELECT:"select",INPUT:"input"},aggregationTypes:{sum:2,count:4,avg:8,min:16,max:32},CURRENCY_SYMBOLS:["ƒ","$","£","$","¤","¥","៛","₩","₱","฿","₫"],scrollDirection:{UP:"up",DOWN:"down",LEFT:"left",RIGHT:"right",NONE:"none"},dataChange:{ALL:"all",EDIT:"edit",ROW:"row",COLUMN:"column",OPTIONS:"options"},scrollbars:{NEVER:0,ALWAYS:1}})}(),angular.module("ui.grid").directive("uiGridCell",["$compile","$parse","gridUtil","uiGridConstants",function(a,b,c,d){var e={priority:0,scope:!1,require:"?^uiGrid",compile:function(){return{pre:function(b,e,f,g){function h(){var a=b.col.compiledElementFn;a(b,function(a,b){e.append(a)})}if(g&&b.col.compiledElementFn)h();else if(g&&!b.col.compiledElementFn)b.col.getCompiledElementFn().then(function(a){a(b,function(a,b){e.append(a)})});else{var i=b.col.cellTemplate.replace(d.MODEL_COL_FIELD,"row.entity."+c.preEval(b.col.field)).replace(d.COL_FIELD,"grid.getCellValue(row, col)"),j=a(i)(b);e.append(j)}},post:function(a,b,c,e){var f=a.col.getColClass(!1);b.addClass(f);var g,h=function(c){var d=b;g&&(d.removeClass(g),g=null),g=angular.isFunction(a.col.cellClass)?a.col.cellClass(a.grid,a.row,a.col,a.rowRenderIndex,a.colRenderIndex):a.col.cellClass,d.addClass(g)};a.col.cellClass&&h();var i=a.grid.registerDataChangeCallback(h,[d.dataChange.COLUMN,d.dataChange.EDIT]),j=function(c,d){if(c!==d){(g||a.col.cellClass)&&h();var e=a.col.getColClass(!1);e!==f&&(b.removeClass(f),b.addClass(e),f=e)}},k=a.$watch("row",j),l=function(){i(),k()};a.$on("$destroy",l),b.on("$destroy",l)}}}};return e}]),function(){angular.module("ui.grid").service("uiGridColumnMenuService",["i18nService","uiGridConstants","gridUtil",function(a,b,c){var d={initialize:function(a,b){a.grid=b.grid,b.columnMenuScope=a,a.menuShown=!1},setColMenuItemWatch:function(a){var b=a.$watch("col.menuItems",function(b){"undefined"!=typeof b&&b&&angular.isArray(b)?(b.forEach(function(b){"undefined"!=typeof b.context&&b.context||(b.context={}),b.context.col=a.col}),a.menuItems=a.defaultMenuItems.concat(b)):a.menuItems=a.defaultMenuItems});a.$on("$destroy",b)},sortable:function(a){return a.grid.options.enableSorting&&"undefined"!=typeof a.col&&a.col&&a.col.enableSorting?!0:!1},isActiveSort:function(a,b){return"undefined"!=typeof a.col&&"undefined"!=typeof a.col.sort&&"undefined"!=typeof a.col.sort.direction&&a.col.sort.direction===b},suppressRemoveSort:function(a){return a.col&&a.col.suppressRemoveSort?!0:!1},hideable:function(a){return"undefined"!=typeof a.col&&a.col&&a.col.colDef&&a.col.colDef.enableHiding===!1?!1:!0},getDefaultMenuItems:function(c){return[{title:a.getSafeText("sort.ascending"),icon:"ui-grid-icon-sort-alt-up",action:function(a){a.stopPropagation(),c.sortColumn(a,b.ASC)},shown:function(){return d.sortable(c)},active:function(){return d.isActiveSort(c,b.ASC)}},{title:a.getSafeText("sort.descending"),icon:"ui-grid-icon-sort-alt-down",action:function(a){a.stopPropagation(),c.sortColumn(a,b.DESC)},shown:function(){return d.sortable(c)},active:function(){return d.isActiveSort(c,b.DESC)}},{title:a.getSafeText("sort.remove"),icon:"ui-grid-icon-cancel",action:function(a){a.stopPropagation(),c.unsortColumn()},shown:function(){return d.sortable(c)&&"undefined"!=typeof c.col&&"undefined"!=typeof c.col.sort&&"undefined"!=typeof c.col.sort.direction&&null!==c.col.sort.direction&&!d.suppressRemoveSort(c)}},{title:a.getSafeText("column.hide"),icon:"ui-grid-icon-cancel",shown:function(){return d.hideable(c)},action:function(a){a.stopPropagation(),c.hideColumn()}}]},getColumnElementPosition:function(a,b,d){var e={};return e.left=d[0].offsetLeft,e.top=d[0].offsetTop,e.parentLeft=d[0].offsetParent.offsetLeft,e.offset=0,b.grid.options.offsetLeft&&(e.offset=b.grid.options.offsetLeft),e.height=c.elementHeight(d,!0),e.width=c.elementWidth(d,!0),e},repositionMenu:function(a,b,d,e,f){var g=e[0].querySelectorAll(".ui-grid-menu"),h=c.closestElm(f,".ui-grid-render-container"),i=h.getBoundingClientRect().left-a.grid.element[0].getBoundingClientRect().left,j=h.querySelectorAll(".ui-grid-viewport")[0].scrollLeft,k=b.lastMenuWidth?b.lastMenuWidth:a.lastMenuWidth?a.lastMenuWidth:170,l=b.lastMenuPaddingRight?b.lastMenuPaddingRight:a.lastMenuPaddingRight?a.lastMenuPaddingRight:10;if(0!==g.length){var m=g[0].querySelectorAll(".ui-grid-menu-mid");0===m.length||angular.element(m).hasClass("ng-hide")||(k=c.elementWidth(g,!0),a.lastMenuWidth=k,b.lastMenuWidth=k,l=parseInt(c.getStyles(angular.element(g)[0]).paddingRight,10),a.lastMenuPaddingRight=l,b.lastMenuPaddingRight=l)}var n=d.left+i-j+d.parentLeft+d.width-k+l;n<d.offset&&(n=d.offset),e.css("left",n+"px"),e.css("top",d.top+d.height+"px")}};return d}]).directive("uiGridColumnMenu",["$timeout","gridUtil","uiGridConstants","uiGridColumnMenuService","$document",function(a,b,c,d,e){var f={priority:0,scope:!0,require:"^uiGrid",templateUrl:"ui-grid/uiGridColumnMenu",replace:!0,link:function(f,g,h,i){d.initialize(f,i),f.defaultMenuItems=d.getDefaultMenuItems(f),f.menuItems=f.defaultMenuItems,d.setColMenuItemWatch(f),f.showMenu=function(a,b,c){f.col=a;var e=d.getColumnElementPosition(f,a,b);f.menuShown?(f.colElement=b,f.colElementPosition=e,f.hideThenShow=!0,f.$broadcast("hide-menu",{originalEvent:c})):(f.menuShown=!0,d.repositionMenu(f,a,e,g,b),f.colElement=b,f.colElementPosition=e,f.$broadcast("show-menu",{originalEvent:c}))},f.hideMenu=function(a){f.menuShown=!1,a||f.$broadcast("hide-menu")},f.$on("menu-hidden",function(){f.hideThenShow?(delete f.hideThenShow,d.repositionMenu(f,f.col,f.colElementPosition,g,f.colElement),f.$broadcast("show-menu"),f.menuShown=!0):(f.hideMenu(!0),f.col&&b.focus.bySelector(e,".ui-grid-header-cell."+f.col.getColClass()+" .ui-grid-column-menu-button",f.col.grid,!1))}),f.$on("menu-shown",function(){a(function(){d.repositionMenu(f,f.col,f.colElementPosition,g,f.colElement),b.focus.bySelector(e,".ui-grid-menu-items .ui-grid-menu-item",!0),delete f.colElementPosition,delete f.columnElement},200)}),f.sortColumn=function(a,b){a.stopPropagation(),f.grid.sortColumn(f.col,b,!0).then(function(){f.grid.refresh(),f.hideMenu()})},f.unsortColumn=function(){f.col.unsort(),f.grid.refresh(),f.hideMenu()};var j=function(){a(function(){var a,c=function(){return b.focus.byId("grid-menu",f.grid)};f.grid.columns.some(function(b,c){return angular.equals(b,f.col)?(a=c,!0):void 0});var d;if(f.grid.columns.some(function(b,c){if(!b.visible)return!1;if(a>c)d=b;else{if(c>a&&!d)return d=b,!0;if(c>a&&d)return!0}}),d){var g=d.getColClass();b.focus.bySelector(e,".ui-grid-header-cell."+g+" .ui-grid-header-cell-primary-focus",!0).then(angular.noop,function(a){return"canceled"!==a?c():void 0})}else c()})};f.hideColumn=function(){f.col.colDef.visible=!1,f.col.visible=!1,f.grid.queueGridRefresh(),f.hideMenu(),f.grid.api.core.notifyDataChange(c.dataChange.COLUMN),f.grid.api.core.raise.columnVisibilityChanged(f.col),j()}},controller:["$scope",function(a){var b=this;a.$watch("menuItems",function(a){b.menuItems=a})}]};return f}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridFilter",["$compile","$templateCache","i18nService","gridUtil",function(a,b,c,d){return{compile:function(){return{pre:function(b,c,d,e){b.col.updateFilters=function(d){if(c.children().remove(),d){var e=b.col.filterHeaderTemplate;c.append(a(e)(b))}},b.$on("$destroy",function(){delete b.col.updateFilters})},post:function(a,b,e,f){a.aria=c.getSafeText("headerCell.aria"),a.removeFilter=function(a,c){a.term=null,d.focus.bySelector(b,".ui-grid-filter-input-"+c)}}}}}}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridFooterCell",["$timeout","gridUtil","uiGridConstants","$compile",function(a,b,c,d){var e={priority:0,scope:{col:"=",row:"=",renderIndex:"="},replace:!0,require:"^uiGrid",compile:function(a,b,e){return{pre:function(a,b,c,e){var f=d(a.col.footerCellTemplate)(a);b.append(f)},post:function(a,b,d,e){a.grid=e.grid;var f=a.col.getColClass(!1);b.addClass(f);var g,h=function(c){var d=b;g&&(d.removeClass(g),g=null),g=angular.isFunction(a.col.footerCellClass)?a.col.footerCellClass(a.grid,a.row,a.col,a.rowRenderIndex,a.colRenderIndex):a.col.footerCellClass,d.addClass(g)};a.col.footerCellClass&&h(),a.col.updateAggregationValue();var i=a.grid.registerDataChangeCallback(h,[c.dataChange.COLUMN]);a.grid.api.core.on.rowsRendered(a,a.col.updateAggregationValue),a.grid.api.core.on.rowsRendered(a,h),a.$on("$destroy",i)}}}};return e}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridFooter",["$templateCache","$compile","uiGridConstants","gridUtil","$timeout",function(a,b,c,d,e){return{restrict:"EA",replace:!0,require:["^uiGrid","^uiGridRenderContainer"],scope:!0,compile:function(a,c){return{pre:function(a,c,e,f){var g=f[0],h=f[1];a.grid=g.grid,a.colContainer=h.colContainer,h.footer=c;var i=a.grid.options.footerTemplate;d.getTemplate(i).then(function(d){var e=angular.element(d),f=b(e)(a);if(c.append(f),h){var g=c[0].getElementsByClassName("ui-grid-footer-viewport")[0];g&&(h.footerViewport=g)}})},post:function(a,b,c,e){var f=e[0],g=e[1];f.grid;d.disableAnimations(b),g.footer=b;var h=b[0].getElementsByClassName("ui-grid-footer-viewport")[0];h&&(g.footerViewport=h)}}}}}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridGridFooter",["$templateCache","$compile","uiGridConstants","gridUtil","$timeout",function(a,b,c,d,e){return{restrict:"EA",replace:!0,require:"^uiGrid",scope:!0,compile:function(a,c){return{pre:function(a,c,e,f){a.grid=f.grid;var g=a.grid.options.gridFooterTemplate;d.getTemplate(g).then(function(d){var e=angular.element(d),f=b(e)(a);c.append(f)})},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridGroupPanel",["$compile","uiGridConstants","gridUtil",function(a,b,c){var d="ui-grid/ui-grid-group-panel";return{restrict:"EA",replace:!0,require:"?^uiGrid",scope:!1,compile:function(b,e){return{pre:function(b,e,f,g){var h=b.grid.options.groupPanelTemplate||d;c.getTemplate(h).then(function(c){var d=angular.element(c),f=a(d)(b);e.append(f)})},post:function(a,b,c,d){b.bind("$destroy",function(){})}}}}}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridHeaderCell",["$compile","$timeout","$window","$document","gridUtil","uiGridConstants","ScrollEvent","i18nService",function(a,b,c,d,e,f,g,h){var i=500,j=500,k={priority:0,scope:{col:"=",row:"=",renderIndex:"="},require:["^uiGrid","^uiGridRenderContainer"],replace:!0,compile:function(){return{pre:function(b,c,d){var e=a(b.col.headerCellTemplate)(b);c.append(e)},post:function(a,c,e,g){var k=g[0],l=g[1];a.i18n={headerCell:h.getSafeText("headerCell"),sort:h.getSafeText("sort")},a.isSortPriorityVisible=function(){return angular.isNumber(a.col.sort.priority)&&a.grid.columns.some(function(b,c){return angular.isNumber(b.sort.priority)&&b!==a.col})},a.getSortDirectionAriaLabel=function(){var b=a.col,c=b.sort.direction===f.ASC?a.i18n.sort.ascending:b.sort.direction===f.DESC?a.i18n.sort.descending:a.i18n.sort.none,d=c;return a.isSortPriorityVisible()&&(d=d+". "+a.i18n.headerCell.priority+" "+b.sort.priority),d},a.grid=k.grid,a.renderContainer=k.grid.renderContainers[l.containerId];var m=a.col.getColClass(!1);c.addClass(m),a.menuShown=!1,a.asc=f.ASC,a.desc=f.DESC;var n,o,p=(angular.element(c[0].querySelectorAll(".ui-grid-header-cell-menu")),angular.element(c[0].querySelectorAll(".ui-grid-cell-contents"))),q=[];a.downFn=function(e){e.stopPropagation(),"undefined"!=typeof e.originalEvent&&void 0!==e.originalEvent&&(e=e.originalEvent),e.button&&0!==e.button||(o=e.pageX,a.mousedownStartTime=(new Date).getTime(),a.mousedownTimeout=b(function(){},i),a.mousedownTimeout.then(function(){a.colMenu&&k.columnMenuScope.showMenu(a.col,c,e)}),k.fireEvent(f.events.COLUMN_HEADER_CLICK,{event:e,columnName:a.col.colDef.name}),a.offAllEvents(),"touchstart"===e.type?(d.on("touchend",a.upFn),d.on("touchmove",a.moveFn)):"mousedown"===e.type&&(d.on("mouseup",a.upFn),d.on("mousemove",a.moveFn)))},a.upFn=function(c){c.stopPropagation(),b.cancel(a.mousedownTimeout),a.offAllEvents(),a.onDownEvents(c.type);var d=(new Date).getTime(),e=d-a.mousedownStartTime;e>i||a.sortable&&a.handleClick(c)},a.moveFn=function(c){var d=c.pageX-o;0!==d&&(b.cancel(a.mousedownTimeout),a.offAllEvents(),a.onDownEvents(c.type))},a.clickFn=function(b){b.stopPropagation(),p.off("click",a.clickFn)},a.offAllEvents=function(){p.off("touchstart",a.downFn),p.off("mousedown",a.downFn),d.off("touchend",a.upFn),d.off("mouseup",a.upFn),d.off("touchmove",a.moveFn),d.off("mousemove",a.moveFn),p.off("click",a.clickFn)},a.onDownEvents=function(c){switch(c){case"touchmove":case"touchend":p.on("click",a.clickFn),p.on("touchstart",a.downFn),b(function(){p.on("mousedown",a.downFn)},j);break;case"mousemove":case"mouseup":p.on("click",a.clickFn),p.on("mousedown",a.downFn),b(function(){p.on("touchstart",a.downFn)},j);break;default:p.on("click",a.clickFn),p.on("touchstart",a.downFn),p.on("mousedown",a.downFn)}};var r=function(d){var e=c;n&&(e.removeClass(n),n=null),n=angular.isFunction(a.col.headerCellClass)?a.col.headerCellClass(a.grid,a.row,a.col,a.rowRenderIndex,a.colRenderIndex):a.col.headerCellClass,e.addClass(n),b(function(){var b=a.grid.renderContainers.right?a.grid.renderContainers.right:a.grid.renderContainers.body;a.isLastCol=a.col===b.visibleColumnCache[b.visibleColumnCache.length-1]}),k.grid.options.enableSorting&&a.col.enableSorting?a.sortable=!0:a.sortable=!1;var g=a.filterable;k.grid.options.enableFiltering&&a.col.enableFiltering?a.filterable=!0:a.filterable=!1,g!==a.filterable&&("undefined"!=typeof a.col.updateFilters&&a.col.updateFilters(a.filterable),a.filterable?(a.col.filters.forEach(function(b,c){q.push(a.$watch("col.filters["+c+"].term",function(a,b){a!==b&&(k.grid.api.core.raise.filterChanged(),k.grid.api.core.notifyDataChange(f.dataChange.COLUMN),k.grid.queueGridRefresh())}))}),a.$on("$destroy",function(){q.forEach(function(a){a()})})):q.forEach(function(a){a()})),a.col.grid.options&&a.col.grid.options.enableColumnMenus!==!1&&a.col.colDef&&a.col.colDef.enableColumnMenu!==!1?a.colMenu=!0:a.colMenu=!1,a.offAllEvents(),(a.sortable||a.colMenu)&&(a.onDownEvents(),a.$on("$destroy",function(){a.offAllEvents()}))};r();var s=a.grid.registerDataChangeCallback(r,[f.dataChange.COLUMN]);a.$on("$destroy",s),a.handleClick=function(b){var c=!1;b.shiftKey&&(c=!0),k.grid.sortColumn(a.col,c).then(function(){k.columnMenuScope&&k.columnMenuScope.hideMenu(),k.grid.refresh()})},a.toggleMenu=function(b){b.stopPropagation(),k.columnMenuScope.menuShown&&k.columnMenuScope.col===a.col?k.columnMenuScope.hideMenu():k.columnMenuScope.showMenu(a.col,c)}}}}};return k}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridHeader",["$templateCache","$compile","uiGridConstants","gridUtil","$timeout","ScrollEvent",function(a,b,c,d,e,f){var g="ui-grid/ui-grid-header",h="ui-grid/ui-grid-no-header";return{restrict:"EA",replace:!0,require:["^uiGrid","^uiGridRenderContainer"],scope:!0,compile:function(a,c){return{pre:function(a,c,e,i){function j(){m.header=m.colContainer.header=c;var a=c[0].getElementsByClassName("ui-grid-header-canvas");a.length>0?m.headerCanvas=m.colContainer.headerCanvas=a[0]:m.headerCanvas=null}function k(a){if(!l.grid.isScrollingHorizontally){var b=d.normalizeScrollLeft(m.headerViewport,l.grid),c=m.colContainer.scrollHorizontal(b),e=new f(l.grid,null,m.colContainer,f.Sources.ViewPortScroll);e.newScrollLeft=b,c>-1&&(e.x={percentage:c}),l.grid.scrollContainers(null,e)}}var l=i[0],m=i[1];a.grid=l.grid,a.colContainer=m.colContainer,j();var n;n=a.grid.options.showHeader?a.grid.options.headerTemplate?a.grid.options.headerTemplate:g:h,d.getTemplate(n).then(function(d){var e=angular.element(d),f=b(e)(a);if(c.replaceWith(f),c=f,j(),m){var g=c[0].getElementsByClassName("ui-grid-header-viewport")[0];g&&(m.headerViewport=g,angular.element(g).on("scroll",k),a.$on("$destroy",function(){angular.element(g).off("scroll",k)}))}a.grid.queueRefresh()})},post:function(a,b,c,e){function f(){var a=h.colContainer.visibleColumnCache,b="",c=0;return a.forEach(function(a){b+=a.getColClassDefinition(),c+=a.drawnWidth}),h.colContainer.canvasWidth=c,b}var g=e[0],h=e[1];g.grid;d.disableAnimations(b),h.header=b;var i=b[0].getElementsByClassName("ui-grid-header-viewport")[0];i&&(h.headerViewport=i),g&&g.grid.registerStyleComputation({priority:15,func:f})}}}}}])}(),function(){angular.module("ui.grid").service("uiGridGridMenuService",["gridUtil","i18nService","uiGridConstants",function(a,b,c){var d={initialize:function(a,b){b.gridMenuScope=a,a.grid=b,a.registeredMenuItems=[],a.$on("$destroy",function(){a.grid&&a.grid.gridMenuScope&&(a.grid.gridMenuScope=null),a.grid&&(a.grid=null),a.registeredMenuItems&&(a.registeredMenuItems=null)}),a.registeredMenuItems=[],b.api.registerMethod("core","addToGridMenu",d.addToGridMenu),b.api.registerMethod("core","removeFromGridMenu",d.removeFromGridMenu)},addToGridMenu:function(b,c){angular.isArray(c)?b.gridMenuScope?(b.gridMenuScope.registeredMenuItems=b.gridMenuScope.registeredMenuItems?b.gridMenuScope.registeredMenuItems:[],b.gridMenuScope.registeredMenuItems=b.gridMenuScope.registeredMenuItems.concat(c)):a.logError("Asked to addToGridMenu, but gridMenuScope not present.  Timing issue?  Please log issue with ui-grid"):a.logError("addToGridMenu: menuItems must be an array, and is not, not adding any items")},removeFromGridMenu:function(b,c){var d=-1;b&&b.gridMenuScope&&b.gridMenuScope.registeredMenuItems.forEach(function(b,e){b.id===c&&(d>-1?a.logError("removeFromGridMenu: found multiple items with the same id, removing only the last"):d=e)}),d>-1&&b.gridMenuScope.registeredMenuItems.splice(d,1)},getMenuItems:function(c){var e=[];c.grid.options.gridMenuCustomItems&&(angular.isArray(c.grid.options.gridMenuCustomItems)?e=e.concat(c.grid.options.gridMenuCustomItems):a.logError("gridOptions.gridMenuCustomItems must be an array, and is not"));var f=[{title:b.getSafeText("gridMenu.clearAllFilters"),action:function(a){c.grid.clearAllFilters(void 0,!0,void 0)},shown:function(){return c.grid.options.enableFiltering},order:100}];return e=e.concat(f),e=e.concat(c.registeredMenuItems),c.grid.options.gridMenuShowHideColumns!==!1&&(e=e.concat(d.showHideColumns(c))),e.sort(function(a,b){return a.order-b.order}),e},showHideColumns:function(a){var c=[];return a.grid.options.columnDefs&&0!==a.grid.options.columnDefs.length&&0!==a.grid.columns.length?(c.push({title:b.getSafeText("gridMenu.columns"),order:300}),a.grid.options.gridMenuTitleFilter=a.grid.options.gridMenuTitleFilter?a.grid.options.gridMenuTitleFilter:function(a){return a},a.grid.options.columnDefs.forEach(function(b,e){if(b.enableHiding!==!1){var f={icon:"ui-grid-icon-ok",action:function(a){a.stopPropagation(),d.toggleColumnVisibility(this.context.gridCol)},shown:function(){return this.context.gridCol.colDef.visible===!0||void 0===this.context.gridCol.colDef.visible},context:{gridCol:a.grid.getColumn(b.name||b.field)},leaveOpen:!0,order:301+2*e};d.setMenuItemTitle(f,b,a.grid),c.push(f),f={icon:"ui-grid-icon-cancel",action:function(a){a.stopPropagation(),d.toggleColumnVisibility(this.context.gridCol)},shown:function(){return!(this.context.gridCol.colDef.visible===!0||void 0===this.context.gridCol.colDef.visible)},context:{gridCol:a.grid.getColumn(b.name||b.field)},leaveOpen:!0,order:301+2*e+1},d.setMenuItemTitle(f,b,a.grid),c.push(f)}}),c):c},setMenuItemTitle:function(b,c,d){var e=d.options.gridMenuTitleFilter(c.displayName||a.readableColumnName(c.name)||c.field);"string"==typeof e?b.title=e:e.then?(b.title="",e.then(function(a){b.title=a},function(a){b.title=a})):(a.logError("Expected gridMenuTitleFilter to return a string or a promise, it has returned neither, bad config"),b.title="badconfig")},toggleColumnVisibility:function(a){a.colDef.visible=!(a.colDef.visible===!0||void 0===a.colDef.visible),a.grid.refresh(),a.grid.api.core.notifyDataChange(c.dataChange.COLUMN),a.grid.api.core.raise.columnVisibilityChanged(a)}};return d}]).directive("uiGridMenuButton",["gridUtil","uiGridConstants","uiGridGridMenuService","i18nService",function(a,b,c,d){return{priority:0,scope:!0,require:["^uiGrid"],templateUrl:"ui-grid/ui-grid-menu-button",replace:!0,link:function(b,e,f,g){var h=g[0];b.i18n={aria:d.getSafeText("gridMenu.aria")},c.initialize(b,h.grid),b.shown=!1,b.toggleMenu=function(){b.shown?(b.$broadcast("hide-menu"),b.shown=!1):(b.menuItems=c.getMenuItems(b),b.$broadcast("show-menu"),b.shown=!0)},b.$on("menu-hidden",function(){b.shown=!1,a.focus.bySelector(e,".ui-grid-icon-container")})}}}])}(),function(){angular.module("ui.grid").directive("uiGridMenu",["$compile","$timeout","$window","$document","gridUtil","uiGridConstants","i18nService",function(a,b,c,d,e,f,g){var h={priority:0,scope:{menuItems:"=",autoHide:"=?"},require:"?^uiGrid",templateUrl:"ui-grid/uiGridMenu",replace:!1,link:function(a,d,h,i){a.dynamicStyles="";var j=function(b){var c=b-i.grid.headerHeight-20;a.dynamicStyles=[".grid"+i.grid.id+" .ui-grid-menu-mid {","max-height: "+c+"px;","}"].join(" ")};i&&(j(i.grid.gridHeight),i.grid.api.core.on.gridDimensionChanged(a,function(a,b,c,d){j(c)})),a.i18n={close:g.getSafeText("columnMenu.close")},a.showMenu=function(c,f){a.shown?a.shownMid||(a.shownMid=!0,a.$emit("menu-shown")):(a.shown=!0,b(function(){a.shownMid=!0,a.$emit("menu-shown")}));var g="click";f&&f.originalEvent&&f.originalEvent.type&&"touchstart"===f.originalEvent.type&&(g=f.originalEvent.type),angular.element(document).off("click touchstart",k),d.off("keyup",l),d.off("keydown",m),b(function(){angular.element(document).on(g,k),d.on("keyup",l),d.on("keydown",m)}),e.focus.bySelector(d,"button[type=button]",!0)},a.hideMenu=function(c){a.shown&&(a.shownMid=!1,b(function(){a.shownMid||(a.shown=!1,a.$emit("menu-hidden"))},200)),angular.element(document).off("click touchstart",k),d.off("keyup",l),d.off("keydown",m)},a.$on("hide-menu",function(b,c){a.hideMenu(b,c)}),a.$on("show-menu",function(b,c){a.showMenu(b,c)});var k=function(){a.shown&&a.$apply(function(){a.hideMenu()})},l=function(b){27===b.keyCode&&a.hideMenu()},m=function(a){var b=function(b){return b.focus(),a.preventDefault(),!1};if(9===a.keyCode){var c,e,f=d[0].querySelectorAll("button:not(.ng-hide)");f.length>0&&(c=f[0],e=f[f.length-1],a.target!==e||a.shiftKey?a.target===c&&a.shiftKey&&b(e):b(c))}};("undefined"==typeof a.autoHide||void 0===a.autoHide)&&(a.autoHide=!0),a.autoHide&&angular.element(c).on("resize",k),a.$on("$destroy",function(){angular.element(document).off("click touchstart",k)}),a.$on("$destroy",function(){angular.element(c).off("resize",k)}),i&&a.$on("$destroy",i.grid.api.core.on.scrollBegin(a,k)),a.$on("$destroy",a.$on(f.events.ITEM_DRAGGING,k))}};return h}]).directive("uiGridMenuItem",["gridUtil","$compile","i18nService",function(a,b,c){var d={priority:0,scope:{name:"=",active:"=",action:"=",icon:"=",shown:"=",context:"=",templateUrl:"=",leaveOpen:"=",screenReaderOnly:"="},require:["?^uiGrid"],templateUrl:"ui-grid/uiGridMenuItem",replace:!1,compile:function(){return{pre:function(c,d){c.templateUrl&&a.getTemplate(c.templateUrl).then(function(a){var e=angular.element(a),f=b(e)(c);d.replaceWith(f)})},post:function(b,d,e,f){var g=f[0];("undefined"==typeof b.shown||null===b.shown)&&(b.shown=function(){return!0}),b.itemShown=function(){var a={};return b.context&&(a.context=b.context),"undefined"!=typeof g&&g&&(a.grid=g.grid),b.shown.call(a)},b.itemAction=function(c,e){if(c.stopPropagation(),"function"==typeof b.action){var f={};b.context&&(f.context=b.context),"undefined"!=typeof g&&g&&(f.grid=g.grid),b.action.call(f,c,e),b.leaveOpen?a.focus.bySelector(angular.element(a.closestElm(d,".ui-grid-menu-items")),"button[type=button]",!0):b.$emit("hide-menu")}},b.i18n=c.get()}}}};return d}])}(),function(){"use strict";var a=angular.module("ui.grid");angular.forEach([{tag:"Src",method:"attr"},{tag:"Text",method:"text"},{tag:"Href",method:"attr"},{tag:"Class",method:"addClass"},{tag:"Html",method:"html"},{tag:"Alt",method:"attr"},{tag:"Style",method:"css"},{tag:"Value",method:"attr"},{tag:"Id",method:"attr"},{tag:"Id",directiveName:"IdGrid",method:"attr",appendGridId:!0},{tag:"Title",method:"attr"},{tag:"Label",method:"attr",aria:!0},{tag:"Labelledby",method:"attr",aria:!0},{tag:"Labelledby",directiveName:"LabelledbyGrid",appendGridId:!0,method:"attr",aria:!0},{tag:"Describedby",method:"attr",aria:!0},{tag:"Describedby",directiveName:"DescribedbyGrid",appendGridId:!0,method:"attr",aria:!0}],function(b){var c="uiGridOneBind",d=(b.aria?c+"Aria":c)+(b.directiveName?b.directiveName:b.tag);a.directive(d,["gridUtil",function(a){return{restrict:"A",require:["?uiGrid","?^uiGrid"],link:function(c,e,f,g){var h=function(b){var e;if(c.grid)e=c.grid;else if(c.col&&c.col.grid)e=c.col.grid;else if(!g.some(function(a){return a&&a.grid?(e=a.grid,!0):void 0}))throw a.logError("["+d+"] A valid grid could not be found to bind id. Are you using this directive within the correct scope? Trying to generate id: [gridID]-"+b),new Error("No valid grid could be found");if(e){var f=new RegExp(e.id.toString());f.test(b)||(b=e.id.toString()+"-"+b)}return b},i=c.$watch(f[d],function(a){if(a){if(b.appendGridId){var c=null;angular.forEach(a.split(" "),function(a){c=(c?c+" ":"")+h(a)}),a=c}switch(b.method){case"attr":b.aria?e[b.method]("aria-"+b.tag.toLowerCase(),a):e[b.method](b.tag.toLowerCase(),a);break;case"addClass":if(angular.isObject(a)&&!angular.isArray(a)){var d=[],f=!1;if(angular.forEach(a,function(a,b){null!==a&&"undefined"!=typeof a&&(f=!0,a&&d.push(b))}),!f)return;a=d}if(!a)return;e.addClass(angular.isArray(a)?a.join(" "):a);break;default:e[b.method](a)}i()}},!0)}}}])})}(),function(){"use strict";var a=angular.module("ui.grid");a.directive("uiGridRenderContainer",["$timeout","$document","uiGridConstants","gridUtil","ScrollEvent",function(a,b,c,d,e){return{replace:!0,transclude:!0,templateUrl:"ui-grid/uiGridRenderContainer",require:["^uiGrid","uiGridRenderContainer"],scope:{containerId:"=",rowContainerName:"=",colContainerName:"=",bindScrollHorizontal:"=",bindScrollVertical:"=",enableVerticalScrollbar:"=",enableHorizontalScrollbar:"="},controller:"uiGridRenderContainer as RenderContainer",compile:function(){return{pre:function(a,b,c,d){var e=d[0],f=d[1],g=a.grid=e.grid;if(!a.rowContainerName)throw"No row render container name specified";if(!a.colContainerName)throw"No column render container name specified";if(!g.renderContainers[a.rowContainerName])throw"Row render container '"+a.rowContainerName+"' is not registered.";if(!g.renderContainers[a.colContainerName])throw"Column render container '"+a.colContainerName+"' is not registered.";var h=a.rowContainer=g.renderContainers[a.rowContainerName],i=a.colContainer=g.renderContainers[a.colContainerName];f.containerId=a.containerId,f.rowContainer=h,f.colContainer=i},post:function(a,b,c,f){function g(){var b="",c=l.canvasWidth,d=l.getViewportWidth(),e=k.getCanvasHeight(),f=k.getViewportHeight();l.needsHScrollbarPlaceholder()&&(f-=j.scrollbarHeight);var g,i;return g=i=l.getHeaderViewportWidth(),b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-canvas { width: "+c+"px; height: "+e+"px; }",b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-header-canvas { width: "+(c+j.scrollbarWidth)+"px; }",b+=o.explicitHeaderCanvasHeight?"\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-header-canvas { height: "+o.explicitHeaderCanvasHeight+"px; }":"\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-header-canvas { height: inherit; }",b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-viewport { width: "+d+"px; height: "+f+"px; }",b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-header-viewport { width: "+g+"px; }",b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-footer-canvas { width: "+(c+j.scrollbarWidth)+"px; }",b+="\n .grid"+h.grid.id+" .ui-grid-render-container-"+a.containerId+" .ui-grid-footer-viewport { width: "+i+"px; }"}var h=f[0],i=f[1],j=h.grid,k=i.rowContainer,l=i.colContainer,m=null,n=null,o=j.renderContainers[a.containerId];b.addClass("ui-grid-render-container-"+a.containerId),d.on.mousewheel(b,function(a){var b=new e(j,k,l,e.Sources.RenderContainerMouseWheel);if(0!==a.deltaY){var c=-1*a.deltaY*a.deltaFactor;m=i.viewport[0].scrollTop,b.verticalScrollLength=k.getVerticalScrollLength();var f=(m+c)/b.verticalScrollLength;f>=1&&m<b.verticalScrollLength&&(i.viewport[0].scrollTop=b.verticalScrollLength),0>f?f=0:f>1&&(f=1),b.y={percentage:f,pixels:c}}if(0!==a.deltaX){var g=a.deltaX*a.deltaFactor;n=d.normalizeScrollLeft(i.viewport,j),b.horizontalScrollLength=l.getCanvasWidth()-l.getViewportWidth();var h=(n+g)/b.horizontalScrollLength;0>h?h=0:h>1&&(h=1),b.x={percentage:h,pixels:g}}0!==a.deltaY&&(b.atTop(m)||b.atBottom(m))||0!==a.deltaX&&(b.atLeft(n)||b.atRight(n))||(a.preventDefault(),a.stopPropagation(),b.fireThrottledScrollingEvent("",b))}),b.bind("$destroy",function(){b.unbind("keydown"),["touchstart","touchmove","touchend","keydown","wheel","mousewheel","DomMouseScroll","MozMousePixelScroll"].forEach(function(a){b.unbind(a)})}),h.grid.registerStyleComputation({priority:6,func:g})}}}}}]),a.controller("uiGridRenderContainer",["$scope","gridUtil",function(a,b){}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridRow",["gridUtil",function(a){return{replace:!0,require:["^uiGrid","^uiGridRenderContainer"],scope:{row:"=uiGridRow",rowRenderIndex:"="},compile:function(){return{pre:function(a,b,c,d){function e(){a.row.getRowTemplateFn.then(function(c){var d=a.$new();c(d,function(a,c){h&&(h.remove(),i.$destroy()),b.empty().append(a),h=a,i=d})})}var f=d[0],g=d[1];f.grid;a.grid=f.grid,a.colContainer=g.colContainer;var h,i;e(),a.$watch("row.getRowTemplateFn",function(a,b){a!==b&&e()})},post:function(a,b,c,d){}}}}}])}(),function(){angular.module("ui.grid").directive("uiGridStyle",["gridUtil","$interpolate",function(a,b){return{link:function(a,c,d,e){var f=b(c.text(),!0);f&&a.$watch(f,function(a){c.text(a)})}}}])}(),function(){"use strict";angular.module("ui.grid").directive("uiGridViewport",["gridUtil","ScrollEvent","uiGridConstants","$log",function(a,b,c,d){return{replace:!0,scope:{},controllerAs:"Viewport",templateUrl:"ui-grid/uiGridViewport",require:["^uiGrid","^uiGridRenderContainer"],link:function(c,d,e,f){function g(e){var f=d[0].scrollTop,g=a.normalizeScrollLeft(d,p),h=n.scrollVertical(f),i=o.scrollHorizontal(g),j=new b(p,n,o,b.Sources.ViewPortScroll);j.newScrollLeft=g,j.newScrollTop=f,i>-1&&(j.x={percentage:i}),h>-1&&(j.y={percentage:h}),p.scrollContainers(c.$parent.containerId,j)}function h(a){m.prevScrollArgs=a;var b=a.getNewScrollTop(n,m.viewport);
+d[0].scrollTop=b}function i(b){m.prevScrollArgs=b;var c=b.getNewScrollLeft(o,m.viewport);d[0].scrollLeft=a.denormalizeScrollLeft(m.viewport,c,p)}function j(b){var c=b.getNewScrollLeft(o,m.viewport);m.headerViewport&&(m.headerViewport.scrollLeft=a.denormalizeScrollLeft(m.viewport,c,p))}function k(b){var c=b.getNewScrollLeft(o,m.viewport);m.footerViewport&&(m.footerViewport.scrollLeft=a.denormalizeScrollLeft(m.viewport,c,p))}var l=f[0],m=f[1];c.containerCtrl=m;var n=m.rowContainer,o=m.colContainer,p=l.grid;c.grid=l.grid,c.rowContainer=m.rowContainer,c.colContainer=m.colContainer,m.viewport=d,d.on("scroll",g);c.$parent.bindScrollVertical&&p.addVerticalScrollSync(c.$parent.containerId,h),c.$parent.bindScrollHorizontal&&(p.addHorizontalScrollSync(c.$parent.containerId,i),p.addHorizontalScrollSync(c.$parent.containerId+"header",j),p.addHorizontalScrollSync(c.$parent.containerId+"footer",k))},controller:["$scope",function(a){this.rowStyle=function(b){var c=a.rowContainer,d=a.colContainer,e={};if(0===b&&0!==c.currentTopRow){var f=c.currentTopRow*c.grid.options.rowHeight;e["margin-top"]=f+"px"}return 0!==d.currentFirstColumn&&(d.grid.isRTL()?e["margin-right"]=d.columnOffset+"px":e["margin-left"]=d.columnOffset+"px"),e}}]}}])}(),function(){angular.module("ui.grid").directive("uiGridVisible",function(){return function(a,b,c){a.$watch(c.uiGridVisible,function(a){b[a?"removeClass":"addClass"]("ui-grid-invisible")})}})}(),function(){"use strict";function a(a,b,c,d,e,f){return{templateUrl:"ui-grid/ui-grid",scope:{uiGrid:"="},replace:!0,transclude:!0,controller:"uiGridController",compile:function(){return{post:function(a,b,g,h){function i(){b[0].offsetWidth<=0&&p>q?(setTimeout(i,o),q++):c(k)}function j(){angular.element(d).on("resize",m),b.on("$destroy",function(){angular.element(d).off("resize",m)}),a.$watch(function(){return n.hasLeftContainer()},function(a,b){a!==b&&n.refreshCanvas(!0)}),a.$watch(function(){return n.hasRightContainer()},function(a,b){a!==b&&n.refreshCanvas(!0)})}function k(){n.gridWidth=a.gridWidth=e.elementWidth(b),n.canvasWidth=h.grid.gridWidth,n.gridHeight=a.gridHeight=e.elementHeight(b),n.gridHeight<=n.options.rowHeight&&n.options.enableMinHeightCheck&&l(),n.refreshCanvas(!0)}function l(){var c=n.options.minRowsToShow*n.options.rowHeight,d=n.options.showHeader?n.options.headerRowHeight:0,g=n.calcFooterHeight(),h=0;n.options.enableHorizontalScrollbar===f.scrollbars.ALWAYS&&(h=e.getScrollbarWidth());var i=0;if(angular.forEach(n.options.columnDefs,function(a){a.hasOwnProperty("filter")?1>i&&(i=1):a.hasOwnProperty("filters")&&i<a.filters.length&&(i=a.filters.length)}),n.options.enableFiltering&&!i){var j=n.options.columnDefs.length&&n.options.columnDefs.every(function(a){return a.enableFiltering===!1});j||(i=1)}var k=i*d,l=d+c+g+h+k;b.css("height",l+"px"),n.gridHeight=a.gridHeight=e.elementHeight(b)}function m(c){n.gridWidth=a.gridWidth=e.elementWidth(b),n.gridHeight=a.gridHeight=e.elementHeight(b),n.refreshCanvas(!0)}var n=h.grid;h.scrollbars=[],n.element=b;var o=100,p=20,q=0;j(),k(),n.renderingComplete(),i()}}}}}angular.module("ui.grid").controller("uiGridController",["$scope","$element","$attrs","gridUtil","$q","uiGridConstants","$templateCache","gridClassFactory","$timeout","$parse","$compile",function(a,b,c,d,e,f,g,h,i,j,k){function l(b,c){b&&b!==c&&(n.grid.options.columnDefs=a.uiGrid.columnDefs,n.grid.buildColumns({orderByColumnDefs:!0}).then(function(){n.grid.preCompileCellTemplates(),n.grid.callDataChangeCallbacks(f.dataChange.COLUMN)}))}function m(b){var d=[];if(n.grid.options.fastWatch&&(b=angular.isString(a.uiGrid.data)?n.grid.appScope[a.uiGrid.data]:a.uiGrid.data),p=b,b){var g=n.grid.columns.length>(n.grid.rowHeaderColumns?n.grid.rowHeaderColumns.length:0);!g&&!c.uiGridColumns&&0===n.grid.options.columnDefs.length&&b.length>0&&n.grid.buildColumnDefsFromData(b),!g&&(n.grid.options.columnDefs.length>0||b.length>0)&&d.push(n.grid.buildColumns().then(function(){n.grid.preCompileCellTemplates()})),e.all(d).then(function(){n.grid.modifyRows(p).then(function(){n.grid.redrawInPlace(!0),a.$evalAsync(function(){n.grid.refreshCanvas(!0),n.grid.callDataChangeCallbacks(f.dataChange.ROW)})})})}}var n=this;n.grid=h.createGrid(a.uiGrid),n.grid.appScope=n.grid.appScope||a.$parent,b.addClass("grid"+n.grid.id),n.grid.rtl="rtl"===d.getStyles(b[0]).direction,a.grid=n.grid,c.uiGridColumns&&c.$observe("uiGridColumns",function(a){n.grid.options.columnDefs=a,n.grid.buildColumns().then(function(){n.grid.preCompileCellTemplates(),n.grid.refreshCanvas(!0)})});var o=[];n.grid.options.fastWatch?(n.uiGrid=a.uiGrid,angular.isString(a.uiGrid.data)?(o.push(a.$parent.$watch(a.uiGrid.data,m)),o.push(a.$parent.$watch(function(){return n.grid.appScope[a.uiGrid.data]?n.grid.appScope[a.uiGrid.data].length:void 0},m))):(o.push(a.$parent.$watch(function(){return a.uiGrid.data},m)),o.push(a.$parent.$watch(function(){return a.uiGrid.data.length},function(){m(a.uiGrid.data)}))),o.push(a.$parent.$watch(function(){return a.uiGrid.columnDefs},l)),o.push(a.$parent.$watch(function(){return a.uiGrid.columnDefs.length},function(){l(a.uiGrid.columnDefs)}))):(angular.isString(a.uiGrid.data)?o.push(a.$parent.$watchCollection(a.uiGrid.data,m)):o.push(a.$parent.$watchCollection(function(){return a.uiGrid.data},m)),o.push(a.$parent.$watchCollection(function(){return a.uiGrid.columnDefs},l)));var p,q=a.$watch(function(){return n.grid.styleComputations},function(){n.grid.refreshCanvas(!0)});a.$on("$destroy",function(){o.forEach(function(a){a()}),q()}),n.fireEvent=function(b,c){("undefined"==typeof c||void 0===c)&&(c={}),("undefined"==typeof c.grid||void 0===c.grid)&&(c.grid=n.grid),a.$broadcast(b,c)},n.innerCompile=function(b){k(b)(a)}}]),angular.module("ui.grid").directive("uiGrid",a),a.$inject=["$compile","$templateCache","$timeout","$window","gridUtil","uiGridConstants"]}(),function(){"use strict";angular.module("ui.grid").directive("uiGridPinnedContainer",["gridUtil",function(a){return{restrict:"EA",replace:!0,template:'<div class="ui-grid-pinned-container"><div ui-grid-render-container container-id="side" row-container-name="\'body\'" col-container-name="side" bind-scroll-vertical="true" class="{{ side }} ui-grid-render-container-{{ side }}"></div></div>',scope:{side:"=uiGridPinnedContainer"},require:"^uiGrid",compile:function(){return{post:function(a,b,c,d){function e(){var a=this,b=0;a.visibleColumnCache.forEach(function(a){b+=a.drawnWidth});var c=a.getViewportAdjustment();return b+=c.width}function f(){if("left"===a.side||"right"===a.side){for(var b=h.renderContainers[a.side].visibleColumnCache,c=0,d=0;d<b.length;d++){var e=b[d];c+=e.drawnWidth||e.width||0}return c}}function g(){var c="";return("left"===a.side||"right"===a.side)&&(i=f(),b.attr("style",null),c+=".grid"+h.id+" .ui-grid-pinned-container-"+a.side+", .grid"+h.id+" .ui-grid-pinned-container-"+a.side+" .ui-grid-render-container-"+a.side+" .ui-grid-viewport { width: "+i+"px; } "),c}var h=d.grid,i=0;b.addClass("ui-grid-pinned-container-"+a.side),("left"===a.side||"right"===a.side)&&(h.renderContainers[a.side].getViewportWidth=e),h.renderContainers.body.registerViewportAdjuster(function(b){return i=f(),b.width-=i,b.side=a.side,b}),h.registerStyleComputation({priority:15,func:g})}}}}}])}(),function(){angular.module("ui.grid").factory("Grid",["$q","$compile","$parse","gridUtil","uiGridConstants","GridOptions","GridColumn","GridRow","GridApi","rowSorter","rowSearcher","GridRenderContainer","$timeout","ScrollEvent",function(a,b,c,d,e,f,g,h,i,j,k,l,m,n){function o(){}var p=function(a){function b(a){g.isScrollingVertically=!1,g.api.core.raise.scrollEnd(a),g.scrollDirection=e.scrollDirection.NONE}function c(a){g.isScrollingHorizontally=!1,g.api.core.raise.scrollEnd(a),g.scrollDirection=e.scrollDirection.NONE}var g=this;if(void 0===a||"undefined"==typeof a.id||!a.id)throw new Error("No ID provided. An ID must be given when creating a grid.");if(!/^[_a-zA-Z0-9-]+$/.test(a.id))throw new Error("Grid id '"+a.id+'" is invalid. It must follow CSS selector syntax rules.');g.id=a.id,delete a.id,g.options=f.initialize(a),g.appScope=g.options.appScopeProvider,g.headerHeight=g.options.headerRowHeight,g.footerHeight=g.calcFooterHeight(),g.columnFooterHeight=g.calcColumnFooterHeight(),g.rtl=!1,g.gridHeight=0,g.gridWidth=0,g.columnBuilders=[],g.rowBuilders=[],g.rowsProcessors=[],g.columnsProcessors=[],g.styleComputations=[],g.viewportAdjusters=[],g.rowHeaderColumns=[],g.dataChangeCallbacks={},g.verticalScrollSyncCallBackFns={},g.horizontalScrollSyncCallBackFns={},g.renderContainers={},g.renderContainers.body=new l("body",g),g.cellValueGetterCache={},g.getRowTemplateFn=null,g.rows=[],g.columns=[],g.isScrollingVertically=!1,g.isScrollingHorizontally=!1,g.scrollDirection=e.scrollDirection.NONE,g.disableScrolling=!1;var h=d.debounce(b,g.options.scrollDebounce),k=d.debounce(b,0),m=d.debounce(c,g.options.scrollDebounce),n=d.debounce(c,0);g.flagScrollingVertically=function(a){g.isScrollingVertically||g.isScrollingHorizontally||g.api.core.raise.scrollBegin(a),g.isScrollingVertically=!0,0!==g.options.scrollDebounce&&a.withDelay?h(a):k(a)},g.flagScrollingHorizontally=function(a){g.isScrollingVertically||g.isScrollingHorizontally||g.api.core.raise.scrollBegin(a),g.isScrollingHorizontally=!0,0!==g.options.scrollDebounce&&a.withDelay?m(a):n(a)},g.scrollbarHeight=0,g.scrollbarWidth=0,g.options.enableHorizontalScrollbar===e.scrollbars.ALWAYS&&(g.scrollbarHeight=d.getScrollbarWidth()),g.options.enableVerticalScrollbar===e.scrollbars.ALWAYS&&(g.scrollbarWidth=d.getScrollbarWidth()),g.api=new i(g),g.api.registerMethod("core","refresh",this.refresh),g.api.registerMethod("core","queueGridRefresh",this.queueGridRefresh),g.api.registerMethod("core","refreshRows",this.refreshRows),g.api.registerMethod("core","queueRefresh",this.queueRefresh),g.api.registerMethod("core","handleWindowResize",this.handleWindowResize),g.api.registerMethod("core","addRowHeaderColumn",this.addRowHeaderColumn),g.api.registerMethod("core","scrollToIfNecessary",function(a,b){return g.scrollToIfNecessary(a,b)}),g.api.registerMethod("core","scrollTo",function(a,b){return g.scrollTo(a,b)}),g.api.registerMethod("core","registerRowsProcessor",this.registerRowsProcessor),g.api.registerMethod("core","registerColumnsProcessor",this.registerColumnsProcessor),g.api.registerMethod("core","sortHandleNulls",j.handleNulls),g.api.registerEvent("core","sortChanged"),g.api.registerEvent("core","columnVisibilityChanged"),g.api.registerMethod("core","notifyDataChange",this.notifyDataChange),g.api.registerMethod("core","clearAllFilters",this.clearAllFilters),g.registerDataChangeCallback(g.columnRefreshCallback,[e.dataChange.COLUMN]),g.registerDataChangeCallback(g.processRowsCallback,[e.dataChange.EDIT]),g.registerDataChangeCallback(g.updateFooterHeightCallback,[e.dataChange.OPTIONS]),g.registerStyleComputation({priority:10,func:g.getFooterStyles})};p.prototype.calcFooterHeight=function(){if(!this.hasFooter())return 0;var a=0;return this.options.showGridFooter&&(a+=this.options.gridFooterHeight),a+=this.calcColumnFooterHeight()},p.prototype.calcColumnFooterHeight=function(){var a=0;return this.options.showColumnFooter&&(a+=this.options.columnFooterHeight),a},p.prototype.getFooterStyles=function(){var a=".grid"+this.id+" .ui-grid-footer-aggregates-row { height: "+this.options.columnFooterHeight+"px; }";return a+=" .grid"+this.id+" .ui-grid-footer-info { height: "+this.options.gridFooterHeight+"px; }"},p.prototype.hasFooter=function(){return this.options.showGridFooter||this.options.showColumnFooter},p.prototype.isRTL=function(){return this.rtl},p.prototype.registerColumnBuilder=function(a){this.columnBuilders.push(a)},p.prototype.buildColumnDefsFromData=function(a){this.options.columnDefs=d.getColumnsFromData(a,this.options.excludeProperties)},p.prototype.registerRowBuilder=function(a){this.rowBuilders.push(a)},p.prototype.registerDataChangeCallback=function(a,b,c){var f=d.nextUid();b||(b=[e.dataChange.ALL]),Array.isArray(b)||d.logError("Expected types to be an array or null in registerDataChangeCallback, value passed was: "+b),this.dataChangeCallbacks[f]={callback:a,types:b,_this:c};var g=this,h=function(){delete g.dataChangeCallbacks[f]};return h},p.prototype.callDataChangeCallbacks=function(a,b){angular.forEach(this.dataChangeCallbacks,function(b,c){(-1!==b.types.indexOf(e.dataChange.ALL)||-1!==b.types.indexOf(a)||a===e.dataChange.ALL)&&(b._this?b.callback.apply(b._this,this):b.callback(this))},this)},p.prototype.notifyDataChange=function(a){var b=e.dataChange;a===b.ALL||a===b.COLUMN||a===b.EDIT||a===b.ROW||a===b.OPTIONS?this.callDataChangeCallbacks(a):d.logError("Notified of a data change, but the type was not recognised, so no action taken, type was: "+a)},p.prototype.columnRefreshCallback=function(a){a.buildColumns(),a.queueGridRefresh()},p.prototype.processRowsCallback=function(a){a.queueGridRefresh()},p.prototype.updateFooterHeightCallback=function(a){a.footerHeight=a.calcFooterHeight(),a.columnFooterHeight=a.calcColumnFooterHeight()},p.prototype.getColumn=function(a){var b=this.columns.filter(function(b){return b.colDef.name===a});return b.length>0?b[0]:null},p.prototype.getColDef=function(a){var b=this.options.columnDefs.filter(function(b){return b.name===a});return b.length>0?b[0]:null},p.prototype.assignTypes=function(){var a=this;a.options.columnDefs.forEach(function(b,c){if(!b.type){var e=new g(b,c,a),f=a.rows.length>0?a.rows[0]:null;f?b.type=d.guessType(a.getCellValue(f,e)):b.type="string"}})},p.prototype.isRowHeaderColumn=function(a){return-1!==this.rowHeaderColumns.indexOf(a)},p.prototype.addRowHeaderColumn=function(a,b){var c=this;void 0===b&&(b=0);var e=new g(a,d.nextUid(),c);e.isRowHeader=!0,c.isRTL()?(c.createRightContainer(),e.renderContainer="right"):(c.createLeftContainer(),e.renderContainer="left"),c.columnBuilders[0](a,e,c.options).then(function(){e.enableFiltering=!1,e.enableSorting=!1,e.enableHiding=!1,e.headerPriority=b,c.rowHeaderColumns.push(e),c.rowHeaderColumns=c.rowHeaderColumns.sort(function(a,b){return a.headerPriority-b.headerPriority}),c.buildColumns().then(function(){c.preCompileCellTemplates(),c.queueGridRefresh()})})},p.prototype.getOnlyDataColumns=function(){var a=this,b=[];return a.columns.forEach(function(c){-1===a.rowHeaderColumns.indexOf(c)&&b.push(c)}),b},p.prototype.buildColumns=function(b){var c={orderByColumnDefs:!1};angular.extend(c,b);var e,f=this,h=[],i=f.rowHeaderColumns.length;for(e=0;e<f.columns.length;e++)f.getColDef(f.columns[e].name)||(f.columns.splice(e,1),e--);for(var j=f.rowHeaderColumns.length-1;j>=0;j--)f.columns.unshift(f.rowHeaderColumns[j]);if(f.options.columnDefs.forEach(function(a,b){f.preprocessColDef(a);var c=f.getColumn(a.name);c?c.updateColumnDef(a,!1):(c=new g(a,d.nextUid(),f),f.columns.splice(b+i,0,c)),f.columnBuilders.forEach(function(b){h.push(b.call(f,a,c,f.options))})}),c.orderByColumnDefs){var k=f.columns.slice(0),l=Math.min(f.options.columnDefs.length,f.columns.length);for(e=0;l>e;e++)f.columns[e+i].name!==f.options.columnDefs[e].name?k[e+i]=f.getColumn(f.options.columnDefs[e].name):k[e+i]=f.columns[e+i];f.columns.length=0,Array.prototype.splice.apply(f.columns,[0,0].concat(k))}return a.all(h).then(function(){f.rows.length>0&&f.assignTypes()})},p.prototype.preCompileCellTemplate=function(a){var c=this,d=a.cellTemplate.replace(e.MODEL_COL_FIELD,c.getQualifiedColField(a));d=d.replace(e.COL_FIELD,"grid.getCellValue(row, col)");var f=b(d);a.compiledElementFn=f,a.compiledElementFnDefer&&a.compiledElementFnDefer.resolve(a.compiledElementFn)},p.prototype.preCompileCellTemplates=function(){var a=this;a.columns.forEach(function(b){b.cellTemplate?a.preCompileCellTemplate(b):b.cellTemplatePromise&&b.cellTemplatePromise.then(function(){a.preCompileCellTemplate(b)})})},p.prototype.getQualifiedColField=function(a){var b="row.entity";return a.field===e.ENTITY_BINDING?b:d.preEval(b+"."+a.field)},p.prototype.createLeftContainer=function(){this.hasLeftContainer()||(this.renderContainers.left=new l("left",this,{disableColumnOffset:!0}))},p.prototype.createRightContainer=function(){this.hasRightContainer()||(this.renderContainers.right=new l("right",this,{disableColumnOffset:!0}))},p.prototype.hasLeftContainer=function(){return void 0!==this.renderContainers.left},p.prototype.hasRightContainer=function(){return void 0!==this.renderContainers.right},p.prototype.preprocessColDef=function(a){var b=this;if(!a.field&&!a.name)throw new Error("colDef.name or colDef.field property is required");if(void 0===a.name&&void 0!==a.field){for(var c=a.field,d=2;b.getColumn(c);)c=a.field+d.toString(),d++;a.name=c}},p.prototype.newInN=function(a,b,c,d){for(var e=this,f=[],g=0;g<b.length;g++){for(var h=d?b[g][d]:b[g],i=!1,j=0;j<a.length;j++){var k=c?a[j][c]:a[j];if(e.options.rowEquality(h,k)){i=!0;break}}i||f.push(h)}return f},p.prototype.getRow=function(a,b){var c=this;b="undefined"==typeof b?c.rows:b;var d=b.filter(function(b){return c.options.rowEquality(b.entity,a)});return d.length>0?d[0]:null},p.prototype.modifyRows=function(b){var c=this,d=c.rows.slice(0),e=c.rowHashMap||c.createRowHashMap();c.rowHashMap=c.createRowHashMap(),c.rows.length=0,b.forEach(function(a,b){var f;f=c.options.enableRowHashing?e.get(a):c.getRow(a,d),f||(f=c.processRowBuilders(new h(a,b,c))),c.rows.push(f),c.rowHashMap.put(a,f)}),c.assignTypes();var f=a.when(c.processRowsProcessors(c.rows)).then(function(a){return c.setVisibleRows(a)}),g=a.when(c.processColumnsProcessors(c.columns)).then(function(a){return c.setVisibleColumns(a)});return a.all([f,g])},p.prototype.addRows=function(a){for(var b=this,c=b.rows.length,d=0;d<a.length;d++){var e=b.processRowBuilders(new h(a[d],d+c,b));if(b.options.enableRowHashing){var f=b.rowHashMap.get(e.entity);f&&(f.row=e)}b.rows.push(e)}},p.prototype.processRowBuilders=function(a){var b=this;return b.rowBuilders.forEach(function(c){c.call(b,a,b.options)}),a},p.prototype.registerStyleComputation=function(a){this.styleComputations.push(a)},p.prototype.registerRowsProcessor=function(a,b){if(!angular.isFunction(a))throw"Attempt to register non-function rows processor: "+a;this.rowsProcessors.push({processor:a,priority:b}),this.rowsProcessors.sort(function(a,b){return a.priority-b.priority})},p.prototype.removeRowsProcessor=function(a){var b=-1;this.rowsProcessors.forEach(function(c,d){c.processor===a&&(b=d)}),-1!==b&&this.rowsProcessors.splice(b,1)},p.prototype.processRowsProcessors=function(b){function c(b,e){var g=d.rowsProcessors[b].processor;return a.when(g.call(d,e,d.columns)).then(function(a){if(!a)throw"Processor at index "+b+" did not return a set of renderable rows";if(!angular.isArray(a))throw"Processor at index "+b+" did not return an array";return b++,b<=d.rowsProcessors.length-1?c(b,a):void f.resolve(a)})}var d=this,e=b.slice(0);if(0===d.rowsProcessors.length)return a.when(e);var f=a.defer();return c(0,e),f.promise},p.prototype.setVisibleRows=function(a){var b=this;for(var c in b.renderContainers){var d=b.renderContainers[c];d.canvasHeightShouldUpdate=!0,"undefined"==typeof d.visibleRowCache?d.visibleRowCache=[]:d.visibleRowCache.length=0}for(var e=0;e<a.length;e++){var f=a[e],g="undefined"!=typeof f.renderContainer&&f.renderContainer?f.renderContainer:"body";f.visible&&b.renderContainers[g].visibleRowCache.push(f)}b.api.core.raise.rowsVisibleChanged(this.api),b.api.core.raise.rowsRendered(this.api)},p.prototype.registerColumnsProcessor=function(a,b){if(!angular.isFunction(a))throw"Attempt to register non-function rows processor: "+a;this.columnsProcessors.push({processor:a,priority:b}),this.columnsProcessors.sort(function(a,b){return a.priority-b.priority})},p.prototype.removeColumnsProcessor=function(a){var b=this.columnsProcessors.indexOf(a);"undefined"!=typeof b&&void 0!==b&&this.columnsProcessors.splice(b,1)},p.prototype.processColumnsProcessors=function(b){function c(b,g){var h=d.columnsProcessors[b].processor;return a.when(h.call(d,g,d.rows)).then(function(a){if(!a)throw"Processor at index "+b+" did not return a set of renderable rows";if(!angular.isArray(a))throw"Processor at index "+b+" did not return an array";return b++,b<=d.columnsProcessors.length-1?c(b,e):void f.resolve(e)})}var d=this,e=b.slice(0);if(0===d.columnsProcessors.length)return a.when(e);var f=a.defer();return c(0,e),f.promise},p.prototype.setVisibleColumns=function(a){var b=this;for(var c in b.renderContainers){var d=b.renderContainers[c];d.visibleColumnCache.length=0}for(var e=0;e<a.length;e++){var f=a[e];f.visible&&("undefined"!=typeof f.renderContainer&&f.renderContainer?b.renderContainers[f.renderContainer].visibleColumnCache.push(f):b.renderContainers.body.visibleColumnCache.push(f))}},p.prototype.handleWindowResize=function(a){var b=this;return b.gridWidth=d.elementWidth(b.element),b.gridHeight=d.elementHeight(b.element),b.queueRefresh()},p.prototype.queueRefresh=function(){var a=this;return a.refreshCanceller&&m.cancel(a.refreshCanceller),a.refreshCanceller=m(function(){a.refreshCanvas(!0)}),a.refreshCanceller.then(function(){a.refreshCanceller=null}),a.refreshCanceller},p.prototype.queueGridRefresh=function(){var a=this;return a.gridRefreshCanceller&&m.cancel(a.gridRefreshCanceller),a.gridRefreshCanceller=m(function(){a.refresh(!0)}),a.gridRefreshCanceller.then(function(){a.gridRefreshCanceller=null}),a.gridRefreshCanceller},p.prototype.updateCanvasHeight=function(){var a=this;for(var b in a.renderContainers)if(a.renderContainers.hasOwnProperty(b)){var c=a.renderContainers[b];c.canvasHeightShouldUpdate=!0}},p.prototype.buildStyles=function(){var a=this;a.customStyles="",a.styleComputations.sort(function(a,b){return null===a.priority?1:null===b.priority?-1:null===a.priority&&null===b.priority?0:a.priority-b.priority}).forEach(function(b){var c=b.func.call(a);angular.isString(c)&&(a.customStyles+="\n"+c)})},p.prototype.minColumnsToRender=function(){var a=this,b=this.getViewportWidth(),c=0,d=0;return a.columns.forEach(function(e,f){if(b>d)d+=e.drawnWidth,c++;else{for(var g=0,h=f;h>=f-c;h--)g+=a.columns[h].drawnWidth;b>g&&c++}}),c},p.prototype.getBodyHeight=function(){var a=this.getViewportHeight();return a},p.prototype.getViewportHeight=function(){var a=this,b=this.gridHeight-this.headerHeight-this.footerHeight,c=a.getViewportAdjustment();return b+=c.height},p.prototype.getViewportWidth=function(){var a=this,b=this.gridWidth,c=a.getViewportAdjustment();return b+=c.width},p.prototype.getHeaderViewportWidth=function(){var a=this.getViewportWidth();return a},p.prototype.addVerticalScrollSync=function(a,b){this.verticalScrollSyncCallBackFns[a]=b},p.prototype.addHorizontalScrollSync=function(a,b){this.horizontalScrollSyncCallBackFns[a]=b},p.prototype.scrollContainers=function(a,b){if(b.y){var c=["body","left","right"];this.flagScrollingVertically(b),"body"===a?c=["left","right"]:"left"===a?c=["body","right"]:"right"===a&&(c=["body","left"]);for(var d=0;d<c.length;d++){var e=c[d];this.verticalScrollSyncCallBackFns[e]&&this.verticalScrollSyncCallBackFns[e](b)}}if(b.x){var f=["body","bodyheader","bodyfooter"];this.flagScrollingHorizontally(b),"body"===a&&(f=["bodyheader","bodyfooter"]);for(var g=0;g<f.length;g++){var h=f[g];this.horizontalScrollSyncCallBackFns[h]&&this.horizontalScrollSyncCallBackFns[h](b)}}},p.prototype.registerViewportAdjuster=function(a){this.viewportAdjusters.push(a)},p.prototype.removeViewportAdjuster=function(a){var b=this.viewportAdjusters.indexOf(a);"undefined"!=typeof b&&void 0!==b&&this.viewportAdjusters.splice(b,1)},p.prototype.getViewportAdjustment=function(){var a=this,b={height:0,width:0};return a.viewportAdjusters.forEach(function(a){b=a.call(this,b)}),b},p.prototype.getVisibleRowCount=function(){return this.renderContainers.body.visibleRowCache.length},p.prototype.getVisibleRows=function(){return this.renderContainers.body.visibleRowCache},p.prototype.getVisibleColumnCount=function(){return this.renderContainers.body.visibleColumnCache.length},p.prototype.searchRows=function(a){return k.search(this,a,this.columns)},p.prototype.sortByColumn=function(a){return j.sort(this,a,this.columns)},p.prototype.getCellValue=function(a,b){return"undefined"!=typeof a.entity["$$"+b.uid]?a.entity["$$"+b.uid].rendered:this.options.flatEntityAccess&&"undefined"!=typeof b.field?a.entity[b.field]:(b.cellValueGetterCache||(b.cellValueGetterCache=c(a.getEntityQualifiedColField(b))),b.cellValueGetterCache(a))},p.prototype.getCellDisplayValue=function(a,b){if(!b.cellDisplayGetterCache){var d=b.cellFilter?" | "+b.cellFilter:"";"undefined"!=typeof a.entity["$$"+b.uid]?b.cellDisplayGetterCache=c(a.entity["$$"+b.uid].rendered+d):this.options.flatEntityAccess&&"undefined"!=typeof b.field?b.cellDisplayGetterCache=c(a.entity[b.field]+d):b.cellDisplayGetterCache=c(a.getEntityQualifiedColField(b)+d)}return b.cellDisplayGetterCache(a)},p.prototype.getNextColumnSortPriority=function(){var a=this,b=0;return a.columns.forEach(function(a){a.sort&&void 0!==a.sort.priority&&a.sort.priority>=b&&(b=a.sort.priority+1)}),b},p.prototype.resetColumnSorting=function(a){var b=this;b.columns.forEach(function(b){b===a||b.suppressRemoveSort||(b.sort={})})},p.prototype.getColumnSorting=function(){var a,b=this,c=[];return a=b.columns.slice(0),a.sort(j.prioritySort).forEach(function(a){a.sort&&"undefined"!=typeof a.sort.direction&&a.sort.direction&&(a.sort.direction===e.ASC||a.sort.direction===e.DESC)&&c.push(a)}),c},p.prototype.sortColumn=function(b,c,d){var e=this,f=null;if("undefined"==typeof b||!b)throw new Error("No column parameter provided");if("boolean"==typeof c?d=c:f=c,d?void 0===b.sort.priority&&(b.sort.priority=e.getNextColumnSortPriority()):(e.resetColumnSorting(b),b.sort.priority=void 0,b.sort.priority=e.getNextColumnSortPriority()),f)b.sort.direction=f;else{var g=b.sortDirectionCycle.indexOf(b.sort.direction?b.sort.direction:null);g=(g+1)%b.sortDirectionCycle.length,b.colDef&&b.suppressRemoveSort&&!b.sortDirectionCycle[g]&&(g=(g+1)%b.sortDirectionCycle.length),b.sortDirectionCycle[g]?b.sort.direction=b.sortDirectionCycle[g]:q(b,e)}return e.api.core.raise.sortChanged(e,e.getColumnSorting()),a.when(b)};var q=function(a,b){b.columns.forEach(function(b){b.sort&&void 0!==b.sort.priority&&b.sort.priority>a.sort.priority&&(b.sort.priority-=1)}),a.sort={}};return p.prototype.renderingComplete=function(){angular.isFunction(this.options.onRegisterApi)&&this.options.onRegisterApi(this.api),this.api.core.raise.renderingComplete(this.api)},p.prototype.createRowHashMap=function(){var a=this,b=new o;return b.grid=a,b},p.prototype.refresh=function(b){var c=this,d=c.processRowsProcessors(c.rows).then(function(a){c.setVisibleRows(a)}),e=c.processColumnsProcessors(c.columns).then(function(a){c.setVisibleColumns(a)});return a.all([d,e]).then(function(){c.redrawInPlace(b),c.refreshCanvas(!0)})},p.prototype.refreshRows=function(){var a=this;return a.processRowsProcessors(a.rows).then(function(b){a.setVisibleRows(b),a.redrawInPlace(),a.refreshCanvas(!0)})},p.prototype.refreshCanvas=function(b){var c=this;b&&c.buildStyles();var e=a.defer(),f=[];for(var g in c.renderContainers)if(c.renderContainers.hasOwnProperty(g)){var h=c.renderContainers[g];if(null===h.canvasWidth||isNaN(h.canvasWidth))continue;(h.header||h.headerCanvas)&&(h.explicitHeaderHeight=h.explicitHeaderHeight||null,h.explicitHeaderCanvasHeight=h.explicitHeaderCanvasHeight||null,f.push(h))}return f.length>0?(b&&c.buildStyles(),m(function(){var a,g,h=!1,i=0,j=0,k=function(a,b){return a!==b&&(h=!0),b};for(a=0;a<f.length;a++)if(g=f[a],null!==g.canvasWidth&&!isNaN(g.canvasWidth)){if(g.header){var l=g.headerHeight=k(g.headerHeight,parseInt(d.outerElementHeight(g.header),10)),m=d.getBorderSize(g.header,"top"),n=d.getBorderSize(g.header,"bottom"),o=parseInt(l-m-n,10);o=0>o?0:o,g.innerHeaderHeight=o,!g.explicitHeaderHeight&&o>i&&(i=o)}if(g.headerCanvas){var p=g.headerCanvasHeight=k(g.headerCanvasHeight,parseInt(d.outerElementHeight(g.headerCanvas),10));!g.explicitHeaderCanvasHeight&&p>j&&(j=p)}}for(a=0;a<f.length;a++)g=f[a],i>0&&"undefined"!=typeof g.headerHeight&&null!==g.headerHeight&&(g.explicitHeaderHeight||g.headerHeight<i)&&(g.explicitHeaderHeight=k(g.explicitHeaderHeight,i)),j>0&&"undefined"!=typeof g.headerCanvasHeight&&null!==g.headerCanvasHeight&&(g.explicitHeaderCanvasHeight||g.headerCanvasHeight<j)&&(g.explicitHeaderCanvasHeight=k(g.explicitHeaderCanvasHeight,j));b&&h&&c.buildStyles(),e.resolve()})):m(function(){e.resolve()}),e.promise},p.prototype.redrawInPlace=function(a){var b=this;for(var c in b.renderContainers){var d=b.renderContainers[c];a?(d.adjustRows(d.prevScrollTop,null),d.adjustColumns(d.prevScrollLeft,null)):(d.adjustRows(null,d.prevScrolltopPercentage),d.adjustColumns(null,d.prevScrollleftPercentage))}},p.prototype.hasLeftContainerColumns=function(){return this.hasLeftContainer()&&this.renderContainers.left.renderedColumns.length>0},p.prototype.hasRightContainerColumns=function(){return this.hasRightContainer()&&this.renderContainers.right.renderedColumns.length>0},p.prototype.scrollToIfNecessary=function(b,c){var d=this,e=new n(d,"uiGrid.scrollToIfNecessary"),f=d.renderContainers.body.visibleRowCache,g=d.renderContainers.body.visibleColumnCache,h=d.renderContainers.body.prevScrollTop+d.headerHeight;h=0>h?0:h;var i=d.renderContainers.body.prevScrollLeft,j=d.renderContainers.body.prevScrollTop+d.gridHeight-d.renderContainers.body.headerHeight-d.footerHeight-d.scrollbarWidth,k=d.renderContainers.body.prevScrollLeft+Math.ceil(d.renderContainers.body.getViewportWidth());if(null!==b){var l=f.indexOf(b),m=d.renderContainers.body.getCanvasHeight()-d.renderContainers.body.getViewportHeight(),o=l*d.options.rowHeight+d.headerHeight;o=0>o?0:o;var p,q;h>o?(p=d.renderContainers.body.prevScrollTop-(h-o),q=p/m,e.y={percentage:q}):o>j&&(p=o-j+d.renderContainers.body.prevScrollTop,q=p/m,e.y={percentage:q})}if(null!==c){for(var r=g.indexOf(c),s=d.renderContainers.body.getCanvasWidth()-d.renderContainers.body.getViewportWidth(),t=0,u=0;r>u;u++){var v=g[u];t+=v.drawnWidth}t=0>t?0:t;var w=t+c.drawnWidth;w=0>w?0:w;var x,y;i>t?(x=d.renderContainers.body.prevScrollLeft-(i-t),y=x/s,y=y>1?1:y,e.x={percentage:y}):w>k&&(x=w-k+d.renderContainers.body.prevScrollLeft,y=x/s,y=y>1?1:y,e.x={percentage:y})}var z=a.defer();if(e.y||e.x){e.withDelay=!1,d.scrollContainers("",e);var A=d.api.core.on.scrollEnd(null,function(){z.resolve(e),A()})}else z.resolve();return z.promise},p.prototype.scrollTo=function(a,b){var c=null,d=null;return null!==a&&"undefined"!=typeof a&&(c=this.getRow(a)),null!==b&&"undefined"!=typeof b&&(d=this.getColumn(b.name?b.name:b.field)),this.scrollToIfNecessary(c,d)},p.prototype.clearAllFilters=function(a,b,c){return void 0===a&&(a=!0),void 0===b&&(b=!1),void 0===c&&(c=!1),this.columns.forEach(function(a){a.filters.forEach(function(a){a.term=void 0,b&&(a.condition=void 0),c&&(a.flags=void 0)})}),a?this.refreshRows():void 0},o.prototype={put:function(a,b){this[this.grid.options.rowIdentity(a)]=b},get:function(a){return this[this.grid.options.rowIdentity(a)]},remove:function(a){var b=this[a=this.grid.options.rowIdentity(a)];return delete this[a],b}},p}])}(),function(){angular.module("ui.grid").factory("GridApi",["$q","$rootScope","gridUtil","uiGridConstants","GridRow","uiGridGridMenuService",function(a,b,c,d,e,f){function g(a,c,d,e){return b.$on(a,function(a){var b=Array.prototype.slice.call(arguments);b.splice(0,1),c.apply(e?e:d.api,b)})}var h=function(a){this.grid=a,this.listeners=[],this.registerEvent("core","renderingComplete"),this.registerEvent("core","filterChanged"),this.registerMethod("core","setRowInvisible",e.prototype.setRowInvisible),this.registerMethod("core","clearRowInvisible",e.prototype.clearRowInvisible),this.registerMethod("core","getVisibleRows",this.grid.getVisibleRows),this.registerEvent("core","rowsVisibleChanged"),this.registerEvent("core","rowsRendered"),this.registerEvent("core","scrollBegin"),this.registerEvent("core","scrollEnd"),this.registerEvent("core","canvasHeightChanged"),this.registerEvent("core","gridDimensionChanged")};return h.prototype.suppressEvents=function(a,b){
+var c=this,d=angular.isArray(a)?a:[a],e=c.listeners.filter(function(a){return d.some(function(b){return a.handler===b})});e.forEach(function(a){a.dereg()}),b(),e.forEach(function(a){a.dereg=g(a.eventId,a.handler,c.grid,a._this)})},h.prototype.registerEvent=function(a,d){var e=this;e[a]||(e[a]={});var f=e[a];f.on||(f.on={},f.raise={});var h=e.grid.id+a+d;f.raise[d]=function(){b.$emit.apply(b,[h].concat(Array.prototype.slice.call(arguments)))},f.on[d]=function(b,f,i){if(null!==b&&"undefined"==typeof b.$on)return void c.logError("asked to listen on "+a+".on."+d+" but scope wasn't passed in the input parameters.  It is legitimate to pass null, but you've passed something else, so you probably forgot to provide scope rather than did it deliberately, not registering");var j=g(h,f,e.grid,i),k={handler:f,dereg:j,eventId:h,scope:b,_this:i};e.listeners.push(k);var l=function(){k.dereg();var a=e.listeners.indexOf(k);e.listeners.splice(a,1)};return b&&b.$on("$destroy",function(){l()}),l}},h.prototype.registerEventsFromObject=function(a){var b=this,c=[];angular.forEach(a,function(a,b){var d={name:b,events:[]};angular.forEach(a,function(a,b){d.events.push(b)}),c.push(d)}),c.forEach(function(a){a.events.forEach(function(c){b.registerEvent(a.name,c)})})},h.prototype.registerMethod=function(a,b,d,e){this[a]||(this[a]={});var f=this[a];f[b]=c.createBoundedWrapper(e||this.grid,d)},h.prototype.registerMethodsFromObject=function(a,b){var c=this,d=[];angular.forEach(a,function(a,b){var c={name:b,methods:[]};angular.forEach(a,function(a,b){c.methods.push({name:b,fn:a})}),d.push(c)}),d.forEach(function(a){a.methods.forEach(function(d){c.registerMethod(a.name,d.name,d.fn,b)})})},h}])}(),function(){angular.module("ui.grid").factory("GridColumn",["gridUtil","uiGridConstants","i18nService",function(a,b,c){function d(a,c,d){var e=this;e.grid=d,e.uid=c,e.updateColumnDef(a,!0),e.aggregationValue=void 0,e.updateAggregationValue=function(){if(!e.aggregationType)return void(e.aggregationValue=void 0);var a=0,c=e.grid.getVisibleRows(),d=function(){var a=[];return c.forEach(function(b){var c=e.grid.getCellValue(b,e),d=Number(c);isNaN(d)||a.push(d)}),a};angular.isFunction(e.aggregationType)?e.aggregationValue=e.aggregationType(c,e):e.aggregationType===b.aggregationTypes.count?e.aggregationValue=e.grid.getVisibleRowCount():e.aggregationType===b.aggregationTypes.sum?(d().forEach(function(b){a+=b}),e.aggregationValue=a):e.aggregationType===b.aggregationTypes.avg?(d().forEach(function(b){a+=b}),a/=d().length,e.aggregationValue=a):e.aggregationType===b.aggregationTypes.min?e.aggregationValue=Math.min.apply(null,d()):e.aggregationType===b.aggregationTypes.max?e.aggregationValue=Math.max.apply(null,d()):e.aggregationValue=" "},this.getAggregationValue=function(){return e.aggregationValue}}return d.prototype.hideColumn=function(){this.colDef.visible=!1},d.prototype.setPropertyOrDefault=function(a,b,c){var d=this;"undefined"!=typeof a[b]&&a[b]?d[b]=a[b]:"undefined"!=typeof d[b]?d[b]=d[b]:d[b]=c?c:{}},d.prototype.updateColumnDef=function(c,d){var e=this;if(e.colDef=c,void 0===c.name)throw new Error("colDef.name is required for column at index "+e.grid.options.columnDefs.indexOf(c));if(e.displayName=void 0===c.displayName?a.readableColumnName(c.name):c.displayName,!angular.isNumber(e.width)||!e.hasCustomWidth||c.allowCustomWidthOverride){var f=c.width,g="Cannot parse column width '"+f+"' for column named '"+c.name+"'";if(e.hasCustomWidth=!1,angular.isString(f)||angular.isNumber(f))if(angular.isString(f))if(a.endsWith(f,"%")){var h=f.replace(/%/g,""),i=parseInt(h,10);if(isNaN(i))throw new Error(g);e.width=f}else if(f.match(/^(\d+)$/))e.width=parseInt(f.match(/^(\d+)$/)[1],10);else{if(!f.match(/^\*+$/))throw new Error(g);e.width=f}else e.width=f;else e.width="*"}["minWidth","maxWidth"].forEach(function(a){var b=c[a],d="Cannot parse column "+a+" '"+b+"' for column named '"+c.name+"'";if(angular.isString(b)||angular.isNumber(b))if(angular.isString(b)){if(!b.match(/^(\d+)$/))throw new Error(d);e[a]=parseInt(b.match(/^(\d+)$/)[1],10)}else e[a]=b;else e[a]="minWidth"===a?30:9e3}),e.field=void 0===c.field?c.name:c.field,"string"!=typeof e.field&&a.logError("Field is not a string, this is likely to break the code, Field is: "+e.field),e.name=c.name,e.displayName=void 0===c.displayName?a.readableColumnName(c.name):c.displayName,e.aggregationType=angular.isDefined(c.aggregationType)?c.aggregationType:null,e.footerCellTemplate=angular.isDefined(c.footerCellTemplate)?c.footerCellTemplate:null,"undefined"==typeof c.cellTooltip||c.cellTooltip===!1?e.cellTooltip=!1:c.cellTooltip===!0?e.cellTooltip=function(a,b){return e.grid.getCellValue(a,b)}:"function"==typeof c.cellTooltip?e.cellTooltip=c.cellTooltip:e.cellTooltip=function(a,b){return b.colDef.cellTooltip},"undefined"==typeof c.headerTooltip||c.headerTooltip===!1?e.headerTooltip=!1:c.headerTooltip===!0?e.headerTooltip=function(a){return a.displayName}:"function"==typeof c.headerTooltip?e.headerTooltip=c.headerTooltip:e.headerTooltip=function(a){return a.colDef.headerTooltip},e.footerCellClass=c.footerCellClass,e.cellClass=c.cellClass,e.headerCellClass=c.headerCellClass,e.cellFilter=c.cellFilter?c.cellFilter:"",e.sortCellFiltered=c.sortCellFiltered?!0:!1,e.filterCellFiltered=c.filterCellFiltered?!0:!1,e.headerCellFilter=c.headerCellFilter?c.headerCellFilter:"",e.footerCellFilter=c.footerCellFilter?c.footerCellFilter:"",e.visible=a.isNullOrUndefined(c.visible)||c.visible,e.headerClass=c.headerClass,e.enableSorting="undefined"!=typeof c.enableSorting?c.enableSorting:!0,e.sortingAlgorithm=c.sortingAlgorithm,e.sortDirectionCycle="undefined"!=typeof c.sortDirectionCycle?c.sortDirectionCycle:[null,b.ASC,b.DESC],"undefined"==typeof e.suppressRemoveSort&&(e.suppressRemoveSort="undefined"!=typeof c.suppressRemoveSort?c.suppressRemoveSort:!1),e.enableFiltering="undefined"!=typeof c.enableFiltering?c.enableFiltering:!0,e.setPropertyOrDefault(c,"menuItems",[]),d&&e.setPropertyOrDefault(c,"sort");var j=[];c.filter?j.push(c.filter):c.filters?j=c.filters:j.push({}),d?(e.setPropertyOrDefault(c,"filter"),e.setPropertyOrDefault(c,"filters",j)):e.filters.length===j.length&&e.filters.forEach(function(a,b){"undefined"!=typeof j[b].placeholder&&(a.placeholder=j[b].placeholder),"undefined"!=typeof j[b].ariaLabel&&(a.ariaLabel=j[b].ariaLabel),"undefined"!=typeof j[b].flags&&(a.flags=j[b].flags),"undefined"!=typeof j[b].type&&(a.type=j[b].type),"undefined"!=typeof j[b].selectOptions&&(a.selectOptions=j[b].selectOptions)})},d.prototype.unsort=function(){this.sort={},this.grid.api.core.raise.sortChanged(this.grid,this.grid.getColumnSorting())},d.prototype.getColClass=function(a){var c=b.COL_CLASS_PREFIX+this.uid;return a?"."+c:c},d.prototype.isPinnedLeft=function(){return"left"===this.renderContainer},d.prototype.isPinnedRight=function(){return"right"===this.renderContainer},d.prototype.getColClassDefinition=function(){return" .grid"+this.grid.id+" "+this.getColClass(!0)+" { min-width: "+this.drawnWidth+"px; max-width: "+this.drawnWidth+"px; }"},d.prototype.getRenderContainer=function(){var a=this,b=a.renderContainer;return(null===b||""===b||void 0===b)&&(b="body"),a.grid.renderContainers[b]},d.prototype.showColumn=function(){this.colDef.visible=!0},d.prototype.getAggregationText=function(){var a=this;if(a.colDef.aggregationHideLabel)return"";if(a.colDef.aggregationLabel)return a.colDef.aggregationLabel;switch(a.colDef.aggregationType){case b.aggregationTypes.count:return c.getSafeText("aggregation.count");case b.aggregationTypes.sum:return c.getSafeText("aggregation.sum");case b.aggregationTypes.avg:return c.getSafeText("aggregation.avg");case b.aggregationTypes.min:return c.getSafeText("aggregation.min");case b.aggregationTypes.max:return c.getSafeText("aggregation.max");default:return""}},d.prototype.getCellTemplate=function(){var a=this;return a.cellTemplatePromise},d.prototype.getCompiledElementFn=function(){var a=this;return a.compiledElementFnDefer.promise},d}])}(),function(){angular.module("ui.grid").factory("GridOptions",["gridUtil","uiGridConstants",function(a,b){return{initialize:function(c){return c.onRegisterApi=c.onRegisterApi||angular.noop(),c.data=c.data||[],c.columnDefs=c.columnDefs||[],c.excludeProperties=c.excludeProperties||["$$hashKey"],c.enableRowHashing=c.enableRowHashing!==!1,c.rowIdentity=c.rowIdentity||function(b){return a.hashKey(b)},c.getRowIdentity=c.getRowIdentity||function(a){return a.$$hashKey},c.flatEntityAccess=c.flatEntityAccess===!0,c.showHeader="undefined"!=typeof c.showHeader?c.showHeader:!0,c.showHeader?c.headerRowHeight="undefined"!=typeof c.headerRowHeight?c.headerRowHeight:30:c.headerRowHeight=0,c.rowHeight=c.rowHeight||30,c.minRowsToShow="undefined"!=typeof c.minRowsToShow?c.minRowsToShow:10,c.showGridFooter=c.showGridFooter===!0,c.showColumnFooter=c.showColumnFooter===!0,c.columnFooterHeight="undefined"!=typeof c.columnFooterHeight?c.columnFooterHeight:30,c.gridFooterHeight="undefined"!=typeof c.gridFooterHeight?c.gridFooterHeight:30,c.columnWidth="undefined"!=typeof c.columnWidth?c.columnWidth:50,c.maxVisibleColumnCount="undefined"!=typeof c.maxVisibleColumnCount?c.maxVisibleColumnCount:200,c.virtualizationThreshold="undefined"!=typeof c.virtualizationThreshold?c.virtualizationThreshold:20,c.columnVirtualizationThreshold="undefined"!=typeof c.columnVirtualizationThreshold?c.columnVirtualizationThreshold:10,c.excessRows="undefined"!=typeof c.excessRows?c.excessRows:4,c.scrollThreshold="undefined"!=typeof c.scrollThreshold?c.scrollThreshold:4,c.excessColumns="undefined"!=typeof c.excessColumns?c.excessColumns:4,c.horizontalScrollThreshold="undefined"!=typeof c.horizontalScrollThreshold?c.horizontalScrollThreshold:2,c.aggregationCalcThrottle="undefined"!=typeof c.aggregationCalcThrottle?c.aggregationCalcThrottle:500,c.wheelScrollThrottle="undefined"!=typeof c.wheelScrollThrottle?c.wheelScrollThrottle:70,c.scrollDebounce="undefined"!=typeof c.scrollDebounce?c.scrollDebounce:300,c.enableSorting=c.enableSorting!==!1,c.enableFiltering=c.enableFiltering===!0,c.enableColumnMenus=c.enableColumnMenus!==!1,c.enableVerticalScrollbar="undefined"!=typeof c.enableVerticalScrollbar?c.enableVerticalScrollbar:b.scrollbars.ALWAYS,c.enableHorizontalScrollbar="undefined"!=typeof c.enableHorizontalScrollbar?c.enableHorizontalScrollbar:b.scrollbars.ALWAYS,c.enableMinHeightCheck=c.enableMinHeightCheck!==!1,c.minimumColumnSize="undefined"!=typeof c.minimumColumnSize?c.minimumColumnSize:10,c.rowEquality=c.rowEquality||function(a,b){return a===b},c.headerTemplate=c.headerTemplate||null,c.footerTemplate=c.footerTemplate||"ui-grid/ui-grid-footer",c.gridFooterTemplate=c.gridFooterTemplate||"ui-grid/ui-grid-grid-footer",c.rowTemplate=c.rowTemplate||"ui-grid/ui-grid-row",c.appScopeProvider=c.appScopeProvider||null,c}}}])}(),function(){angular.module("ui.grid").factory("GridRenderContainer",["gridUtil","uiGridConstants",function(a,b){function c(a,b,c){var d=this;d.name=a,d.grid=b,d.visibleRowCache=[],d.visibleColumnCache=[],d.renderedRows=[],d.renderedColumns=[],d.prevScrollTop=0,d.prevScrolltopPercentage=0,d.prevRowScrollIndex=0,d.prevScrollLeft=0,d.prevScrollleftPercentage=0,d.prevColumnScrollIndex=0,d.columnStyles="",d.viewportAdjusters=[],d.hasHScrollbar=!1,d.hasVScrollbar=!1,d.canvasHeightShouldUpdate=!0,d.$$canvasHeight=0,c&&angular.isObject(c)&&angular.extend(d,c),b.registerStyleComputation({priority:5,func:function(){return d.updateColumnWidths(),d.columnStyles}})}return c.prototype.reset=function(){this.visibleColumnCache.length=0,this.visibleRowCache.length=0,this.renderedRows.length=0,this.renderedColumns.length=0},c.prototype.containsColumn=function(a){return-1!==this.visibleColumnCache.indexOf(a)},c.prototype.minRowsToRender=function(){for(var a=this,b=0,c=0,d=a.getViewportHeight(),e=a.visibleRowCache.length-1;d>c&&e>=0;e--)c+=a.visibleRowCache[e].height,b++;return b},c.prototype.minColumnsToRender=function(){for(var a=this,b=this.getViewportWidth(),c=0,d=0,e=0;e<a.visibleColumnCache.length;e++){var f=a.visibleColumnCache[e];if(b>d)d+=f.drawnWidth?f.drawnWidth:0,c++;else{for(var g=0,h=e;h>=e-c;h--)g+=a.visibleColumnCache[h].drawnWidth?a.visibleColumnCache[h].drawnWidth:0;b>g&&c++}}return c},c.prototype.getVisibleRowCount=function(){return this.visibleRowCache.length},c.prototype.registerViewportAdjuster=function(a){this.viewportAdjusters.push(a)},c.prototype.removeViewportAdjuster=function(a){var b=this.viewportAdjusters.indexOf(a);b>-1&&this.viewportAdjusters.splice(b,1)},c.prototype.getViewportAdjustment=function(){var a=this,b={height:0,width:0};return a.viewportAdjusters.forEach(function(a){b=a.call(this,b)}),b},c.prototype.getMargin=function(a){var b=this,c=0;return b.viewportAdjusters.forEach(function(b){var d=b.call(this,{height:0,width:0});d.side&&d.side===a&&(c+=-1*d.width)}),c},c.prototype.getViewportHeight=function(){var a=this,b=a.headerHeight?a.headerHeight:a.grid.headerHeight,c=a.grid.gridHeight-b-a.grid.footerHeight,d=a.getViewportAdjustment();return c+=d.height},c.prototype.getViewportWidth=function(){var a=this,b=a.grid.gridWidth,c=a.getViewportAdjustment();return b+=c.width},c.prototype.getHeaderViewportWidth=function(){var a=this.getViewportWidth();return a},c.prototype.getCanvasHeight=function(){var a=this;if(!a.canvasHeightShouldUpdate)return a.$$canvasHeight;var b=a.$$canvasHeight;return a.$$canvasHeight=0,a.visibleRowCache.forEach(function(b){a.$$canvasHeight+=b.height}),a.canvasHeightShouldUpdate=!1,a.grid.api.core.raise.canvasHeightChanged(b,a.$$canvasHeight),a.$$canvasHeight},c.prototype.getVerticalScrollLength=function(){return this.getCanvasHeight()-this.getViewportHeight()+this.grid.scrollbarHeight},c.prototype.getHorizontalScrollLength=function(){return this.getCanvasWidth()-this.getViewportWidth()+this.grid.scrollbarWidth},c.prototype.getCanvasWidth=function(){var a=this,b=a.canvasWidth;return b},c.prototype.setRenderedRows=function(a){this.renderedRows.length=a.length;for(var b=0;b<a.length;b++)this.renderedRows[b]=a[b]},c.prototype.setRenderedColumns=function(a){this.renderedColumns.length=a.length;for(var b=0;b<a.length;b++)this.renderedColumns[b]=a[b];this.updateColumnOffset()},c.prototype.updateColumnOffset=function(){for(var a=0,b=0;b<this.currentFirstColumn;b++)a+=this.visibleColumnCache[b].drawnWidth;this.columnOffset=a},c.prototype.scrollVertical=function(a){var c=-1;if(a!==this.prevScrollTop){var d=a-this.prevScrollTop;d>0&&(this.grid.scrollDirection=b.scrollDirection.DOWN),0>d&&(this.grid.scrollDirection=b.scrollDirection.UP);var e=this.getVerticalScrollLength();return c=a/e,c>1&&(c=1),0>c&&(c=0),this.adjustScrollVertical(a,c),c}},c.prototype.scrollHorizontal=function(a){var c=-1;if(a!==this.prevScrollLeft){var d=a-this.prevScrollLeft;d>0&&(this.grid.scrollDirection=b.scrollDirection.RIGHT),0>d&&(this.grid.scrollDirection=b.scrollDirection.LEFT);var e=this.getHorizontalScrollLength();return c=0!==e?a/e:0,this.adjustScrollHorizontal(a,c),c}},c.prototype.adjustScrollVertical=function(a,b,c){(this.prevScrollTop!==a||c)&&(("undefined"==typeof a||void 0===a||null===a)&&(a=(this.getCanvasHeight()-this.getViewportHeight())*b),this.adjustRows(a,b,!1),this.prevScrollTop=a,this.prevScrolltopPercentage=b,this.grid.queueRefresh())},c.prototype.adjustScrollHorizontal=function(a,b,c){(this.prevScrollLeft!==a||c)&&(("undefined"==typeof a||void 0===a||null===a)&&(a=(this.getCanvasWidth()-this.getViewportWidth())*b),this.adjustColumns(a,b),this.prevScrollLeft=a,this.prevScrollleftPercentage=b,this.grid.queueRefresh())},c.prototype.adjustRows=function(a,b,c){var d=this,e=d.minRowsToRender(),f=d.visibleRowCache,g=f.length-e;"undefined"!=typeof b&&null!==b||!a||(b=a/d.getVerticalScrollLength());var h=Math.ceil(Math.min(g,g*b));h>g&&(h=g);var i=[];if(f.length>d.grid.options.virtualizationThreshold){if("undefined"!=typeof a&&null!==a){if(!d.grid.suppressParentScrollDown&&d.prevScrollTop<a&&h<d.prevRowScrollIndex+d.grid.options.scrollThreshold&&g>h)return;if(!d.grid.suppressParentScrollUp&&d.prevScrollTop>a&&h>d.prevRowScrollIndex-d.grid.options.scrollThreshold&&g>h)return}var j={},k={};j=Math.max(0,h-d.grid.options.excessRows),k=Math.min(f.length,h+e+d.grid.options.excessRows),i=[j,k]}else{var l=d.visibleRowCache.length;i=[0,Math.max(l,e+d.grid.options.excessRows)]}d.updateViewableRowRange(i),d.prevRowScrollIndex=h},c.prototype.adjustColumns=function(a,b){var c=this,d=c.minColumnsToRender(),e=c.visibleColumnCache,f=e.length-d;"undefined"!=typeof b&&null!==b||!a||(b=a/c.getHorizontalScrollLength());var g=Math.ceil(Math.min(f,f*b));g>f&&(g=f);var h=[];if(e.length>c.grid.options.columnVirtualizationThreshold&&c.getCanvasWidth()>c.getViewportWidth()){var i=Math.max(0,g-c.grid.options.excessColumns),j=Math.min(e.length,g+d+c.grid.options.excessColumns);h=[i,j]}else{var k=c.visibleColumnCache.length;h=[0,Math.max(k,d+c.grid.options.excessColumns)]}c.updateViewableColumnRange(h),c.prevColumnScrollIndex=g},c.prototype.updateViewableRowRange=function(a){var b=this.visibleRowCache.slice(a[0],a[1]);this.currentTopRow=a[0],this.setRenderedRows(b)},c.prototype.updateViewableColumnRange=function(a){var b=this.visibleColumnCache.slice(a[0],a[1]);this.currentFirstColumn=a[0],this.setRenderedColumns(b)},c.prototype.headerCellWrapperStyle=function(){var a=this;if(0!==a.currentFirstColumn){var b=a.columnOffset;return a.grid.isRTL()?{"margin-right":b+"px"}:{"margin-left":b+"px"}}return null},c.prototype.updateColumnWidths=function(){var b=this,c=[],d=0,e=0,f="",g=b.grid.getViewportWidth()-b.grid.scrollbarWidth,h=[];angular.forEach(b.grid.renderContainers,function(a,b){h=h.concat(a.visibleColumnCache)}),h.forEach(function(b,f){var h=0;b.visible&&(angular.isNumber(b.width)?(h=parseInt(b.width,10),e+=h,b.drawnWidth=h):a.endsWith(b.width,"%")?(h=parseInt(parseInt(b.width.replace(/%/g,""),10)/100*g),h>b.maxWidth&&(h=b.maxWidth),h<b.minWidth&&(h=b.minWidth),e+=h,b.drawnWidth=h):angular.isString(b.width)&&-1!==b.width.indexOf("*")&&(d+=b.width.length,c.push(b)))});var i=g-e;if(c.length>0){var j=i/d;c.forEach(function(a){var b=parseInt(a.width.length*j,10);b>a.maxWidth&&(b=a.maxWidth),b<a.minWidth&&(b=a.minWidth),e+=b,a.drawnWidth=b})}for(var k=function(a){a.drawnWidth<a.maxWidth&&l>0&&(a.drawnWidth++,e++,l--,m=!0)},l=g-e,m=!0;l>0&&m;)m=!1,c.forEach(k);var n=function(a){a.drawnWidth>a.minWidth&&o>0&&(a.drawnWidth--,e--,o--,m=!0)},o=e-g;for(m=!0;o>0&&m;)m=!1,c.forEach(n);var p=0;b.visibleColumnCache.forEach(function(a){a.visible&&(p+=a.drawnWidth)}),h.forEach(function(a){f+=a.getColClassDefinition()}),b.canvasWidth=p,this.columnStyles=f},c.prototype.needsHScrollbarPlaceholder=function(){return this.grid.options.enableHorizontalScrollbar&&!this.hasHScrollbar&&!this.grid.disableScrolling},c.prototype.getViewportStyle=function(){var a=this,c={};return a.hasHScrollbar=!1,a.hasVScrollbar=!1,a.grid.disableScrolling?(c["overflow-x"]="hidden",c["overflow-y"]="hidden",c):("body"===a.name?(a.hasHScrollbar=a.grid.options.enableHorizontalScrollbar!==b.scrollbars.NEVER,a.grid.isRTL()?a.grid.hasLeftContainerColumns()||(a.hasVScrollbar=a.grid.options.enableVerticalScrollbar!==b.scrollbars.NEVER):a.grid.hasRightContainerColumns()||(a.hasVScrollbar=a.grid.options.enableVerticalScrollbar!==b.scrollbars.NEVER)):"left"===a.name?a.hasVScrollbar=a.grid.isRTL()?a.grid.options.enableVerticalScrollbar!==b.scrollbars.NEVER:!1:a.hasVScrollbar=a.grid.isRTL()?!1:a.grid.options.enableVerticalScrollbar!==b.scrollbars.NEVER,c["overflow-x"]=a.hasHScrollbar?"scroll":"hidden",c["overflow-y"]=a.hasVScrollbar?"scroll":"hidden",c)},c}])}(),function(){angular.module("ui.grid").factory("GridRow",["gridUtil","uiGridConstants",function(a,b){function c(b,c,d){this.grid=d,this.entity=b,this.uid=a.nextUid(),this.visible=!0,this.$$height=d.options.rowHeight}return Object.defineProperty(c.prototype,"height",{get:function(){return this.$$height},set:function(a){a!==this.$$height&&(this.grid.updateCanvasHeight(),this.$$height=a)}}),c.prototype.getQualifiedColField=function(a){return"row."+this.getEntityQualifiedColField(a)},c.prototype.getEntityQualifiedColField=function(c){var d="entity";return c.field===b.ENTITY_BINDING?d:a.preEval(d+"."+c.field)},c.prototype.setRowInvisible=function(a){a&&a.setThisRowInvisible&&a.setThisRowInvisible("user")},c.prototype.clearRowInvisible=function(a){a&&a.clearThisRowInvisible&&a.clearThisRowInvisible("user")},c.prototype.setThisRowInvisible=function(a,b){this.invisibleReason||(this.invisibleReason={}),this.invisibleReason[a]=!0,this.evaluateRowVisibility(b)},c.prototype.clearThisRowInvisible=function(a,b){"undefined"!=typeof this.invisibleReason&&delete this.invisibleReason[a],this.evaluateRowVisibility(b)},c.prototype.evaluateRowVisibility=function(a){var b=!0;"undefined"!=typeof this.invisibleReason&&angular.forEach(this.invisibleReason,function(a,c){a&&(b=!1)}),("undefined"==typeof this.visible||this.visible!==b)&&(this.visible=b,a||(this.grid.queueGridRefresh(),this.grid.api.core.raise.rowsVisibleChanged(this)))},c}])}(),function(){"use strict";angular.module("ui.grid").factory("GridRowColumn",["$parse","$filter",function(a,b){var c=function d(a,b){if(!(this instanceof d))throw"Using GridRowColumn as a function insead of as a constructor. Must be called with `new` keyword";this.row=a,this.col=b};return c.prototype.getIntersectionValueRaw=function(){var b=a(this.row.getEntityQualifiedColField(this.col)),c=this.row;return b(c)},c}])}(),function(){angular.module("ui.grid").factory("ScrollEvent",["gridUtil",function(a){function b(b,c,d,e){var f=this;if(!b)throw new Error("grid argument is required");f.grid=b,f.source=e,f.withDelay=!0,f.sourceRowContainer=c,f.sourceColContainer=d,f.newScrollLeft=null,f.newScrollTop=null,f.x=null,f.y=null,f.verticalScrollLength=-9999999,f.horizontalScrollLength=-999999,f.fireThrottledScrollingEvent=a.throttle(function(a){f.grid.scrollContainers(a,f)},f.grid.options.wheelScrollThrottle,{trailing:!0})}return b.prototype.getNewScrollLeft=function(b,c){var d=this;if(!d.newScrollLeft){var e,f=b.getCanvasWidth()-b.getViewportWidth(),g=a.normalizeScrollLeft(c,d.grid);if("undefined"!=typeof d.x.percentage&&void 0!==d.x.percentage)e=d.x.percentage;else{if("undefined"==typeof d.x.pixels||void 0===d.x.pixels)throw new Error("No percentage or pixel value provided for scroll event X axis");e=d.x.percentage=(g+d.x.pixels)/f}return Math.max(0,e*f)}return d.newScrollLeft},b.prototype.getNewScrollTop=function(a,b){var c=this;if(!c.newScrollTop){var d,e=a.getVerticalScrollLength(),f=b[0].scrollTop;if("undefined"!=typeof c.y.percentage&&void 0!==c.y.percentage)d=c.y.percentage;else{if("undefined"==typeof c.y.pixels||void 0===c.y.pixels)throw new Error("No percentage or pixel value provided for scroll event Y axis");d=c.y.percentage=(f+c.y.pixels)/e}return Math.max(0,d*e)}return c.newScrollTop},b.prototype.atTop=function(a){return this.y&&(0===this.y.percentage||this.verticalScrollLength<0)&&0===a},b.prototype.atBottom=function(a){return this.y&&(1===this.y.percentage||0===this.verticalScrollLength)&&a>0},b.prototype.atLeft=function(a){return this.x&&(0===this.x.percentage||this.horizontalScrollLength<0)&&0===a},b.prototype.atRight=function(a){return this.x&&(1===this.x.percentage||0===this.horizontalScrollLength)&&a>0},b.Sources={ViewPortScroll:"ViewPortScroll",RenderContainerMouseWheel:"RenderContainerMouseWheel",RenderContainerTouchMove:"RenderContainerTouchMove",Other:99},b}])}(),function(){"use strict";angular.module("ui.grid").service("gridClassFactory",["gridUtil","$q","$compile","$templateCache","uiGridConstants","Grid","GridColumn","GridRow",function(a,b,c,d,e,f,g,h){var i={createGrid:function(d){d="undefined"!=typeof d?d:{},d.id=a.newId();var e=new f(d);if(e.options.rowTemplate){var g=b.defer();e.getRowTemplateFn=g.promise,a.getTemplate(e.options.rowTemplate).then(function(a){var b=c(a);g.resolve(b)},function(a){throw new Error("Couldn't fetch/use row template '"+e.options.rowTemplate+"'")})}return e.registerColumnBuilder(i.defaultColumnBuilder),e.registerRowBuilder(i.rowTemplateAssigner),e.registerRowsProcessor(function(a){return a.forEach(function(a){a.evaluateRowVisibility(!0)},50),a}),e.registerColumnsProcessor(function(a){return a.forEach(function(a){a.visible=angular.isDefined(a.colDef.visible)?a.colDef.visible:!0}),a},50),e.registerRowsProcessor(e.searchRows,100),e.options.externalSort&&angular.isFunction(e.options.externalSort)?e.registerRowsProcessor(e.options.externalSort,200):e.registerRowsProcessor(e.sortByColumn,200),e},defaultColumnBuilder:function(c,d,f){var g=[],h=function(b,f,h,i,j){c[b]?d[f]=c[b]:d[f]=h,g.push(a.getTemplate(d[f]).then(function(a){angular.isFunction(a)&&(a=a());var c="cellTooltip"===j?"col.cellTooltip(row,col)":"col.headerTooltip(col)";j&&d[j]===!1?a=a.replace(e.TOOLTIP,""):j&&d[j]&&(a=a.replace(e.TOOLTIP,'title="{{'+c+' CUSTOM_FILTERS }}"')),i?d[b]=a.replace(e.CUSTOM_FILTERS,function(){return d[i]?"|"+d[i]:""}):d[b]=a},function(a){throw new Error("Couldn't fetch/use colDef."+b+" '"+c[b]+"'")}))};return h("cellTemplate","providedCellTemplate","ui-grid/uiGridCell","cellFilter","cellTooltip"),d.cellTemplatePromise=g[0],h("headerCellTemplate","providedHeaderCellTemplate","ui-grid/uiGridHeaderCell","headerCellFilter","headerTooltip"),h("footerCellTemplate","providedFooterCellTemplate","ui-grid/uiGridFooterCell","footerCellFilter"),h("filterHeaderTemplate","providedFilterHeaderTemplate","ui-grid/ui-grid-filter"),d.compiledElementFnDefer=b.defer(),b.all(g)},rowTemplateAssigner:function(d){var e=this;if(d.rowTemplate){var f=b.defer();d.getRowTemplateFn=f.promise,a.getTemplate(d.rowTemplate).then(function(a){var b=c(a);f.resolve(b)},function(a){throw new Error("Couldn't fetch/use row template '"+d.rowTemplate+"'")})}else d.rowTemplate=e.options.rowTemplate,d.getRowTemplateFn=e.getRowTemplateFn;return d.getRowTemplateFn}};return i}])}(),function(){function a(a){return a.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,"\\$&")}var b=angular.module("ui.grid");b.service("rowSearcher",["gridUtil","uiGridConstants",function(b,c){var d=c.filter.CONTAINS,e={};return e.getTerm=function(a){if("undefined"==typeof a.term)return a.term;var b=a.term;return"string"==typeof b&&(b=b.trim()),b},e.stripTerm=function(b){var c=e.getTerm(b);return"string"==typeof c?a(c.replace(/(^\*|\*$)/g,"")):c},e.guessCondition=function(a){if("undefined"==typeof a.term||!a.term)return d;var b=e.getTerm(a);if(/\*/.test(b)){var c="";a.flags&&a.flags.caseSensitive||(c+="i");var f=b.replace(/(\\)?\*/g,function(a,b){return b?a:"[\\s\\S]*?"});return new RegExp("^"+f+"$",c)}return d},e.setupFilters=function(a){for(var d=[],f=a.length,g=0;f>g;g++){var h=a[g];if(h.noTerm||!b.isNullOrUndefined(h.term)){var i={},j="";h.flags&&h.flags.caseSensitive||(j+="i"),b.isNullOrUndefined(h.term)||(h.rawTerm?i.term=h.term:i.term=e.stripTerm(h)),i.noTerm=h.noTerm,h.condition?i.condition=h.condition:i.condition=e.guessCondition(h),i.flags=angular.extend({caseSensitive:!1,date:!1},h.flags),i.condition===c.filter.STARTS_WITH&&(i.startswithRE=new RegExp("^"+i.term,j)),i.condition===c.filter.ENDS_WITH&&(i.endswithRE=new RegExp(i.term+"$",j)),i.condition===c.filter.CONTAINS&&(i.containsRE=new RegExp(i.term,j)),i.condition===c.filter.EXACT&&(i.exactRE=new RegExp("^"+i.term+"$",j)),d.push(i)}}return d},e.runColumnFilter=function(a,b,d,e){var f,g=typeof e.condition,h=e.term;if(f=d.filterCellFiltered?a.getCellDisplayValue(b,d):a.getCellValue(b,d),e.condition instanceof RegExp)return e.condition.test(f);if("function"===g)return e.condition(h,f,b,d);if(e.startswithRE)return e.startswithRE.test(f);if(e.endswithRE)return e.endswithRE.test(f);if(e.containsRE)return e.containsRE.test(f);if(e.exactRE)return e.exactRE.test(f);if(e.condition===c.filter.NOT_EQUAL){var i=new RegExp("^"+h+"$");return!i.exec(f)}if("number"==typeof f&&"string"==typeof h){var j=parseFloat(h.replace(/\\\./,".").replace(/\\\-/,"-"));isNaN(j)||(h=j)}return e.flags.date===!0&&(f=new Date(f),h=new Date(h.replace(/\\/g,""))),e.condition===c.filter.GREATER_THAN?f>h:e.condition===c.filter.GREATER_THAN_OR_EQUAL?f>=h:e.condition===c.filter.LESS_THAN?h>f:e.condition===c.filter.LESS_THAN_OR_EQUAL?h>=f:!0},e.searchColumn=function(a,c,d,f){if(a.options.useExternalFiltering)return!0;for(var g=f.length,h=0;g>h;h++){var i=f[h];if(!b.isNullOrUndefined(i.term)&&""!==i.term||i.noTerm){var j=e.runColumnFilter(a,c,d,i);if(!j)return!1}}return!0},e.search=function(a,c,d){if(c){if(!a.options.enableFiltering)return c;for(var f=[],g=d.length,h=function(a){var c=!1;return a.forEach(function(a){(!b.isNullOrUndefined(a.term)&&""!==a.term||a.noTerm)&&(c=!0)}),c},i=0;g>i;i++){var j=d[i];"undefined"!=typeof j.filters&&h(j.filters)&&f.push({col:j,filters:e.setupFilters(j.filters)})}if(f.length>0){for(var k=function(a,b,c,d){b.visible&&!e.searchColumn(a,b,c,d)&&(b.visible=!1)},l=function(a,b){for(var d=c.length,e=0;d>e;e++)k(a,c[e],b.col,b.filters)},m=f.length,n=0;m>n;n++)l(a,f[n]);a.api.core.raise.rowsVisibleChanged&&a.api.core.raise.rowsVisibleChanged()}return c}},e}])}(),function(){var a=angular.module("ui.grid");a.service("rowSorter",["$parse","uiGridConstants",function(a,b){var c="("+b.CURRENCY_SYMBOLS.map(function(a){return"\\"+a}).join("|")+")?",d=(new RegExp("^[-+]?"+c+"[\\d,.]+"+c+"%?$"),{colSortFnCache:{}});return d.guessSortFn=function(a){switch(a){case"number":return d.sortNumber;case"numberStr":return d.sortNumberStr;case"boolean":return d.sortBool;case"string":return d.sortAlpha;case"date":return d.sortDate;case"object":return d.basicSort;default:throw new Error("No sorting function found for type:"+a)}},d.handleNulls=function(a,b){if(!a&&0!==a&&a!==!1||!b&&0!==b&&b!==!1){if(!a&&0!==a&&a!==!1&&!b&&0!==b&&b!==!1)return 0;if(!a&&0!==a&&a!==!1)return 1;if(!b&&0!==b&&b!==!1)return-1}return null},d.basicSort=function(a,b){var c=d.handleNulls(a,b);return null!==c?c:a===b?0:b>a?-1:1},d.sortNumber=function(a,b){var c=d.handleNulls(a,b);return null!==c?c:a-b},d.sortNumberStr=function(a,b){var c=d.handleNulls(a,b);if(null!==c)return c;var e,f,g=!1,h=!1;return e=parseFloat(a.replace(/[^0-9.-]/g,"")),isNaN(e)&&(g=!0),f=parseFloat(b.replace(/[^0-9.-]/g,"")),isNaN(f)&&(h=!0),g&&h?0:g?1:h?-1:e-f},d.sortAlpha=function(a,b){var c=d.handleNulls(a,b);if(null!==c)return c;var e=a.toString().toLowerCase(),f=b.toString().toLowerCase();return e===f?0:e.localeCompare(f)},d.sortDate=function(a,b){var c=d.handleNulls(a,b);if(null!==c)return c;a instanceof Date||(a=new Date(a)),b instanceof Date||(b=new Date(b));var e=a.getTime(),f=b.getTime();return e===f?0:f>e?-1:1},d.sortBool=function(a,b){var c=d.handleNulls(a,b);return null!==c?c:a&&b?0:a||b?a?1:-1:0},d.getSortFn=function(a,b,c){var e;return d.colSortFnCache[b.colDef.name]?e=d.colSortFnCache[b.colDef.name]:void 0!==b.sortingAlgorithm?(e=b.sortingAlgorithm,d.colSortFnCache[b.colDef.name]=b.sortingAlgorithm):b.sortCellFiltered&&b.cellFilter?(e=d.sortAlpha,d.colSortFnCache[b.colDef.name]=e):(e=d.guessSortFn(b.colDef.type),e?d.colSortFnCache[b.colDef.name]=e:e=d.sortAlpha),e},d.prioritySort=function(a,b){return void 0!==a.sort.priority&&void 0!==b.sort.priority?a.sort.priority<b.sort.priority?-1:a.sort.priority===b.sort.priority?0:1:a.sort.priority||void 0===a.sort.priority?-1:b.sort.priority||void 0===b.sort.priority?1:0},d.sort=function(a,c,e){if(c){if(a.options.useExternalSorting)return c;var f=[];if(e.forEach(function(a){!a.sort||a.sort.ignoreSort||!a.sort.direction||a.sort.direction!==b.ASC&&a.sort.direction!==b.DESC||f.push(a)}),f=f.sort(d.prioritySort),0===f.length)return c;var g,h,i=function(a,b){a.entity.$$uiGridIndex=b};c.forEach(i);var j=c.slice(0),k=function(c,e){for(var i,k=0,l=0;0===k&&l<f.length;){g=f[l],h=f[l].sort.direction,i=d.getSortFn(a,g,j);var m,n;g.sortCellFiltered?(m=a.getCellDisplayValue(c,g),n=a.getCellDisplayValue(e,g)):(m=a.getCellValue(c,g),n=a.getCellValue(e,g)),k=i(m,n,c,e,h),l++}return 0===k?c.entity.$$uiGridIndex-e.entity.$$uiGridIndex:h===b.ASC?k:0-k},l=c.sort(k),m=function(a,b){delete a.entity.$$uiGridIndex};return c.forEach(m),l}
+},d}])}(),function(){function a(a){var b=a;return"undefined"!=typeof b.length&&b.length&&(b=a[0]),b.ownerDocument.defaultView.getComputedStyle(b,null)}function b(a,b,c,d,e){for(var f=c===(d?"border":"content")?4:"width"===b?1:0,g=0,h=["Top","Right","Bottom","Left"];4>f;f+=2){var i=h[f];if("margin"===c){var j=parseFloat(e[c+i]);isNaN(j)||(g+=j)}if(d){if("content"===c){var k=parseFloat(e["padding"+i]);isNaN(k)||(g-=k)}if("margin"!==c){var l=parseFloat(e["border"+i+"Width"]);isNaN(l)||(g-=l)}}else{var m=parseFloat(e["padding"+i]);if(isNaN(m)||(g+=m),"padding"!==c){var n=parseFloat(e["border"+i+"Width"]);isNaN(n)||(g+=n)}}}return g}function c(c,d,e){var f,h=!0,i=a(c),j="border-box"===i.boxSizing;if(0>=f||null==f){if(f=i[d],(0>f||null==f)&&(f=c.style[d]),g.test(f))return f;h=j&&!0,f=parseFloat(f)||0}var k=f+b(c,d,e||(j?"border":"content"),h,i);return k}function d(b){b=angular.element(b)[0];var c=b.parentElement;return c||(c=document.getElementsByTagName("body")[0]),parseInt(a(c).fontSize)||parseInt(a(b).fontSize)||16}var e,f=angular.module("ui.grid");"function"!=typeof Function.prototype.bind&&(e=function(){var a=Array.prototype.slice;return function(b){var c=this,d=a.call(arguments,1);return d.length?function(){return arguments.length?c.apply(b,d.concat(a.call(arguments))):c.apply(b,d)}:function(){return arguments.length?c.apply(b,arguments):c.call(b)}}});var g=new RegExp("^("+/[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source+")(?!px)[a-z%]+$","i"),h=/^(block|none|table(?!-c[ea]).+)/,i={position:"absolute",visibility:"hidden",display:"block"},j=["0","0","0","0"],k="uiGrid-";f.service("gridUtil",["$log","$window","$document","$http","$templateCache","$timeout","$interval","$injector","$q","$interpolate","uiGridConstants",function(f,g,l,m,n,o,p,q,r,s,t){function u(a,b){var c=angular.element(this),d=0,e=0,f=0,g=0;if(b.originalEvent&&(b=b.originalEvent),"detail"in b&&(f=-1*b.detail),"wheelDelta"in b&&(f=b.wheelDelta),"wheelDeltaY"in b&&(f=b.wheelDeltaY),"wheelDeltaX"in b&&(e=-1*b.wheelDeltaX),"axis"in b&&b.axis===b.HORIZONTAL_AXIS&&(e=-1*f,f=0),d=0===f?e:f,"deltaY"in b&&(f=-1*b.deltaY,d=f),"deltaX"in b&&(e=b.deltaX,0===f&&(d=-1*e)),0!==f||0!==e){if(1===b.deltaMode){var h=c.data("mousewheel-line-height");d*=h,f*=h,e*=h}else if(2===b.deltaMode){var i=c.data("mousewheel-page-height");d*=i,f*=i,e*=i}g=Math.max(Math.abs(f),Math.abs(e)),(!z||z>g)&&(z=g,w(b,g)&&(z/=40)),d=Math[d>=1?"floor":"ceil"](d/z),e=Math[e>=1?"floor":"ceil"](e/z),f=Math[f>=1?"floor":"ceil"](f/z);var j={originalEvent:b,deltaX:e,deltaY:f,deltaFactor:z,preventDefault:function(){b.preventDefault()},stopPropagation:function(){b.stopPropagation()}};y&&clearTimeout(y),y=setTimeout(v,200),a.call(c[0],j)}}function v(){z=null}function w(a,b){return"mousewheel"===a.type&&b%120===0}var x={augmentWidthOrHeight:b,getStyles:a,createBoundedWrapper:function(a,b){return function(){return b.apply(a,arguments)}},readableColumnName:function(a){return"undefined"==typeof a||void 0===a||null===a?a:("string"!=typeof a&&(a=String(a)),a.replace(/_+/g," ").replace(/^[A-Z]+$/,function(a){return angular.lowercase(angular.uppercase(a.charAt(0))+a.slice(1))}).replace(/([\w\u00C0-\u017F]+)/g,function(a){return angular.uppercase(a.charAt(0))+a.slice(1)}).replace(/(\w+?(?=[A-Z]))/g,"$1 "))},getColumnsFromData:function(a,b){var c=[];if(!a||"undefined"==typeof a[0]||void 0===a[0])return[];angular.isUndefined(b)&&(b=[]);var d=a[0];return angular.forEach(d,function(a,d){-1===b.indexOf(d)&&c.push({name:d})}),c},newId:function(){var a=(new Date).getTime();return function(){return a+=1}}(),getTemplate:function(a){if(n.get(a))return x.postProcessTemplate(n.get(a));if(angular.isFunction(a.then))return a.then(x.postProcessTemplate);try{if(angular.element(a).length>0)return r.when(a).then(x.postProcessTemplate)}catch(b){}return x.logDebug("fetching url",a),m({method:"GET",url:a}).then(function(b){var c=b.data.trim();return n.put(a,c),c},function(b){throw new Error("Could not get template "+a+": "+b)}).then(x.postProcessTemplate)},postProcessTemplate:function(a){var b=s.startSymbol(),c=s.endSymbol();return("{{"!==b||"}}"!==c)&&(a=a.replace(/\{\{/g,b),a=a.replace(/\}\}/g,c)),r.when(a)},guessType:function(a){var b=typeof a;switch(b){case"number":case"boolean":case"string":return b;default:return angular.isDate(a)?"date":"object"}},elementWidth:function(a){},elementHeight:function(a){},getScrollbarWidth:function(){var a=document.createElement("div");a.style.visibility="hidden",a.style.width="100px",a.style.msOverflowStyle="scrollbar",document.body.appendChild(a);var b=a.offsetWidth;a.style.overflow="scroll";var c=document.createElement("div");c.style.width="100%",a.appendChild(c);var d=c.offsetWidth;return a.parentNode.removeChild(a),b-d},swap:function(a,b,c,d){var e,f,g={};for(f in b)g[f]=a.style[f],a.style[f]=b[f];e=c.apply(a,d||[]);for(f in b)a.style[f]=g[f];return e},fakeElement:function(a,b,c,d){var e,f,g=angular.element(a).clone()[0];for(f in b)g.style[f]=b[f];return angular.element(document.body).append(g),e=c.call(g,g),angular.element(g).remove(),e},normalizeWheelEvent:function(a){var b,c,d,e=a||window.event,f=([].slice.call(arguments,1),0),g=0,h=0,i=0,j=0;return e.originalEvent&&(e=e.originalEvent),e.wheelDelta&&(f=e.wheelDelta),e.detail&&(f=-1*e.detail),h=f,void 0!==e.axis&&e.axis===e.HORIZONTAL_AXIS&&(h=0,g=-1*f),e.deltaY&&(h=-1*e.deltaY,f=h),e.deltaX&&(g=e.deltaX,f=-1*g),void 0!==e.wheelDeltaY&&(h=e.wheelDeltaY),void 0!==e.wheelDeltaX&&(g=e.wheelDeltaX),i=Math.abs(f),(!b||b>i)&&(b=i),j=Math.max(Math.abs(h),Math.abs(g)),(!c||c>j)&&(c=j),d=f>0?"floor":"ceil",f=Math[d](f/b),g=Math[d](g/c),h=Math[d](h/c),{delta:f,deltaX:g,deltaY:h}},isTouchEnabled:function(){var a;return("ontouchstart"in g||g.DocumentTouch&&l instanceof DocumentTouch)&&(a=!0),a},isNullOrUndefined:function(a){return void 0===a||null===a?!0:!1},endsWith:function(a,b){return a&&b&&"string"==typeof a?-1!==a.indexOf(b,a.length-b.length):!1},arrayContainsObjectWithProperty:function(a,b,c){var d=!1;return angular.forEach(a,function(a){a[b]===c&&(d=!0)}),d},numericAndNullSort:function(a,b){return null===a?1:null===b?-1:null===a&&null===b?0:a-b},disableAnimations:function(a){var b;try{b=q.get("$animate"),angular.version.major>1||1===angular.version.major&&angular.version.minor>=4?b.enabled(a,!1):b.enabled(!1,a)}catch(c){}},enableAnimations:function(a){var b;try{return b=q.get("$animate"),angular.version.major>1||1===angular.version.major&&angular.version.minor>=4?b.enabled(a,!0):b.enabled(!0,a),b}catch(c){}},nextUid:function(){for(var a,b=j.length;b;){if(b--,a=j[b].charCodeAt(0),57===a)return j[b]="A",k+j.join("");if(90!==a)return j[b]=String.fromCharCode(a+1),k+j.join("");j[b]="0"}return j.unshift("0"),k+j.join("")},hashKey:function(a){var b,c=typeof a;return"object"===c&&null!==a?"function"==typeof(b=a.$$hashKey)?b=a.$$hashKey():"undefined"!=typeof a.$$hashKey&&a.$$hashKey?b=a.$$hashKey:void 0===b&&(b=a.$$hashKey=x.nextUid()):b=a,c+":"+b},resetUids:function(){j=["0","0","0"]},logError:function(a){t.LOG_ERROR_MESSAGES&&f.error(a)},logWarn:function(a){t.LOG_WARN_MESSAGES&&f.warn(a)},logDebug:function(){t.LOG_DEBUG_MESSAGES&&f.debug.apply(f,arguments)}};x.focus={queue:[],byId:function(a,b){this._purgeQueue();var c=o(function(){var c=(b&&b.id?b.id+"-":"")+a,d=g.document.getElementById(c);d?d.focus():x.logWarn("[focus.byId] Element id "+c+" was not found.")});return this.queue.push(c),c},byElement:function(a){if(!angular.isElement(a))return x.logWarn("Trying to focus on an element that isn't an element."),r.reject("not-element");a=angular.element(a),this._purgeQueue();var b=o(function(){a&&a[0].focus()});return this.queue.push(b),b},bySelector:function(a,b,c){var d=this;if(!angular.isElement(a))throw new Error("The parent element is not an element.");a=angular.element(a);var e=function(){var c=a[0].querySelector(b);return d.byElement(c)};if(this._purgeQueue(),c){var f=o(e);return this.queue.push(o(e)),f}return e()},_purgeQueue:function(){this.queue.forEach(function(a){o.cancel(a)}),this.queue=[]}},["width","height"].forEach(function(b){var d=angular.uppercase(b.charAt(0))+b.substr(1);x["element"+d]=function(d,e){var f=d;if(f&&"undefined"!=typeof f.length&&f.length&&(f=d[0]),f){var g=a(f);return 0===f.offsetWidth&&h.test(g.display)?x.swap(f,i,function(){return c(f,b,e)}):c(f,b,e)}return null},x["outerElement"+d]=function(a,b){return a?x["element"+d].call(this,a,b?"margin":"border"):null}}),x.closestElm=function(a,b){"undefined"!=typeof a.length&&a.length&&(a=a[0]);var c;["matches","webkitMatchesSelector","mozMatchesSelector","msMatchesSelector","oMatchesSelector"].some(function(a){return"function"==typeof document.body[a]?(c=a,!0):!1});for(var d;null!==a;){if(d=a.parentElement,null!==d&&d[c](b))return d;a=d}return null},x.type=function(a){var b=Function.prototype.toString.call(a.constructor);return b.match(/function (.*?)\(/)[1]},x.getBorderSize=function(b,c){"undefined"!=typeof b.length&&b.length&&(b=b[0]);var d=a(b);c=c?"border"+c.charAt(0).toUpperCase()+c.slice(1):"border",c+="Width";var e=parseInt(d[c],10);return isNaN(e)?0:e},x.detectBrowser=function(){var a=g.navigator.userAgent,b={chrome:/chrome/i,safari:/safari/i,firefox:/firefox/i,ie:/internet explorer|trident\//i};for(var c in b)if(b[c].test(a))return c;return"unknown"},x.rtlScrollType=function B(){if(B.type)return B.type;var a=angular.element('<div dir="rtl" style="font-size: 14px; width: 1px; height: 1px; position: absolute; top: -1000px; overflow: scroll">A</div>')[0],b="reverse";return document.body.appendChild(a),a.scrollLeft>0?b="default":(a.scrollLeft=1,0===a.scrollLeft&&(b="negative")),angular.element(a).remove(),B.type=b,b},x.normalizeScrollLeft=function(a,b){"undefined"!=typeof a.length&&a.length&&(a=a[0]);var c=a.scrollLeft;if(b.isRTL())switch(x.rtlScrollType()){case"default":return a.scrollWidth-c-a.clientWidth;case"negative":return Math.abs(c);case"reverse":return c}return c},x.denormalizeScrollLeft=function(a,b,c){if("undefined"!=typeof a.length&&a.length&&(a=a[0]),c.isRTL())switch(x.rtlScrollType()){case"default":var d=a.scrollWidth-a.clientWidth;return d-b;case"negative":return-1*b;case"reverse":return b}return b},x.preEval=function(a){var b=t.BRACKET_REGEXP.exec(a);if(b)return(b[1]?x.preEval(b[1]):b[1])+b[2]+(b[3]?x.preEval(b[3]):b[3]);a=a.replace(t.APOS_REGEXP,"\\'");var c=a.split(t.DOT_REGEXP),d=[c.shift()];return angular.forEach(c,function(a){d.push(a.replace(t.FUNC_REGEXP,"']$1"))}),d.join("['")},x.debounce=function(a,b,c){function d(){g=this,f=arguments;var d=function(){e=null,c||(h=a.apply(g,f))},i=c&&!e;return e&&o.cancel(e),e=o(d,b,!1),i&&(h=a.apply(g,f)),h}var e,f,g,h;return d.cancel=function(){o.cancel(e),e=null},d},x.throttle=function(a,b,c){function d(b){g=+new Date,a.apply(e,f),p(function(){h=null},0,1,!1)}c=c||{};var e,f,g=0,h=null;return function(){if(e=this,f=arguments,null===h){var a=+new Date-g;a>b?d():c.trailing&&(h=p(d,b-a,1,!1))}}},x.on={},x.off={},x._events={},x.addOff=function(a){x.off[a]=function(b,c){var d=x._events[a].indexOf(c);d>0&&x._events[a].removeAt(d)}};var y,z,A="onwheel"in document||document.documentMode>=9?["wheel"]:["mousewheel","DomMouseScroll","MozMousePixelScroll"];return x.on.mousewheel=function(a,b){if(a&&b){var c=angular.element(a);c.data("mousewheel-line-height",d(c)),c.data("mousewheel-page-height",x.elementHeight(c)),c.data("mousewheel-callbacks")||c.data("mousewheel-callbacks",{});var f=c.data("mousewheel-callbacks");f[b]=(Function.prototype.bind||e).call(u,c[0],b);for(var g=A.length;g;)c.on(A[--g],f[b])}},x.off.mousewheel=function(a,b){var c=angular.element(a),d=c.data("mousewheel-callbacks"),e=d[b];if(e)for(var f=A.length;f;)c.off(A[--f],e);delete d[b],0===Object.keys(d).length&&(c.removeData("mousewheel-line-height"),c.removeData("mousewheel-page-height"),c.removeData("mousewheel-callbacks"))},x}]),f.filter("px",function(){return function(a){return a.match(/^[\d\.]+$/)?a+"px":a}})}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){var b={aggregate:{label:"položky"},groupPanel:{description:"Přesuňte záhlaví zde pro vytvoření skupiny dle sloupce."},search:{placeholder:"Hledat...",showingItems:"Zobrazuji položky:",selectedItems:"Vybrané položky:",totalItems:"Celkem položek:",size:"Velikost strany:",first:"První strana",next:"Další strana",previous:"Předchozí strana",last:"Poslední strana"},menu:{text:"Vyberte sloupec:"},sort:{ascending:"Seřadit od A-Z",descending:"Seřadit od Z-A",remove:"Odebrat seřazení"},column:{hide:"Schovat sloupec"},aggregation:{count:"celkem řádků: ",sum:"celkem: ",avg:"avg: ",min:"min.: ",max:"max.: "},pinning:{pinLeft:"Zamknout vlevo",pinRight:"Zamknout vpravo",unpin:"Odemknout"},gridMenu:{columns:"Sloupce:",importerTitle:"Importovat soubor",exporterAllAsCsv:"Exportovat všechna data do csv",exporterVisibleAsCsv:"Exportovat viditelná data do csv",exporterSelectedAsCsv:"Exportovat vybraná data do csv",exporterAllAsPdf:"Exportovat všechna data do pdf",exporterVisibleAsPdf:"Exportovat viditelná data do pdf",exporterSelectedAsPdf:"Exportovat vybraná data do pdf",clearAllFilters:"Odstranit všechny filtry"},importer:{noHeaders:"Názvy sloupců se nepodařilo získat, obsahuje soubor záhlaví?",noObjects:"Data se nepodařilo zpracovat, obsahuje soubor řádky mimo záhlaví?",invalidCsv:"Soubor nelze zpracovat, jedná se o CSV?",invalidJson:"Soubor nelze zpracovat, je to JSON?",jsonNotArray:"Soubor musí obsahovat json. Ukončuji.."},pagination:{sizes:"položek na stránku",totalItems:"položek"},grouping:{group:"Seskupit",ungroup:"Odebrat seskupení",aggregate_count:"Agregace: Count",aggregate_sum:"Agregace: Sum",aggregate_max:"Agregace: Max",aggregate_min:"Agregace: Min",aggregate_avg:"Agregace: Avg",aggregate_remove:"Agregace: Odebrat"}};return a.add("cs",b),a.add("cz",b),a.add("cs-cz",b),a.add("cs-CZ",b),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("da",{aggregate:{label:"artikler"},groupPanel:{description:"Grupér rækker udfra en kolonne ved at trække dens overskift hertil."},search:{placeholder:"Søg...",showingItems:"Viste rækker:",selectedItems:"Valgte rækker:",totalItems:"Rækker totalt:",size:"Side størrelse:",first:"Første side",next:"Næste side",previous:"Forrige side",last:"Sidste side"},menu:{text:"Vælg kolonner:"},sort:{ascending:"Sorter stigende",descending:"Sorter faldende",none:"Sorter ingen",remove:"Fjern sortering"},column:{hide:"Skjul kolonne"},aggregation:{count:"antal rækker: ",sum:"sum: ",avg:"gns: ",min:"min: ",max:"max: "},gridMenu:{columns:"Kolonner:",importerTitle:"Importer fil",exporterAllAsCsv:"Eksporter alle data som csv",exporterVisibleAsCsv:"Eksporter synlige data som csv",exporterSelectedAsCsv:"Eksporter markerede data som csv",exporterAllAsPdf:"Eksporter alle data som pdf",exporterVisibleAsPdf:"Eksporter synlige data som pdf",exporterSelectedAsPdf:"Eksporter markerede data som pdf",clearAllFilters:"Clear all filters"},importer:{noHeaders:"Column names were unable to be derived, does the file have a header?",noObjects:"Objects were not able to be derived, was there data in the file other than headers?",invalidCsv:"File was unable to be processed, is it valid CSV?",invalidJson:"File was unable to be processed, is it valid Json?",jsonNotArray:"Imported json file must contain an array, aborting."},pagination:{aria:{pageToFirst:"Gå til første",pageBack:"Gå tilbage",pageSelected:"Valgte side",pageForward:"Gå frem",pageToLast:"Gå til sidste"},sizes:"genstande per side",totalItems:"genstande",through:"gennem",of:"af"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("de",{headerCell:{aria:{defaultFilterLabel:"Filter für Spalte",removeFilter:"Filter löschen",columnMenuButtonLabel:"Spaltenmenü"},priority:"Priorität:",filterLabel:"Filter für Spalte: "},aggregate:{label:"Eintrag"},groupPanel:{description:"Ziehen Sie eine Spaltenüberschrift hierhin, um nach dieser Spalte zu gruppieren."},search:{placeholder:"Suche...",showingItems:"Zeige Einträge:",selectedItems:"Ausgewählte Einträge:",totalItems:"Einträge gesamt:",size:"Einträge pro Seite:",first:"Erste Seite",next:"Nächste Seite",previous:"Vorherige Seite",last:"Letzte Seite"},menu:{text:"Spalten auswählen:"},sort:{ascending:"aufsteigend sortieren",descending:"absteigend sortieren",none:"keine Sortierung",remove:"Sortierung zurücksetzen"},column:{hide:"Spalte ausblenden"},aggregation:{count:"Zeilen insgesamt: ",sum:"gesamt: ",avg:"Durchschnitt: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Links anheften",pinRight:"Rechts anheften",unpin:"Lösen"},columnMenu:{close:"Schließen"},gridMenu:{aria:{buttonLabel:"Tabellenmenü"},columns:"Spalten:",importerTitle:"Datei importieren",exporterAllAsCsv:"Alle Daten als CSV exportieren",exporterVisibleAsCsv:"sichtbare Daten als CSV exportieren",exporterSelectedAsCsv:"markierte Daten als CSV exportieren",exporterAllAsPdf:"Alle Daten als PDF exportieren",exporterVisibleAsPdf:"sichtbare Daten als PDF exportieren",exporterSelectedAsPdf:"markierte Daten als PDF exportieren",clearAllFilters:"Alle Filter zurücksetzen"},importer:{noHeaders:"Es konnten keine Spaltennamen ermittelt werden. Sind in der Datei Spaltendefinitionen enthalten?",noObjects:"Es konnten keine Zeileninformationen gelesen werden, Sind in der Datei außer den Spaltendefinitionen auch Daten enthalten?",invalidCsv:"Die Datei konnte nicht eingelesen werden, ist es eine gültige CSV-Datei?",invalidJson:"Die Datei konnte nicht eingelesen werden. Enthält sie gültiges JSON?",jsonNotArray:"Die importierte JSON-Datei muß ein Array enthalten. Breche Import ab."},pagination:{aria:{pageToFirst:"Zum Anfang",pageBack:"Seite zurück",pageSelected:"Ausgwählte Seite",pageForward:"Seite vor",pageToLast:"Zum Ende"},sizes:"Einträge pro Seite",totalItems:"Einträge",through:"bis",of:"von"},grouping:{group:"Gruppieren",ungroup:"Gruppierung aufheben",aggregate_count:"Agg: Anzahl",aggregate_sum:"Agg: Summe",aggregate_max:"Agg: Maximum",aggregate_min:"Agg: Minimum",aggregate_avg:"Agg: Mittelwert",aggregate_remove:"Aggregation entfernen"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("en",{headerCell:{aria:{defaultFilterLabel:"Filter for column",removeFilter:"Remove Filter",columnMenuButtonLabel:"Column Menu"},priority:"Priority:",filterLabel:"Filter for column: "},aggregate:{label:"items"},groupPanel:{description:"Drag a column header here and drop it to group by that column."},search:{placeholder:"Search...",showingItems:"Showing Items:",selectedItems:"Selected Items:",totalItems:"Total Items:",size:"Page Size:",first:"First Page",next:"Next Page",previous:"Previous Page",last:"Last Page"},menu:{text:"Choose Columns:"},sort:{ascending:"Sort Ascending",descending:"Sort Descending",none:"Sort None",remove:"Remove Sort"},column:{hide:"Hide Column"},aggregation:{count:"total rows: ",sum:"total: ",avg:"avg: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Pin Left",pinRight:"Pin Right",unpin:"Unpin"},columnMenu:{close:"Close"},gridMenu:{aria:{buttonLabel:"Grid Menu"},columns:"Columns:",importerTitle:"Import file",exporterAllAsCsv:"Export all data as csv",exporterVisibleAsCsv:"Export visible data as csv",exporterSelectedAsCsv:"Export selected data as csv",exporterAllAsPdf:"Export all data as pdf",exporterVisibleAsPdf:"Export visible data as pdf",exporterSelectedAsPdf:"Export selected data as pdf",clearAllFilters:"Clear all filters"},importer:{noHeaders:"Column names were unable to be derived, does the file have a header?",noObjects:"Objects were not able to be derived, was there data in the file other than headers?",invalidCsv:"File was unable to be processed, is it valid CSV?",invalidJson:"File was unable to be processed, is it valid Json?",jsonNotArray:"Imported json file must contain an array, aborting."},pagination:{aria:{pageToFirst:"Page to first",pageBack:"Page back",pageSelected:"Selected page",pageForward:"Page forward",pageToLast:"Page to last"},sizes:"items per page",totalItems:"items",through:"through",of:"of"},grouping:{group:"Group",ungroup:"Ungroup",aggregate_count:"Agg: Count",aggregate_sum:"Agg: Sum",aggregate_max:"Agg: Max",aggregate_min:"Agg: Min",aggregate_avg:"Agg: Avg",aggregate_remove:"Agg: Remove"},validate:{error:"Error:",minLength:"Value should be at least THRESHOLD characters long.",maxLength:"Value should be at most THRESHOLD characters long.",required:"A value is needed."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("es",{aggregate:{label:"Artículos"},groupPanel:{description:"Arrastre un encabezado de columna aquí y suéltelo para agrupar por esa columna."},search:{placeholder:"Buscar...",showingItems:"Artículos Mostrados:",selectedItems:"Artículos Seleccionados:",totalItems:"Artículos Totales:",size:"Tamaño de Página:",first:"Primera Página",next:"Página Siguiente",previous:"Página Anterior",last:"Última Página"},menu:{text:"Elegir columnas:"},sort:{ascending:"Orden Ascendente",descending:"Orden Descendente",remove:"Sin Ordenar"},column:{hide:"Ocultar la columna"},aggregation:{count:"filas totales: ",sum:"total: ",avg:"media: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Fijar a la Izquierda",pinRight:"Fijar a la Derecha",unpin:"Quitar Fijación"},gridMenu:{columns:"Columnas:",importerTitle:"Importar archivo",exporterAllAsCsv:"Exportar todo como csv",exporterVisibleAsCsv:"Exportar vista como csv",exporterSelectedAsCsv:"Exportar selección como csv",exporterAllAsPdf:"Exportar todo como pdf",exporterVisibleAsPdf:"Exportar vista como pdf",exporterSelectedAsPdf:"Exportar selección como pdf",clearAllFilters:"Limpiar todos los filtros"},importer:{noHeaders:"No fue posible derivar los nombres de las columnas, ¿tiene encabezados el archivo?",noObjects:"No fue posible obtener registros, ¿contiene datos el archivo, aparte de los encabezados?",invalidCsv:"No fue posible procesar el archivo, ¿es un CSV válido?",invalidJson:"No fue posible procesar el archivo, ¿es un Json válido?",jsonNotArray:"El archivo json importado debe contener un array, abortando."},pagination:{sizes:"registros por página",totalItems:"registros",of:"de"},grouping:{group:"Agrupar",ungroup:"Desagrupar",aggregate_count:"Agr: Cont",aggregate_sum:"Agr: Sum",aggregate_max:"Agr: Máx",aggregate_min:"Agr: Min",aggregate_avg:"Agr: Prom",aggregate_remove:"Agr: Quitar"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("fa",{aggregate:{label:"قلم"},groupPanel:{description:"عنوان یک ستون را بگیر و به گروهی از آن ستون رها کن."},search:{placeholder:"جستجو...",showingItems:"نمایش اقلام:",selectedItems:"قلم‌های انتخاب شده:",totalItems:"مجموع اقلام:",size:"اندازه‌ی صفحه:",first:"اولین صفحه",next:"صفحه‌ی‌بعدی",previous:"صفحه‌ی‌ قبلی",last:"آخرین صفحه"},menu:{text:"ستون‌های انتخابی:"},sort:{ascending:"ترتیب صعودی",descending:"ترتیب نزولی",remove:"حذف مرتب کردن"},column:{hide:"پنهان‌کردن ستون"},aggregation:{count:"تعداد: ",sum:"مجموع: ",avg:"میانگین: ",min:"کمترین: ",max:"بیشترین: "},pinning:{pinLeft:"پین کردن سمت چپ",pinRight:"پین کردن سمت راست",unpin:"حذف پین"},gridMenu:{columns:"ستون‌ها:",importerTitle:"وارد کردن فایل",exporterAllAsCsv:"خروجی تمام داده‌ها در فایل csv",exporterVisibleAsCsv:"خروجی داده‌های قابل مشاهده در فایل csv",exporterSelectedAsCsv:"خروجی داده‌های انتخاب‌شده در فایل csv",exporterAllAsPdf:"خروجی تمام داده‌ها در فایل pdf",exporterVisibleAsPdf:"خروجی داده‌های قابل مشاهده در فایل pdf",exporterSelectedAsPdf:"خروجی داده‌های انتخاب‌شده در فایل pdf",clearAllFilters:"پاک کردن تمام فیلتر"},importer:{noHeaders:"نام ستون قابل استخراج نیست. آیا فایل عنوان دارد؟",noObjects:"اشیا قابل استخراج نیستند. آیا به جز عنوان‌ها در فایل داده وجود دارد؟",invalidCsv:"فایل قابل پردازش نیست. آیا فرمت  csv  معتبر است؟",invalidJson:"فایل قابل پردازش نیست. آیا فرمت json   معتبر است؟",jsonNotArray:"فایل json وارد شده باید حاوی آرایه باشد. عملیات ساقط شد."},pagination:{sizes:"اقلام در هر صفحه",totalItems:"اقلام",of:"از"},grouping:{group:"گروه‌بندی",ungroup:"حذف گروه‌بندی",aggregate_count:"Agg: تعداد",aggregate_sum:"Agg: جمع",aggregate_max:"Agg: بیشینه",aggregate_min:"Agg: کمینه",aggregate_avg:"Agg: میانگین",aggregate_remove:"Agg: حذف"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("fi",{aggregate:{label:"rivit"},groupPanel:{description:"Raahaa ja pudota otsikko tähän ryhmittääksesi sarakkeen mukaan."},search:{placeholder:"Hae...",showingItems:"Näytetään rivejä:",selectedItems:"Valitut rivit:",totalItems:"Rivejä yht.:",size:"Näytä:",first:"Ensimmäinen sivu",next:"Seuraava sivu",previous:"Edellinen sivu",last:"Viimeinen sivu"},menu:{text:"Valitse sarakkeet:"},sort:{ascending:"Järjestä nouseva",descending:"Järjestä laskeva",remove:"Poista järjestys"},column:{hide:"Piilota sarake"},aggregation:{count:"Rivejä yht.: ",sum:"Summa: ",avg:"K.a.: ",min:"Min: ",max:"Max: "},pinning:{pinLeft:"Lukitse vasemmalle",pinRight:"Lukitse oikealle",unpin:"Poista lukitus"},gridMenu:{columns:"Sarakkeet:",importerTitle:"Tuo tiedosto",exporterAllAsCsv:"Vie tiedot csv-muodossa",exporterVisibleAsCsv:"Vie näkyvä tieto csv-muodossa",exporterSelectedAsCsv:"Vie valittu tieto csv-muodossa",exporterAllAsPdf:"Vie tiedot pdf-muodossa",exporterVisibleAsPdf:"Vie näkyvä tieto pdf-muodossa",exporterSelectedAsPdf:"Vie valittu tieto pdf-muodossa",clearAllFilters:"Puhdista kaikki suodattimet"},importer:{noHeaders:"Sarakkeen nimiä ei voitu päätellä, onko tiedostossa otsikkoriviä?",noObjects:"Tietoja ei voitu lukea, onko tiedostossa muuta kuin otsikkot?",invalidCsv:"Tiedostoa ei voitu käsitellä, oliko se CSV-muodossa?",invalidJson:"Tiedostoa ei voitu käsitellä, oliko se JSON-muodossa?",jsonNotArray:"Tiedosto ei sisältänyt taulukkoa, lopetetaan."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("fr",{headerCell:{aria:{defaultFilterLabel:"Filtre de la colonne",removeFilter:"Supprimer le filtre",columnMenuButtonLabel:"Menu de la colonne"},priority:"Priorité:",filterLabel:"Filtre de la colonne: "},aggregate:{label:"éléments"},groupPanel:{description:"Faites glisser une en-tête de colonne ici pour créer un groupe de colonnes."},search:{placeholder:"Recherche...",showingItems:"Affichage des éléments :",selectedItems:"Éléments sélectionnés :",totalItems:"Nombre total d'éléments:",size:"Taille de page:",first:"Première page",next:"Page Suivante",previous:"Page précédente",last:"Dernière page"},menu:{text:"Choisir des colonnes :"},sort:{ascending:"Trier par ordre croissant",descending:"Trier par ordre décroissant",none:"Aucun tri",remove:"Enlever le tri"},column:{hide:"Cacher la colonne"},aggregation:{count:"lignes totales: ",sum:"total: ",avg:"moy: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Épingler à gauche",pinRight:"Épingler à droite",unpin:"Détacher"},columnMenu:{close:"Fermer"},gridMenu:{aria:{buttonLabel:"Menu du tableau"},columns:"Colonnes:",importerTitle:"Importer un fichier",exporterAllAsCsv:"Exporter toutes les données en CSV",exporterVisibleAsCsv:"Exporter les données visibles en CSV",exporterSelectedAsCsv:"Exporter les données sélectionnées en CSV",exporterAllAsPdf:"Exporter toutes les données en PDF",exporterVisibleAsPdf:"Exporter les données visibles en PDF",exporterSelectedAsPdf:"Exporter les données sélectionnées en PDF",clearAllFilters:"Nettoyez tous les filtres"},importer:{noHeaders:"Impossible de déterminer le nom des colonnes, le fichier possède-t-il une en-tête ?",noObjects:"Aucun objet trouvé, le fichier possède-t-il des données autres que l'en-tête ?",invalidCsv:"Le fichier n'a pas pu être traité, le CSV est-il valide ?",invalidJson:"Le fichier n'a pas pu être traité, le JSON est-il valide ?",jsonNotArray:"Le fichier JSON importé doit contenir un tableau, abandon."},pagination:{aria:{pageToFirst:"Aller à la première page",pageBack:"Page précédente",pageSelected:"Page sélectionnée",pageForward:"Page suivante",pageToLast:"Aller à la dernière page"},sizes:"éléments par page",totalItems:"éléments",through:"à",of:"sur"},grouping:{group:"Grouper",ungroup:"Dégrouper",aggregate_count:"Agg: Compter",aggregate_sum:"Agg: Somme",aggregate_max:"Agg: Max",aggregate_min:"Agg: Min",aggregate_avg:"Agg: Moy",aggregate_remove:"Agg: Retirer"},validate:{error:"Erreur:",minLength:"La valeur doit être supérieure ou égale à THRESHOLD caractères.",maxLength:"La valeur doit être inférieure ou égale à THRESHOLD caractères.",required:"Une valeur est nécéssaire."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("he",{aggregate:{label:"items"},groupPanel:{description:"גרור עמודה לכאן ושחרר בכדי לקבץ עמודה זו."},search:{placeholder:"חפש...",showingItems:"מציג:",selectedItems:'סה"כ נבחרו:',totalItems:'סה"כ רשומות:',size:"תוצאות בדף:",first:"דף ראשון",next:"דף הבא",previous:"דף קודם",last:"דף אחרון"},menu:{text:"בחר עמודות:"},sort:{ascending:"סדר עולה",descending:"סדר יורד",remove:"בטל"},column:{hide:"טור הסתר"},aggregation:{count:"total rows: ",sum:"total: ",avg:"avg: ",min:"min: ",max:"max: "},gridMenu:{columns:"Columns:",importerTitle:"Import file",exporterAllAsCsv:"Export all data as csv",exporterVisibleAsCsv:"Export visible data as csv",exporterSelectedAsCsv:"Export selected data as csv",exporterAllAsPdf:"Export all data as pdf",exporterVisibleAsPdf:"Export visible data as pdf",exporterSelectedAsPdf:"Export selected data as pdf",clearAllFilters:"Clean all filters"},importer:{noHeaders:"Column names were unable to be derived, does the file have a header?",noObjects:"Objects were not able to be derived, was there data in the file other than headers?",invalidCsv:"File was unable to be processed, is it valid CSV?",invalidJson:"File was unable to be processed, is it valid Json?",jsonNotArray:"Imported json file must contain an array, aborting."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("hy",{aggregate:{label:"տվյալներ"},groupPanel:{description:"Ըստ սյան խմբավորելու համար քաշեք և գցեք վերնագիրն այստեղ։"},search:{placeholder:"Փնտրում...",showingItems:"Ցուցադրված տվյալներ՝",selectedItems:"Ընտրված:",totalItems:"Ընդամենը՝",size:"Տողերի քանակը էջում՝",first:"Առաջին էջ",next:"Հաջորդ էջ",previous:"Նախորդ էջ",last:"Վերջին էջ"},menu:{text:"Ընտրել սյուները:"},sort:{ascending:"Աճման կարգով",descending:"Նվազման կարգով",remove:"Հանել "},column:{hide:"Թաքցնել սյունը"},aggregation:{count:"ընդամենը տող՝ ",sum:"ընդամենը՝ ",avg:"միջին՝ ",min:"մին՝ ",max:"մաքս՝ "},pinning:{pinLeft:"Կպցնել ձախ կողմում",pinRight:"Կպցնել աջ կողմում",unpin:"Արձակել"},gridMenu:{columns:"Սյուներ:",importerTitle:"Ներմուծել ֆայլ",exporterAllAsCsv:"Արտահանել ամբողջը CSV",exporterVisibleAsCsv:"Արտահանել երևացող տվյալները CSV",exporterSelectedAsCsv:"Արտահանել ընտրված տվյալները CSV",exporterAllAsPdf:"Արտահանել PDF",exporterVisibleAsPdf:"Արտահանել երևացող տվյալները PDF",exporterSelectedAsPdf:"Արտահանել ընտրված տվյալները PDF",clearAllFilters:"Մաքրել բոլոր ֆիլտրերը"},importer:{noHeaders:"Հնարավոր չեղավ որոշել սյան վերնագրերը։ Արդյո՞ք ֆայլը ունի վերնագրեր։",noObjects:"Հնարավոր չեղավ կարդալ տվյալները։ Արդյո՞ք ֆայլում կան տվյալներ։",invalidCsv:"Հնարավոր չեղավ մշակել ֆայլը։ Արդյո՞ք այն վավեր CSV է։",invalidJson:"Հնարավոր չեղավ մշակել ֆայլը։ Արդյո՞ք այն վավեր Json է։",jsonNotArray:"Ներմուծված json ֆայլը պետք է պարունակի զանգված, կասեցվում է։"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("it",{aggregate:{label:"elementi"},groupPanel:{description:"Trascina un'intestazione all'interno del gruppo della colonna."
+},search:{placeholder:"Ricerca...",showingItems:"Mostra:",selectedItems:"Selezionati:",totalItems:"Totali:",size:"Tot Pagine:",first:"Prima",next:"Prossima",previous:"Precedente",last:"Ultima"},menu:{text:"Scegli le colonne:"},sort:{ascending:"Asc.",descending:"Desc.",remove:"Annulla ordinamento"},column:{hide:"Nascondi"},aggregation:{count:"righe totali: ",sum:"tot: ",avg:"media: ",min:"minimo: ",max:"massimo: "},pinning:{pinLeft:"Blocca a sx",pinRight:"Blocca a dx",unpin:"Blocca in alto"},gridMenu:{columns:"Colonne:",importerTitle:"Importa",exporterAllAsCsv:"Esporta tutti i dati in CSV",exporterVisibleAsCsv:"Esporta i dati visibili in CSV",exporterSelectedAsCsv:"Esporta i dati selezionati in CSV",exporterAllAsPdf:"Esporta tutti i dati in PDF",exporterVisibleAsPdf:"Esporta i dati visibili in PDF",exporterSelectedAsPdf:"Esporta i dati selezionati in PDF",clearAllFilters:"Pulire tutti i filtri"},importer:{noHeaders:"Impossibile reperire i nomi delle colonne, sicuro che siano indicati all'interno del file?",noObjects:"Impossibile reperire gli oggetti, sicuro che siano indicati all'interno del file?",invalidCsv:"Impossibile elaborare il file, sicuro che sia un CSV?",invalidJson:"Impossibile elaborare il file, sicuro che sia un JSON valido?",jsonNotArray:"Errore! Il file JSON da importare deve contenere un array."},pagination:{aria:{pageToFirst:"Prima",pageBack:"Indietro",pageSelected:"Pagina selezionata",pageForward:"Avanti",pageToLast:"Ultima"},sizes:"elementi per pagina",totalItems:"elementi",through:"a",of:"di"},grouping:{group:"Raggruppa",ungroup:"Separa",aggregate_count:"Agg: N. Elem.",aggregate_sum:"Agg: Somma",aggregate_max:"Agg: Massimo",aggregate_min:"Agg: Minimo",aggregate_avg:"Agg: Media",aggregate_remove:"Agg: Rimuovi"},validate:{error:"Errore:",minLength:"Lunghezza minima pari a THRESHOLD caratteri.",maxLength:"Lunghezza massima pari a THRESHOLD caratteri.",required:"Necessario inserire un valore."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ja",{aggregate:{label:"項目"},groupPanel:{description:"ここに列ヘッダをドラッグアンドドロップして、その列でグループ化します。"},search:{placeholder:"検索...",showingItems:"表示中の項目:",selectedItems:"選択した項目:",totalItems:"項目の総数:",size:"ページサイズ:",first:"最初のページ",next:"次のページ",previous:"前のページ",last:"前のページ"},menu:{text:"列の選択:"},sort:{ascending:"昇順に並べ替え",descending:"降順に並べ替え",remove:"並べ替えの解除"},column:{hide:"列の非表示"},aggregation:{count:"合計行数: ",sum:"合計: ",avg:"平均: ",min:"最小: ",max:"最大: "},pinning:{pinLeft:"左に固定",pinRight:"右に固定",unpin:"固定解除"},gridMenu:{columns:"列:",importerTitle:"ファイルのインポート",exporterAllAsCsv:"すべてのデータをCSV形式でエクスポート",exporterVisibleAsCsv:"表示中のデータをCSV形式でエクスポート",exporterSelectedAsCsv:"選択したデータをCSV形式でエクスポート",exporterAllAsPdf:"すべてのデータをPDF形式でエクスポート",exporterVisibleAsPdf:"表示中のデータをPDF形式でエクスポート",exporterSelectedAsPdf:"選択したデータをPDF形式でエクスポート",clearAllFilters:"すべてのフィルタを清掃してください"},importer:{noHeaders:"列名を取得できません。ファイルにヘッダが含まれていることを確認してください。",noObjects:"オブジェクトを取得できません。ファイルにヘッダ以外のデータが含まれていることを確認してください。",invalidCsv:"ファイルを処理できません。ファイルが有効なCSV形式であることを確認してください。",invalidJson:"ファイルを処理できません。ファイルが有効なJSON形式であることを確認してください。",jsonNotArray:"インポートしたJSONファイルには配列が含まれている必要があります。処理を中止します。"},pagination:{aria:{pageToFirst:"最初のページ",pageBack:"前のページ",pageSelected:"現在のページ",pageForward:"次のページ",pageToLast:"最後のページ"},sizes:"項目/ページ",totalItems:"項目",through:"から",of:"項目/全"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ko",{aggregate:{label:"아이템"},groupPanel:{description:"컬럼으로 그룹핑하기 위해서는 컬럼 헤더를 끌어 떨어뜨려 주세요."},search:{placeholder:"검색...",showingItems:"항목 보여주기:",selectedItems:"선택 항목:",totalItems:"전체 항목:",size:"페이지 크기:",first:"첫번째 페이지",next:"다음 페이지",previous:"이전 페이지",last:"마지막 페이지"},menu:{text:"컬럼을 선택하세요:"},sort:{ascending:"오름차순 정렬",descending:"내림차순 정렬",remove:"소팅 제거"},column:{hide:"컬럼 제거"},aggregation:{count:"전체 갯수: ",sum:"전체: ",avg:"평균: ",min:"최소: ",max:"최대: "},pinning:{pinLeft:"왼쪽 핀",pinRight:"오른쪽 핀",unpin:"핀 제거"},gridMenu:{columns:"컬럼:",importerTitle:"파일 가져오기",exporterAllAsCsv:"csv로 모든 데이터 내보내기",exporterVisibleAsCsv:"csv로 보이는 데이터 내보내기",exporterSelectedAsCsv:"csv로 선택된 데이터 내보내기",exporterAllAsPdf:"pdf로 모든 데이터 내보내기",exporterVisibleAsPdf:"pdf로 보이는 데이터 내보내기",exporterSelectedAsPdf:"pdf로 선택 데이터 내보내기",clearAllFilters:"모든 필터를 청소"},importer:{noHeaders:"컬럼명이 지정되어 있지 않습니다. 파일에 헤더가 명시되어 있는지 확인해 주세요.",noObjects:"데이터가 지정되어 있지 않습니다. 데이터가 파일에 있는지 확인해 주세요.",invalidCsv:"파일을 처리할 수 없습니다. 올바른 csv인지 확인해 주세요.",invalidJson:"파일을 처리할 수 없습니다. 올바른 json인지 확인해 주세요.",jsonNotArray:"json 파일은 배열을 포함해야 합니다."},pagination:{sizes:"페이지당 항목",totalItems:"전체 항목"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("nl",{aggregate:{label:"items"},groupPanel:{description:"Sleep hier een kolomnaam heen om op te groeperen."},search:{placeholder:"Zoeken...",showingItems:"Getoonde items:",selectedItems:"Geselecteerde items:",totalItems:"Totaal aantal items:",size:"Items per pagina:",first:"Eerste pagina",next:"Volgende pagina",previous:"Vorige pagina",last:"Laatste pagina"},menu:{text:"Kies kolommen:"},sort:{ascending:"Sorteer oplopend",descending:"Sorteer aflopend",remove:"Verwijder sortering"},column:{hide:"Verberg kolom"},aggregation:{count:"Aantal rijen: ",sum:"Som: ",avg:"Gemiddelde: ",min:"Min: ",max:"Max: "},pinning:{pinLeft:"Zet links vast",pinRight:"Zet rechts vast",unpin:"Maak los"},gridMenu:{columns:"Kolommen:",importerTitle:"Importeer bestand",exporterAllAsCsv:"Exporteer alle data als csv",exporterVisibleAsCsv:"Exporteer zichtbare data als csv",exporterSelectedAsCsv:"Exporteer geselecteerde data als csv",exporterAllAsPdf:"Exporteer alle data als pdf",exporterVisibleAsPdf:"Exporteer zichtbare data als pdf",exporterSelectedAsPdf:"Exporteer geselecteerde data als pdf",clearAllFilters:"Reinig alle filters"},importer:{noHeaders:"Kolomnamen kunnen niet worden afgeleid. Heeft het bestand een header?",noObjects:"Objecten kunnen niet worden afgeleid. Bevat het bestand data naast de headers?",invalidCsv:"Het bestand kan niet verwerkt worden. Is het een valide csv bestand?",invalidJson:"Het bestand kan niet verwerkt worden. Is het valide json?",jsonNotArray:"Het json bestand moet een array bevatten. De actie wordt geannuleerd."},pagination:{sizes:"items per pagina",totalItems:"items",of:"van de"},grouping:{group:"Groepeer",ungroup:"Groepering opheffen",aggregate_count:"Agg: Aantal",aggregate_sum:"Agg: Som",aggregate_max:"Agg: Max",aggregate_min:"Agg: Min",aggregate_avg:"Agg: Gem",aggregate_remove:"Agg: Verwijder"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("no",{headerCell:{aria:{defaultFilterLabel:"Filter for column",removeFilter:"Remove Filter",columnMenuButtonLabel:"Column Menu"},priority:"Priority:",filterLabel:"Filter for column: "},aggregate:{label:"items"},groupPanel:{description:"Drag a column header here and drop it to group by that column."},search:{placeholder:"Search...",showingItems:"Showing Items:",selectedItems:"Selected Items:",totalItems:"Total Items:",size:"Page Size:",first:"First Page",next:"Next Page",previous:"Previous Page",last:"Last Page"},menu:{text:"Choose Columns:"},sort:{ascending:"Sort Ascending",descending:"Sort Descending",none:"Sort None",remove:"Remove Sort"},column:{hide:"Hide Column"},aggregation:{count:"total rows: ",sum:"total: ",avg:"avg: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Pin Left",pinRight:"Pin Right",unpin:"Unpin"},columnMenu:{close:"Close"},gridMenu:{aria:{buttonLabel:"Grid Menu"},columns:"Kolonner:",importerTitle:"Importer fil",exporterAllAsCsv:"Eksporter alle data som csv",exporterVisibleAsCsv:"Eksporter synlige data som csv",exporterSelectedAsCsv:"Eksporter utvalgte data som csv",exporterAllAsPdf:"Eksporter alle data som pdf",exporterVisibleAsPdf:"Eksporter synlige data som pdf",exporterSelectedAsPdf:"Eksporter utvalgte data som pdf",clearAllFilters:"Clear all filters"},importer:{noHeaders:"Column names were unable to be derived, does the file have a header?",noObjects:"Objects were not able to be derived, was there data in the file other than headers?",invalidCsv:"File was unable to be processed, is it valid CSV?",invalidJson:"File was unable to be processed, is it valid Json?",jsonNotArray:"Imported json file must contain an array, aborting."},pagination:{aria:{pageToFirst:"Page to first",pageBack:"Page back",pageSelected:"Selected page",pageForward:"Page forward",pageToLast:"Page to last"},sizes:"items per page",totalItems:"items",through:"through",of:"of"},grouping:{group:"Group",ungroup:"Ungroup",aggregate_count:"Agg: Count",aggregate_sum:"Agg: Sum",aggregate_max:"Agg: Max",aggregate_min:"Agg: Min",aggregate_avg:"Agg: Avg",aggregate_remove:"Agg: Remove"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("pl",{headerCell:{aria:{defaultFilterLabel:"Filter dla kolumny",removeFilter:"Usuń filter",columnMenuButtonLabel:"Menu kolumny"},priority:"Prioritet:",filterLabel:"Filtr dla kolumny: "},aggregate:{label:"pozycji"},groupPanel:{description:"Przeciągnij nagłówek kolumny tutaj, aby pogrupować według niej."},search:{placeholder:"Szukaj...",showingItems:"Widoczne pozycje:",selectedItems:"Zaznaczone pozycje:",totalItems:"Wszystkich pozycji:",size:"Rozmiar strony:",first:"Pierwsza strona",next:"Następna strona",previous:"Poprzednia strona",last:"Ostatnia strona"},menu:{text:"Wybierz kolumny:"},sort:{ascending:"Sortuj rosnąco",descending:"Sortuj malejąco",none:"Brak sortowania",remove:"Wyłącz sortowanie"},column:{hide:"Ukryj kolumne"},aggregation:{count:"Razem pozycji: ",sum:"Razem: ",avg:"Średnia: ",min:"Min: ",max:"Max: "},pinning:{pinLeft:"Przypnij do lewej",pinRight:"Przypnij do prawej",unpin:"Odepnij"},columnMenu:{close:"Zamknij"},gridMenu:{aria:{buttonLabel:"Menu Grida"},columns:"Kolumny:",importerTitle:"Importuj plik",exporterAllAsCsv:"Eksportuj wszystkie dane do csv",exporterVisibleAsCsv:"Eksportuj widoczne dane do csv",exporterSelectedAsCsv:"Eksportuj zaznaczone dane do csv",exporterAllAsPdf:"Eksportuj wszystkie dane do pdf",exporterVisibleAsPdf:"Eksportuj widoczne dane do pdf",exporterSelectedAsPdf:"Eksportuj zaznaczone dane do pdf",clearAllFilters:"Wyczyść filtry"},importer:{noHeaders:"Nie udało się wczytać nazw kolumn. Czy plik posiada nagłówek?",noObjects:"Nie udalo się wczytać pozycji. Czy plik zawiera dane??",invalidCsv:"Nie udało się przetworzyć pliku, jest to prawidlowy plik CSV??",invalidJson:"Nie udało się przetworzyć pliku, jest to prawidlowy plik Json?",jsonNotArray:"Importowany plik json musi zawierać tablicę, importowanie przerwane."},pagination:{aria:{pageToFirst:"Pierwsza strona",pageBack:"Poprzednia strona",pageSelected:"Wybrana strona",pageForward:"Następna strona",pageToLast:"Ostatnia strona"},sizes:"pozycji na stronę",totalItems:"pozycji",through:"do",of:"z"},grouping:{group:"Grupuj",ungroup:"Rozgrupuj",aggregate_count:"Zbiorczo: Razem",aggregate_sum:"Zbiorczo: Suma",aggregate_max:"Zbiorczo: Max",aggregate_min:"Zbiorczo: Min",aggregate_avg:"Zbiorczo: Średnia",aggregate_remove:"Zbiorczo: Usuń"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("pt-br",{headerCell:{aria:{defaultFilterLabel:"Filtro por coluna",removeFilter:"Remover filtro",columnMenuButtonLabel:"Menu coluna"},priority:"Prioridade:",filterLabel:"Filtro por coluna: "},aggregate:{label:"itens"},groupPanel:{description:"Arraste e solte uma coluna aqui para agrupar por essa coluna"},search:{placeholder:"Procurar...",showingItems:"Mostrando os Itens:",selectedItems:"Items Selecionados:",totalItems:"Total de Itens:",size:"Tamanho da Página:",first:"Primeira Página",next:"Próxima Página",previous:"Página Anterior",last:"Última Página"},menu:{text:"Selecione as colunas:"},sort:{ascending:"Ordenar Ascendente",descending:"Ordenar Descendente",none:"Nenhuma Ordem",remove:"Remover Ordenação"},column:{hide:"Esconder coluna"},aggregation:{count:"total de linhas: ",sum:"total: ",avg:"med: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Fixar Esquerda",pinRight:"Fixar Direita",unpin:"Desprender"},columnMenu:{close:"Fechar"},gridMenu:{aria:{buttonLabel:"Menu Grid"},columns:"Colunas:",importerTitle:"Importar arquivo",exporterAllAsCsv:"Exportar todos os dados como csv",exporterVisibleAsCsv:"Exportar dados visíveis como csv",exporterSelectedAsCsv:"Exportar dados selecionados como csv",exporterAllAsPdf:"Exportar todos os dados como pdf",exporterVisibleAsPdf:"Exportar dados visíveis como pdf",exporterSelectedAsPdf:"Exportar dados selecionados como pdf",clearAllFilters:"Limpar todos os filtros"},importer:{noHeaders:"Nomes de colunas não puderam ser derivados. O arquivo tem um cabeçalho?",noObjects:"Objetos não puderam ser derivados. Havia dados no arquivo, além dos cabeçalhos?",invalidCsv:"Arquivo não pode ser processado. É um CSV válido?",invalidJson:"Arquivo não pode ser processado. É um Json válido?",jsonNotArray:"Arquivo json importado tem que conter um array. Abortando."},pagination:{aria:{pageToFirst:"Primeira página",pageBack:"Página anterior",pageSelected:"Página Selecionada",pageForward:"Proxima",pageToLast:"Anterior"},sizes:"itens por página",totalItems:"itens",through:"através dos",of:"de"},grouping:{group:"Agrupar",ungroup:"Desagrupar",aggregate_count:"Agr: Contar",aggregate_sum:"Agr: Soma",aggregate_max:"Agr: Max",aggregate_min:"Agr: Min",aggregate_avg:"Agr: Med",aggregate_remove:"Agr: Remover"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("pt",{headerCell:{aria:{defaultFilterLabel:"Filtro por coluna",removeFilter:"Remover filtro",columnMenuButtonLabel:"Menu coluna"},priority:"Prioridade:",filterLabel:"Filtro por coluna: "},aggregate:{label:"itens"},groupPanel:{description:"Arraste e solte uma coluna aqui para agrupar por essa coluna"},search:{placeholder:"Procurar...",showingItems:"Mostrando os Itens:",selectedItems:"Itens Selecionados:",totalItems:"Total de Itens:",size:"Tamanho da Página:",first:"Primeira Página",next:"Próxima Página",previous:"Página Anterior",last:"Última Página"},menu:{text:"Selecione as colunas:"},sort:{ascending:"Ordenar Ascendente",descending:"Ordenar Descendente",none:"Nenhuma Ordem",remove:"Remover Ordenação"},column:{hide:"Esconder coluna"},aggregation:{count:"total de linhas: ",sum:"total: ",avg:"med: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Fixar Esquerda",pinRight:"Fixar Direita",unpin:"Desprender"},columnMenu:{close:"Fechar"},gridMenu:{aria:{buttonLabel:"Menu Grid"},columns:"Colunas:",importerTitle:"Importar ficheiro",exporterAllAsCsv:"Exportar todos os dados como csv",exporterVisibleAsCsv:"Exportar dados visíveis como csv",exporterSelectedAsCsv:"Exportar dados selecionados como csv",exporterAllAsPdf:"Exportar todos os dados como pdf",exporterVisibleAsPdf:"Exportar dados visíveis como pdf",exporterSelectedAsPdf:"Exportar dados selecionados como pdf",clearAllFilters:"Limpar todos os filtros"},importer:{noHeaders:"Nomes de colunas não puderam ser derivados. O ficheiro tem um cabeçalho?",noObjects:"Objetos não puderam ser derivados. Havia dados no ficheiro, além dos cabeçalhos?",invalidCsv:"Ficheiro não pode ser processado. É um CSV válido?",invalidJson:"Ficheiro não pode ser processado. É um Json válido?",jsonNotArray:"Ficheiro json importado tem que conter um array. Interrompendo."},pagination:{aria:{pageToFirst:"Primeira página",pageBack:"Página anterior",pageSelected:"Página Selecionada",pageForward:"Próxima",pageToLast:"Anterior"},sizes:"itens por página",totalItems:"itens",through:"através dos",of:"de"},grouping:{group:"Agrupar",ungroup:"Desagrupar",aggregate_count:"Agr: Contar",aggregate_sum:"Agr: Soma",aggregate_max:"Agr: Max",aggregate_min:"Agr: Min",aggregate_avg:"Agr: Med",aggregate_remove:"Agr: Remover"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ro",{headerCell:{aria:{defaultFilterLabel:"Filtru pentru coloana",removeFilter:"Sterge filtru",columnMenuButtonLabel:"Column Menu"},priority:"Prioritate:",filterLabel:"Filtru pentru coloana:"},aggregate:{label:"Elemente"},groupPanel:{description:"Trage un cap de coloana aici pentru a grupa elementele dupa coloana respectiva"},search:{placeholder:"Cauta...",showingItems:"Arata elementele:",selectedItems:"Elementele selectate:",totalItems:"Total elemente:",size:"Marime pagina:",first:"Prima pagina",next:"Pagina urmatoare",previous:"Pagina anterioara",last:"Ultima pagina"},menu:{text:"Alege coloane:"},sort:{ascending:"Ordoneaza crescator",descending:"Ordoneaza descrescator",none:"Fara ordonare",remove:"Sterge ordonarea"},column:{hide:"Ascunde coloana"},aggregation:{count:"total linii: ",sum:"total: ",avg:"medie: ",min:"min: ",max:"max: "},pinning:{pinLeft:"Pin la stanga",pinRight:"Pin la dreapta",unpin:"Sterge pinul"},columnMenu:{close:"Inchide"},gridMenu:{aria:{buttonLabel:"Grid Menu"},columns:"Coloane:",importerTitle:"Incarca fisier",exporterAllAsCsv:"Exporta toate datele ca csv",exporterVisibleAsCsv:"Exporta datele vizibile ca csv",exporterSelectedAsCsv:"Exporta datele selectate ca csv",exporterAllAsPdf:"Exporta toate datele ca pdf",exporterVisibleAsPdf:"Exporta datele vizibile ca pdf",exporterSelectedAsPdf:"Exporta datele selectate ca csv pdf",clearAllFilters:"Sterge toate filtrele"},importer:{noHeaders:"Numele coloanelor nu a putut fi incarcat, acest fisier are un header?",noObjects:"Datele nu au putut fi incarcate, exista date in fisier in afara numelor de coloane?",invalidCsv:"Fisierul nu a putut fi procesat, ati incarcat un CSV valid ?",invalidJson:"Fisierul nu a putut fi procesat, ati incarcat un Json valid?",jsonNotArray:"Json-ul incarcat trebuie sa contina un array, inchidere."},pagination:{aria:{pageToFirst:"Prima pagina",pageBack:"O pagina inapoi",pageSelected:"Pagina selectata",pageForward:"O pagina inainte",pageToLast:"Ultima pagina"},sizes:"Elemente per pagina",totalItems:"elemente",through:"prin",of:"of"},grouping:{group:"Grupeaza",ungroup:"Opreste gruparea",aggregate_count:"Agg: Count",aggregate_sum:"Agg: Sum",aggregate_max:"Agg: Max",aggregate_min:"Agg: Min",aggregate_avg:"Agg: Avg",aggregate_remove:"Agg: Remove"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ru",{headerCell:{aria:{defaultFilterLabel:"Фильтр столбца",removeFilter:"Удалить фильтр",columnMenuButtonLabel:"Меню столбца"},priority:"Приоритет:",filterLabel:"Фильтр столбца: "},aggregate:{label:"элементы"},groupPanel:{description:"Для группировки по столбцу перетащите сюда его название."},search:{placeholder:"Поиск...",showingItems:"Показать элементы:",selectedItems:"Выбранные элементы:",totalItems:"Всего элементов:",size:"Размер страницы:",first:"Первая страница",next:"Следующая страница",previous:"Предыдущая страница",last:"Последняя страница"},menu:{text:"Выбрать столбцы:"},sort:{ascending:"По возрастанию",descending:"По убыванию",none:"Без сортировки",remove:"Убрать сортировку"},column:{hide:"Спрятать столбец"},aggregation:{count:"всего строк: ",sum:"итого: ",avg:"среднее: ",min:"мин: ",max:"макс: "},pinning:{pinLeft:"Закрепить слева",pinRight:"Закрепить справа",unpin:"Открепить"},columnMenu:{close:"Закрыть"},gridMenu:{aria:{buttonLabel:"Меню"},columns:"Столбцы:",importerTitle:"Импортировать файл",exporterAllAsCsv:"Экспортировать всё в CSV",exporterVisibleAsCsv:"Экспортировать видимые данные в CSV",exporterSelectedAsCsv:"Экспортировать выбранные данные в CSV",exporterAllAsPdf:"Экспортировать всё в PDF",exporterVisibleAsPdf:"Экспортировать видимые данные в PDF",exporterSelectedAsPdf:"Экспортировать выбранные данные в PDF",clearAllFilters:"Очистите все фильтры"},importer:{noHeaders:"Не удалось получить названия столбцов, есть ли в файле заголовок?",noObjects:"Не удалось получить данные, есть ли в файле строки кроме заголовка?",invalidCsv:"Не удалось обработать файл, это правильный CSV-файл?",invalidJson:"Не удалось обработать файл, это правильный JSON?",jsonNotArray:"Импортируемый JSON-файл должен содержать массив, операция отменена."},pagination:{aria:{pageToFirst:"Первая страница",pageBack:"Предыдущая страница",pageSelected:"Выбранная страница",pageForward:"Следующая страница",pageToLast:"Последняя страница"},sizes:"строк на страницу",totalItems:"строк",through:"по",of:"из"},grouping:{group:"Группировать",ungroup:"Разгруппировать",aggregate_count:"Группировать: Count",aggregate_sum:"Для группы: Сумма",aggregate_max:"Для группы: Максимум",aggregate_min:"Для группы: Минимум",aggregate_avg:"Для группы: Среднее",aggregate_remove:"Для группы: Пусто"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("sk",{aggregate:{label:"items"},groupPanel:{description:"Pretiahni sem názov stĺpca pre zoskupenie podľa toho stĺpca."},search:{placeholder:"Hľadaj...",showingItems:"Zobrazujem položky:",selectedItems:"Vybraté položky:",totalItems:"Počet položiek:",size:"Počet:",first:"Prvá strana",next:"Ďalšia strana",previous:"Predchádzajúca strana",last:"Posledná strana"},menu:{text:"Vyberte stĺpce:"},sort:{ascending:"Zotriediť vzostupne",descending:"Zotriediť zostupne",remove:"Vymazať triedenie"},aggregation:{count:"total rows: ",sum:"total: ",avg:"avg: ",min:"min: ",max:"max: "},gridMenu:{columns:"Columns:",importerTitle:"Import file",exporterAllAsCsv:"Export all data as csv",exporterVisibleAsCsv:"Export visible data as csv",exporterSelectedAsCsv:"Export selected data as csv",exporterAllAsPdf:"Export all data as pdf",exporterVisibleAsPdf:"Export visible data as pdf",exporterSelectedAsPdf:"Export selected data as pdf",clearAllFilters:"Clear all filters"},importer:{noHeaders:"Column names were unable to be derived, does the file have a header?",noObjects:"Objects were not able to be derived, was there data in the file other than headers?",invalidCsv:"File was unable to be processed, is it valid CSV?",invalidJson:"File was unable to be processed, is it valid Json?",jsonNotArray:"Imported json file must contain an array, aborting."}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("sv",{aggregate:{label:"Artiklar"},groupPanel:{description:"Dra en kolumnrubrik hit och släpp den för att gruppera efter den kolumnen."},search:{placeholder:"Sök...",showingItems:"Visar artiklar:",selectedItems:"Valda artiklar:",totalItems:"Antal artiklar:",size:"Sidstorlek:",first:"Första sidan",next:"Nästa sida",previous:"Föregående sida",last:"Sista sidan"},menu:{text:"Välj kolumner:"},sort:{ascending:"Sortera stigande",descending:"Sortera fallande",remove:"Inaktivera sortering"},column:{hide:"Göm kolumn"},aggregation:{count:"Antal rader: ",sum:"Summa: ",avg:"Genomsnitt: ",min:"Min: ",max:"Max: "},pinning:{pinLeft:"Fäst vänster",pinRight:"Fäst höger",unpin:"Lösgör"},gridMenu:{columns:"Kolumner:",importerTitle:"Importera fil",exporterAllAsCsv:"Exportera all data som CSV",exporterVisibleAsCsv:"Exportera synlig data som CSV",exporterSelectedAsCsv:"Exportera markerad data som CSV",exporterAllAsPdf:"Exportera all data som PDF",exporterVisibleAsPdf:"Exportera synlig data som PDF",exporterSelectedAsPdf:"Exportera markerad data som PDF",clearAllFilters:"Rengör alla filter"},importer:{noHeaders:"Kolumnnamn kunde inte härledas. Har filen ett sidhuvud?",noObjects:"Objekt kunde inte härledas. Har filen data undantaget sidhuvud?",invalidCsv:"Filen kunde inte behandlas, är den en giltig CSV?",invalidJson:"Filen kunde inte behandlas, är den en giltig JSON?",jsonNotArray:"Importerad JSON-fil måste innehålla ett fält. Import avbruten."},pagination:{sizes:"Artiklar per sida",totalItems:"Artiklar"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ta",{aggregate:{label:"உருப்படிகள்"},groupPanel:{description:"ஒரு பத்தியை குழுவாக அமைக்க அப்பத்தியின் தலைப்பை இங்கே  இழுத்து வரவும் "},search:{placeholder:"தேடல் ...",showingItems:"உருப்படிகளை காண்பித்தல்:",selectedItems:"தேர்ந்தெடுக்கப்பட்ட  உருப்படிகள்:",totalItems:"மொத்த உருப்படிகள்:",size:"பக்க அளவு: ",first:"முதல் பக்கம்",next:"அடுத்த பக்கம்",previous:"முந்தைய பக்கம் ",last:"இறுதி பக்கம்"},menu:{text:"பத்திகளை தேர்ந்தெடு:"},sort:{ascending:"மேலிருந்து கீழாக",descending:"கீழிருந்து மேலாக",remove:"வரிசையை நீக்கு"},column:{hide:"பத்தியை மறைத்து வை "},aggregation:{count:"மொத்த வரிகள்:",sum:"மொத்தம்: ",avg:"சராசரி: ",min:"குறைந்தபட்ச: ",max:"அதிகபட்ச: "},pinning:{pinLeft:"இடதுபுறமாக தைக்க ",pinRight:"வலதுபுறமாக தைக்க",unpin:"பிரி"},gridMenu:{columns:"பத்திகள்:",importerTitle:"கோப்பு : படித்தல்",exporterAllAsCsv:"எல்லா தரவுகளையும் கோப்பாக்கு: csv",exporterVisibleAsCsv:"இருக்கும் தரவுகளை கோப்பாக்கு: csv",exporterSelectedAsCsv:"தேர்ந்தெடுத்த தரவுகளை கோப்பாக்கு: csv",exporterAllAsPdf:"எல்லா தரவுகளையும் கோப்பாக்கு: pdf",exporterVisibleAsPdf:"இருக்கும் தரவுகளை கோப்பாக்கு: pdf",exporterSelectedAsPdf:"தேர்ந்தெடுத்த தரவுகளை கோப்பாக்கு: pdf",clearAllFilters:"Clear all filters"},importer:{noHeaders:"பத்தியின் தலைப்புகளை பெற இயலவில்லை, கோப்பிற்கு தலைப்பு உள்ளதா?",noObjects:"இலக்குகளை உருவாக்க முடியவில்லை, கோப்பில் தலைப்புகளை தவிர தரவு ஏதேனும் உள்ளதா? ",invalidCsv:"சரிவர நடைமுறை படுத்த இயலவில்லை, கோப்பு சரிதானா? - csv",invalidJson:"சரிவர நடைமுறை படுத்த இயலவில்லை, கோப்பு சரிதானா? - json",jsonNotArray:"படித்த கோப்பில் வரிசைகள் உள்ளது, நடைமுறை ரத்து செய் : json"},pagination:{sizes:"உருப்படிகள் / பக்கம்",totalItems:"உருப்படிகள் "},grouping:{group:"குழு",ungroup:"பிரி",aggregate_count:"மதிப்பீட்டு : எண்ணு",aggregate_sum:"மதிப்பீட்டு : கூட்டல்",aggregate_max:"மதிப்பீட்டு : அதிகபட்சம்",aggregate_min:"மதிப்பீட்டு : குறைந்தபட்சம்",aggregate_avg:"மதிப்பீட்டு : சராசரி",aggregate_remove:"மதிப்பீட்டு : நீக்கு"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("tr",{headerCell:{aria:{defaultFilterLabel:"Sütun için filtre",removeFilter:"Filtreyi Kaldır",columnMenuButtonLabel:"Sütun Menüsü"},priority:"Öncelik:",filterLabel:"Sütun için filtre: "},aggregate:{label:"kayıtlar"},groupPanel:{description:"Sütuna göre gruplamak için sütun başlığını buraya sürükleyin ve bırakın."},search:{placeholder:"Arama...",showingItems:"Gösterilen Kayıt:",selectedItems:"Seçili Kayıt:",totalItems:"Toplam Kayıt:",size:"Sayfa Boyutu:",first:"İlk Sayfa",next:"Sonraki Sayfa",previous:"Önceki Sayfa",last:"Son Sayfa"},menu:{text:"Sütunları Seç:"},sort:{ascending:"Artan Sırada Sırala",descending:"Azalan Sırada Sırala",none:"Sıralama Yapma",remove:"Sıralamayı Kaldır"},column:{hide:"Sütunu Gizle"},aggregation:{count:"toplam satır: ",sum:"toplam: ",avg:"ort: ",min:"min: ",max:"maks: "},pinning:{pinLeft:"Sola Sabitle",pinRight:"Sağa Sabitle",unpin:"Sabitlemeyi Kaldır"},columnMenu:{close:"Kapat"},gridMenu:{aria:{buttonLabel:"Tablo Menü"},columns:"Sütunlar:",importerTitle:"Dosya içeri aktar",exporterAllAsCsv:"Bütün veriyi CSV olarak dışarı aktar",exporterVisibleAsCsv:"Görünen veriyi CSV olarak dışarı aktar",exporterSelectedAsCsv:"Seçili veriyi CSV olarak dışarı aktar",exporterAllAsPdf:"Bütün veriyi PDF olarak dışarı aktar",exporterVisibleAsPdf:"Görünen veriyi PDF olarak dışarı aktar",exporterSelectedAsPdf:"Seçili veriyi PDF olarak dışarı aktar",clearAllFilters:"Bütün filtreleri kaldır"},importer:{noHeaders:"Sütun isimleri üretilemiyor, dosyanın bir başlığı var mı?",noObjects:"Nesneler üretilemiyor, dosyada başlıktan başka bir veri var mı?",invalidCsv:"Dosya işlenemedi, geçerli bir CSV dosyası mı?",invalidJson:"Dosya işlenemedi, geçerli bir Json dosyası mı?",jsonNotArray:"Alınan Json dosyasında bir dizi bulunmalıdır, işlem iptal ediliyor."},pagination:{aria:{pageToFirst:"İlk sayfaya",pageBack:"Geri git",pageSelected:"Seçili sayfa",pageForward:"İleri git",pageToLast:"Sona git"},sizes:"Sayfadaki nesne sayısı",totalItems:"kayıtlar",through:"",of:""},grouping:{group:"Grupla",ungroup:"Gruplama",aggregate_count:"Yekun: Sayı",aggregate_sum:"Yekun: Toplam",aggregate_max:"Yekun: Maks",aggregate_min:"Yekun: Min",aggregate_avg:"Yekun: Ort",aggregate_remove:"Yekun: Sil"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("ua",{headerCell:{aria:{defaultFilterLabel:"Фільтр стовпчика",removeFilter:"Видалити фільтр",columnMenuButtonLabel:"Меню ствпчика"},priority:"Пріоритет:",filterLabel:"Фільтр стовпчика: "},aggregate:{label:"елементи"},groupPanel:{description:"Для групування за стовпчиком перетягніть сюди його назву."},search:{placeholder:"Пошук...",showingItems:"Показати елементи:",selectedItems:"Обрані елементи:",totalItems:"Усього елементів:",size:"Розмір сторінки:",first:"Перша сторінка",next:"Наступна сторінка",previous:"Попередня сторінка",last:"Остання сторінка"},menu:{text:"Обрати ствпчики:"},sort:{ascending:"За зростанням",descending:"За спаданням",none:"Без сортування",remove:"Прибрати сортування"},column:{hide:"Приховати стовпчик"},aggregation:{count:"усього рядків: ",sum:"ітого: ",avg:"середнє: ",min:"мін: ",max:"макс: "},pinning:{pinLeft:"Закріпити ліворуч",pinRight:"Закріпити праворуч",unpin:"Відкріпити"},columnMenu:{close:"Закрити"},gridMenu:{aria:{buttonLabel:"Меню"},columns:"Стовпчики:",importerTitle:"Імпортувати файл",exporterAllAsCsv:"Експортувати все в CSV",exporterVisibleAsCsv:"Експортувати видимі дані в CSV",exporterSelectedAsCsv:"Експортувати обрані дані в CSV",exporterAllAsPdf:"Експортувати все в PDF",exporterVisibleAsPdf:"Експортувати видимі дані в PDF",exporterSelectedAsPdf:"Експортувати обрані дані в PDF",clearAllFilters:"Очистити всі фільтри"},importer:{noHeaders:"Не вдалося отримати назви стовпчиків, чи є в файлі заголовок?",noObjects:"Не вдалося отримати дані, чи є в файлі рядки окрім заголовка?",invalidCsv:"Не вдалося обробити файл, чи це коректний CSV-файл?",invalidJson:"Не вдалося обробити файл, чи це коректний JSON?",jsonNotArray:"JSON-файл що імпортується повинен містити масив, операцію скасовано."},pagination:{aria:{pageToFirst:"Перша сторінка",pageBack:"Попередня сторінка",pageSelected:"Обрана сторінка",pageForward:"Наступна сторінка",pageToLast:"Остання сторінка"},sizes:"рядків на сторінку",totalItems:"рядків",through:"по",of:"з"},grouping:{group:"Групувати",ungroup:"Розгрупувати",aggregate_count:"Групувати: Кількість",aggregate_sum:"Для групи: Сума",aggregate_max:"Для групи: Максимум",aggregate_min:"Для групи: Мінімум",aggregate_avg:"Для групи: Серднє",aggregate_remove:"Для групи: Пусто"}}),a}])}])}(),function(){var a=["uiT","uiTranslate"],b=["t","uiTranslate"],c=angular.module("ui.grid.i18n");c.constant("i18nConstants",{MISSING:"[MISSING]",UPDATE_EVENT:"$uiI18n",LOCALE_DIRECTIVE_ALIAS:"uiI18n",DEFAULT_LANG:"en"}),c.service("i18nService",["$log","i18nConstants","$rootScope",function(a,b,c){var d={_langs:{},current:null,get:function(a){return this._langs[a.toLowerCase()]},add:function(a,b){var c=a.toLowerCase();this._langs[c]||(this._langs[c]={}),angular.extend(this._langs[c],b)},getAllLangs:function(){var a=[];if(!this._langs)return a;for(var b in this._langs)a.push(b);return a},setCurrent:function(a){this.current=a.toLowerCase()},getCurrentLang:function(){return this.current}},e={add:function(a,b){"object"==typeof a?angular.forEach(a,function(a){a&&d.add(a,b)}):d.add(a,b)},getAllLangs:function(){return d.getAllLangs()},get:function(a){var b=a?a:e.getCurrentLang();return d.get(b)},getSafeText:function(a,c){var f=c?c:e.getCurrentLang(),g=d.get(f);if(!g)return b.MISSING;for(var h=a.split("."),i=g,j=0;j<h.length;++j){if(void 0===i[h[j]]||null===i[h[j]])return b.MISSING;i=i[h[j]]}return i},setCurrentLang:function(a){
+a&&(d.setCurrent(a),c.$broadcast(b.UPDATE_EVENT))},getCurrentLang:function(){var a=d.getCurrentLang();return a||(a=b.DEFAULT_LANG,d.setCurrent(a)),a}};return e}]);var d=function(a,b){return{compile:function(){return{pre:function(c,d,e){var f=b.LOCALE_DIRECTIVE_ALIAS,g=c.$eval(e[f]);g?c.$watch(e[f],function(){a.setCurrentLang(g)}):e.$$observers&&e.$observe(f,function(){a.setCurrentLang(e[f]||b.DEFAULT_LANG)})}}}}};c.directive("uiI18n",["i18nService","i18nConstants",d]);var e=function(b,c,d){return{restrict:"EA",compile:function(){return{pre:function(e,f,g){var h,i=a[0],j=a[1],k=g[i]||g[j]||f.html(),l=d.MISSING+k;if(g.$$observers){var m=g[i]?i:j;h=g.$observe(m,function(a){a&&f.html(b(a)(c.getCurrentLang())||l)})}var n=b(k),o=e.$on(d.UPDATE_EVENT,function(a){h?h(g[i]||g[j]):f.html(n(c.get())||l)});e.$on("$destroy",o),f.html(n(c.get())||l)}}}}};angular.forEach(a,function(a){c.directive(a,["$parse","i18nService","i18nConstants",e])});var f=function(a,b,c){return function(d){var e=a(d);return e(b.get())||c.MISSING+d}};angular.forEach(b,function(a){c.filter(a,["$parse","i18nService","i18nConstants",f])})}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("zh-cn",{headerCell:{aria:{defaultFilterLabel:"列过滤器",removeFilter:"移除过滤器",columnMenuButtonLabel:"列菜单"},priority:"优先级:",filterLabel:"列过滤器: "},aggregate:{label:"行"},groupPanel:{description:"拖曳表头到此处进行分组"},search:{placeholder:"查找",showingItems:"已显示行数：",selectedItems:"已选择行数：",totalItems:"总行数：",size:"每页显示行数：",first:"首页",next:"下一页",previous:"上一页",last:"末页"},menu:{text:"选择列："},sort:{ascending:"升序",descending:"降序",none:"无序",remove:"取消排序"},column:{hide:"隐藏列"},aggregation:{count:"计数：",sum:"求和：",avg:"均值：",min:"最小值：",max:"最大值："},pinning:{pinLeft:"左侧固定",pinRight:"右侧固定",unpin:"取消固定"},columnMenu:{close:"关闭"},gridMenu:{aria:{buttonLabel:"表格菜单"},columns:"列：",importerTitle:"导入文件",exporterAllAsCsv:"导出全部数据到CSV",exporterVisibleAsCsv:"导出可见数据到CSV",exporterSelectedAsCsv:"导出已选数据到CSV",exporterAllAsPdf:"导出全部数据到PDF",exporterVisibleAsPdf:"导出可见数据到PDF",exporterSelectedAsPdf:"导出已选数据到PDF",clearAllFilters:"清除所有过滤器"},importer:{noHeaders:"无法获取列名，确定文件包含表头？",noObjects:"无法获取数据，确定文件包含数据？",invalidCsv:"无法处理文件，确定是合法的CSV文件？",invalidJson:"无法处理文件，确定是合法的JSON文件？",jsonNotArray:"导入的文件不是JSON数组！"},pagination:{aria:{pageToFirst:"第一页",pageBack:"上一页",pageSelected:"当前页",pageForward:"下一页",pageToLast:"最后一页"},sizes:"行每页",totalItems:"行",through:"至",of:"共"},grouping:{group:"分组",ungroup:"取消分组",aggregate_count:"合计: 计数",aggregate_sum:"合计: 求和",aggregate_max:"合计: 最大",aggregate_min:"合计: 最小",aggregate_avg:"合计: 平均",aggregate_remove:"合计: 移除"}}),a}])}])}(),function(){angular.module("ui.grid").config(["$provide",function(a){a.decorator("i18nService",["$delegate",function(a){return a.add("zh-tw",{aggregate:{label:"行"},groupPanel:{description:"拖曳表頭到此處進行分組"},search:{placeholder:"查找",showingItems:"已顯示行數：",selectedItems:"已選擇行數：",totalItems:"總行數：",size:"每頁顯示行數：",first:"首頁",next:"下壹頁",previous:"上壹頁",last:"末頁"},menu:{text:"選擇列："},sort:{ascending:"升序",descending:"降序",remove:"取消排序"},column:{hide:"隱藏列"},aggregation:{count:"計數：",sum:"求和：",avg:"均值：",min:"最小值：",max:"最大值："},pinning:{pinLeft:"左側固定",pinRight:"右側固定",unpin:"取消固定"},gridMenu:{columns:"列：",importerTitle:"導入文件",exporterAllAsCsv:"導出全部數據到CSV",exporterVisibleAsCsv:"導出可見數據到CSV",exporterSelectedAsCsv:"導出已選數據到CSV",exporterAllAsPdf:"導出全部數據到PDF",exporterVisibleAsPdf:"導出可見數據到PDF",exporterSelectedAsPdf:"導出已選數據到PDF",clearAllFilters:"清除所有过滤器"},importer:{noHeaders:"無法獲取列名，確定文件包含表頭？",noObjects:"無法獲取數據，確定文件包含數據？",invalidCsv:"無法處理文件，確定是合法的CSV文件？",invalidJson:"無法處理文件，確定是合法的JSON文件？",jsonNotArray:"導入的文件不是JSON數組！"},pagination:{sizes:"行每頁",totalItems:"行"}}),a}])}])}(),function(){"use strict";var a=angular.module("ui.grid.autoResize",["ui.grid"]);a.directive("uiGridAutoResize",["$timeout","gridUtil",function(a,b){return{require:"uiGrid",scope:!1,link:function(a,c,d,e){function f(){i=b.elementHeight(c),h=b.elementWidth(c)}function g(){clearTimeout(j),j=setTimeout(function(){var d=b.elementHeight(c),j=b.elementWidth(c);d!==i||j!==h?(e.grid.gridHeight=d,e.grid.gridWidth=j,e.grid.api.core.raise.gridDimensionChanged(i,h,d,j),a.$apply(function(){e.grid.refresh().then(function(){f(),g()})})):g()},250)}var h,i;f();var j;g(),a.$on("$destroy",function(){clearTimeout(j)})}}}])}(),function(){"use strict";var a=angular.module("ui.grid.cellNav",["ui.grid"]);a.constant("uiGridCellNavConstants",{FEATURE_NAME:"gridCellNav",CELL_NAV_EVENT:"cellNav",direction:{LEFT:0,RIGHT:1,UP:2,DOWN:3,PG_UP:4,PG_DOWN:5},EVENT_TYPE:{KEYDOWN:0,CLICK:1,CLEAR:2}}),a.factory("uiGridCellNavFactory",["gridUtil","uiGridConstants","uiGridCellNavConstants","GridRowColumn","$q",function(a,b,c,d,e){var f=function(a,b,c,d){this.rows=a.visibleRowCache,this.columns=b.visibleColumnCache,this.leftColumns=c?c.visibleColumnCache:[],this.rightColumns=d?d.visibleColumnCache:[],this.bodyContainer=a};return f.prototype.getFocusableCols=function(){var a=this.leftColumns.concat(this.columns,this.rightColumns);return a.filter(function(a){return a.colDef.allowCellFocus})},f.prototype.getFocusableRows=function(){return this.rows.filter(function(a){return a.allowCellFocus!==!1})},f.prototype.getNextRowCol=function(a,b,d){switch(a){case c.direction.LEFT:return this.getRowColLeft(b,d);case c.direction.RIGHT:return this.getRowColRight(b,d);case c.direction.UP:return this.getRowColUp(b,d);case c.direction.DOWN:return this.getRowColDown(b,d);case c.direction.PG_UP:return this.getRowColPageUp(b,d);case c.direction.PG_DOWN:return this.getRowColPageDown(b,d)}},f.prototype.initializeSelection=function(){var a=this.getFocusableCols(),b=this.getFocusableRows();if(0===a.length||0===b.length)return null;return new d(b[0],a[0])},f.prototype.getRowColLeft=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);-1===f&&(f=1);var h=0===f?c.length-1:f-1;return h>f?0===g?new d(a,c[h]):new d(e[g-1],c[h]):new d(a,c[h])},f.prototype.getRowColRight=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);-1===f&&(f=0);var h=f===c.length-1?0:f+1;return f>h?g===e.length-1?new d(a,c[h]):new d(e[g+1],c[h]):new d(a,c[h])},f.prototype.getRowColDown=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);return-1===f&&(f=0),g===e.length-1?new d(a,c[f]):new d(e[g+1],c[f])},f.prototype.getRowColPageDown=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);-1===f&&(f=0);var h=this.bodyContainer.minRowsToRender();return g>=e.length-h?new d(e[e.length-1],c[f]):new d(e[g+h],c[f])},f.prototype.getRowColUp=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);return-1===f&&(f=0),0===g?new d(a,c[f]):new d(e[g-1],c[f])},f.prototype.getRowColPageUp=function(a,b){var c=this.getFocusableCols(),e=this.getFocusableRows(),f=c.indexOf(b),g=e.indexOf(a);-1===f&&(f=0);var h=this.bodyContainer.minRowsToRender();return 0>g-h?new d(e[0],c[f]):new d(e[g-h],c[f])},f}]),a.service("uiGridCellNavService",["gridUtil","uiGridConstants","uiGridCellNavConstants","$q","uiGridCellNavFactory","GridRowColumn","ScrollEvent",function(a,b,c,d,e,f,g){var h={initializeGrid:function(a){a.registerColumnBuilder(h.cellNavColumnBuilder),a.cellNav={},a.cellNav.lastRowCol=null,a.cellNav.focusedCells=[],h.defaultGridOptions(a.options);var b={events:{cellNav:{navigate:function(a,b){},viewPortKeyDown:function(a,b){},viewPortKeyPress:function(a,b){}}},methods:{cellNav:{scrollToFocus:function(b,c){return h.scrollToFocus(a,b,c)},getFocusedCell:function(){return a.cellNav.lastRowCol},getCurrentSelection:function(){return a.cellNav.focusedCells},rowColSelectIndex:function(b){for(var c=-1,d=0;d<a.cellNav.focusedCells.length;d++)if(a.cellNav.focusedCells[d].col.uid===b.col.uid&&a.cellNav.focusedCells[d].row.uid===b.row.uid){c=d;break}return c}}}};a.api.registerEventsFromObject(b.events),a.api.registerMethodsFromObject(b.methods)},defaultGridOptions:function(a){a.modifierKeysToMultiSelectCells=a.modifierKeysToMultiSelectCells===!0},decorateRenderContainers:function(a){var b=a.hasRightContainer()?a.renderContainers.right:null,c=a.hasLeftContainer()?a.renderContainers.left:null;null!==c&&(a.renderContainers.left.cellNav=new e(a.renderContainers.body,c,b,a.renderContainers.body)),null!==b&&(a.renderContainers.right.cellNav=new e(a.renderContainers.body,b,a.renderContainers.body,c)),a.renderContainers.body.cellNav=new e(a.renderContainers.body,a.renderContainers.body,c,b)},getDirection:function(a){return a.keyCode===b.keymap.LEFT||a.keyCode===b.keymap.TAB&&a.shiftKey?c.direction.LEFT:a.keyCode===b.keymap.RIGHT||a.keyCode===b.keymap.TAB?c.direction.RIGHT:a.keyCode===b.keymap.UP||a.keyCode===b.keymap.ENTER&&a.shiftKey?c.direction.UP:a.keyCode===b.keymap.PG_UP?c.direction.PG_UP:a.keyCode===b.keymap.DOWN||a.keyCode===b.keymap.ENTER&&!a.ctrlKey&&!a.altKey?c.direction.DOWN:a.keyCode===b.keymap.PG_DOWN?c.direction.PG_DOWN:null},cellNavColumnBuilder:function(a,b,c){var e=[];return a.allowCellFocus=void 0===a.allowCellFocus?!0:a.allowCellFocus,d.all(e)},scrollToFocus:function(a,b,c){var d=null,e=null;return"undefined"!=typeof b&&null!==b&&(d=a.getRow(b)),"undefined"!=typeof c&&null!==c&&(e=a.getColumn(c.name?c.name:c.field)),a.api.core.scrollToIfNecessary(d,e).then(function(){var b={row:d,col:e};null!==d&&null!==e&&a.cellNav.broadcastCellNav(b)})},getLeftWidth:function(a,b){var c=0;if(!b)return c;var d=a.renderContainers.body.visibleColumnCache.indexOf(b);a.renderContainers.body.visibleColumnCache.forEach(function(a,b){d>b&&(c+=a.drawnWidth)});var e=0===d?0:(d+1)/a.renderContainers.body.visibleColumnCache.length;return c+=b.drawnWidth*e}};return h}]),a.directive("uiGridCellnav",["gridUtil","uiGridCellNavService","uiGridCellNavConstants","uiGridConstants","GridRowColumn","$timeout","$compile",function(a,b,c,d,e,f,g){return{replace:!0,priority:-150,require:"^uiGrid",scope:!1,controller:function(){},compile:function(){return{pre:function(a,f,g,h){var i=a,j=h.grid;b.initializeGrid(j),h.cellNav={},h.cellNav.makeRowCol=function(a){return a instanceof e||(a=new e(a.row,a.col)),a},h.cellNav.getActiveCell=function(){var a=f[0].getElementsByClassName("ui-grid-cell-focus");return a.length>0?a[0]:void 0},h.cellNav.broadcastCellNav=j.cellNav.broadcastCellNav=function(a,b,d){b=!(void 0===b||!b),a=h.cellNav.makeRowCol(a),h.cellNav.broadcastFocus(a,b,d),i.$broadcast(c.CELL_NAV_EVENT,a,b,d)},h.cellNav.clearFocus=j.cellNav.clearFocus=function(){j.cellNav.focusedCells=[],i.$broadcast(c.CELL_NAV_EVENT)},h.cellNav.broadcastFocus=function(a,b,c){b=!(void 0===b||!b),a=h.cellNav.makeRowCol(a);var d=a.row,f=a.col,g=h.grid.api.cellNav.rowColSelectIndex(a);if(null===j.cellNav.lastRowCol||-1===g){var i=new e(d,f);(null===j.cellNav.lastRowCol||j.cellNav.lastRowCol.row!==i.row||j.cellNav.lastRowCol.col!==i.col)&&(j.api.cellNav.raise.navigate(i,j.cellNav.lastRowCol),j.cellNav.lastRowCol=i),h.grid.options.modifierKeysToMultiSelectCells&&b?j.cellNav.focusedCells.push(a):j.cellNav.focusedCells=[a]}else j.options.modifierKeysToMultiSelectCells&&b&&g>=0&&j.cellNav.focusedCells.splice(g,1)},h.cellNav.handleKeyDown=function(a){var e=b.getDirection(a);if(null===e)return null;var f="body";a.uiGridTargetRenderContainerId&&(f=a.uiGridTargetRenderContainerId);var g=h.grid.api.cellNav.getFocusedCell();if(g){var i=h.grid.renderContainers[f].cellNav.getNextRowCol(e,g.row,g.col),k=h.grid.renderContainers[f].cellNav.getFocusableCols(),l=h.grid.api.cellNav.rowColSelectIndex(i);return e===c.direction.LEFT&&i.col===k[k.length-1]&&i.row===g.row&&a.keyCode===d.keymap.TAB&&a.shiftKey?(j.cellNav.focusedCells.splice(l,1),h.cellNav.clearFocus(),!0):e!==c.direction.RIGHT||i.col!==k[0]||i.row!==g.row||a.keyCode!==d.keymap.TAB||a.shiftKey?(j.scrollToIfNecessary(i.row,i.col).then(function(){h.cellNav.broadcastCellNav(i)}),a.stopPropagation(),a.preventDefault(),!1):(j.cellNav.focusedCells.splice(l,1),h.cellNav.clearFocus(),!0)}}},post:function(a,b,d,e){function f(){var d='<div id="'+h.id+'-aria-speakable" class="ui-grid-a11y-ariascreenreader-speakable ui-grid-offscreen" aria-live="assertive" role="region" aria-atomic="true" aria-hidden="false" aria-relevant="additions" >&nbsp;</div>',e=g(d)(a);b.prepend(e),a.$on(c.CELL_NAV_EVENT,function(a,b,c,d){function f(a){a!==e.text()&&(e[0].style.clip="rect(0px,0px,0px,0px)",e[0].innerHTML="",e[0].style.visibility="hidden",e[0].style.visibility="visible",""!==a&&(e[0].style.clip="auto",e[0].appendChild(document.createTextNode(a+" ")),e[0].style.visibility="hidden",e[0].style.visibility="visible"))}if(!d||"focus"!==d.type){for(var g=[],i=h.api.cellNav.getCurrentSelection(),j=0;j<i.length;j++)g.push(h.getCellDisplayValue(i[j].row,i[j].col));var k=g.toString();f(k)}})}var h=e.grid;f()}}}}}]),a.directive("uiGridRenderContainer",["$timeout","$document","gridUtil","uiGridConstants","uiGridCellNavService","$compile","uiGridCellNavConstants",function(a,b,c,d,e,f,g){return{replace:!0,priority:-99999,require:["^uiGrid","uiGridRenderContainer","?^uiGridCellnav"],scope:!1,compile:function(){return{post:function(b,d,h,i){var j=i[0],k=i[1],l=i[2];if(j.grid.api.cellNav){var m=k.containerId,n=j.grid;if(e.decorateRenderContainers(n),"body"===m){j.grid.options.modifierKeysToMultiSelectCells?d.attr("aria-multiselectable",!0):d.attr("aria-multiselectable",!1);var o=f('<div class="ui-grid-focuser" role="region" aria-live="assertive" aria-atomic="false" tabindex="0" aria-controls="'+n.id+"-aria-speakable "+n.id+'-grid-container" aria-owns="'+n.id+'-grid-container"></div>')(b);d.append(o),o.on("focus",function(a){a.uiGridTargetRenderContainerId=m;var b=j.grid.api.cellNav.getFocusedCell();null===b&&(b=j.grid.renderContainers[m].cellNav.getNextRowCol(g.direction.DOWN,null,null),b.row&&b.col&&j.cellNav.broadcastCellNav(b))}),l.setAriaActivedescendant=function(a){d.attr("aria-activedescendant",a)},l.removeAriaActivedescendant=function(a){d.attr("aria-activedescendant")===a&&d.attr("aria-activedescendant","")},j.focus=function(){c.focus.byElement(o[0])};var p=null;o.on("keydown",function(a){a.uiGridTargetRenderContainerId=m;var b=j.grid.api.cellNav.getFocusedCell(),c=j.cellNav.handleKeyDown(a);null===c&&(j.grid.api.cellNav.raise.viewPortKeyDown(a,b),p=b)}),o.on("keypress",function(b){p&&(a(function(){j.grid.api.cellNav.raise.viewPortKeyPress(b,p)},4),p=null)}),b.$on("$destroy",function(){o.off()})}}}}}}}]),a.directive("uiGridViewport",["$timeout","$document","gridUtil","uiGridConstants","uiGridCellNavService","uiGridCellNavConstants","$log","$compile",function(a,b,c,d,e,f,g,h){return{replace:!0,priority:-99999,require:["^uiGrid","^uiGridRenderContainer","?^uiGridCellnav"],scope:!1,compile:function(){return{pre:function(a,b,c,d){},post:function(a,b,c,d){var e=d[0],f=d[1];if(e.grid.api.cellNav){var g=f.containerId;if("body"===g){var h=e.grid;h.api.core.on.scrollBegin(a,function(a){var b=e.grid.api.cellNav.getFocusedCell();null!==b&&f.colContainer.containsColumn(b.col)&&e.cellNav.clearFocus()}),h.api.core.on.scrollEnd(a,function(a){var b=e.grid.api.cellNav.getFocusedCell();null!==b&&f.colContainer.containsColumn(b.col)&&e.cellNav.broadcastCellNav(b)}),h.api.cellNav.on.navigate(a,function(){e.focus()})}}}}}}}]),a.directive("uiGridCell",["$timeout","$document","uiGridCellNavService","gridUtil","uiGridCellNavConstants","uiGridConstants","GridRowColumn",function(a,b,c,d,e,f,g){return{priority:-150,restrict:"A",require:["^uiGrid","?^uiGridCellnav"],scope:!1,link:function(a,b,c,d){function f(a){a.preventDefault()}function h(){if(!a.focused){var c=b.find("div");c.addClass("ui-grid-cell-focus"),b.attr("aria-selected",!0),k.setAriaActivedescendant(b.attr("id")),a.focused=!0}}function i(){if(a.focused){var c=b.find("div");c.removeClass("ui-grid-cell-focus"),b.attr("aria-selected",!1),k.removeAriaActivedescendant(b.attr("id")),a.focused=!1}}var j=d[0],k=d[1];if(j.grid.api.cellNav&&a.col.colDef.allowCellFocus){var l=j.grid;a.focused=!1,b.attr("tabindex",-1),b.find("div").on("click",function(b){j.cellNav.broadcastCellNav(new g(a.row,a.col),b.ctrlKey||b.metaKey,b),b.stopPropagation(),a.$apply()}),b.on("mousedown",f),j.grid.api.edit&&(j.grid.api.edit.on.beginCellEdit(a,function(){b.off("mousedown",f)}),j.grid.api.edit.on.afterCellEdit(a,function(){b.on("mousedown",f)}),j.grid.api.edit.on.cancelCellEdit(a,function(){b.on("mousedown",f)})),b.on("focus",function(b){j.cellNav.broadcastCellNav(new g(a.row,a.col),!1,b),b.stopPropagation(),a.$apply()}),a.$on(e.CELL_NAV_EVENT,function(b,c,d){var e=l.cellNav.focusedCells.some(function(b,c){return b.row===a.row&&b.col===a.col});e?h():i()}),a.$on("$destroy",function(){b.find("div").off(),b.off()})}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.edit",["ui.grid"]);a.constant("uiGridEditConstants",{EDITABLE_CELL_TEMPLATE:/EDITABLE_CELL_TEMPLATE/g,EDITABLE_CELL_DIRECTIVE:/editable_cell_directive/g,events:{BEGIN_CELL_EDIT:"uiGridEventBeginCellEdit",END_CELL_EDIT:"uiGridEventEndCellEdit",CANCEL_CELL_EDIT:"uiGridEventCancelCellEdit"}}),a.service("uiGridEditService",["$q","uiGridConstants","gridUtil",function(a,b,c){var d={initializeGrid:function(a){d.defaultGridOptions(a.options),a.registerColumnBuilder(d.editColumnBuilder),a.edit={};var b={events:{edit:{afterCellEdit:function(a,b,c,d){},beginCellEdit:function(a,b,c){},cancelCellEdit:function(a,b){}}},methods:{edit:{}}};a.api.registerEventsFromObject(b.events)},defaultGridOptions:function(a){a.cellEditableCondition=void 0===a.cellEditableCondition?!0:a.cellEditableCondition,a.enableCellEditOnFocus=void 0===a.enableCellEditOnFocus?!1:a.enableCellEditOnFocus},editColumnBuilder:function(b,d,e){var f=[];return b.enableCellEdit=void 0===b.enableCellEdit?void 0===e.enableCellEdit?"object"!==b.type:e.enableCellEdit:b.enableCellEdit,b.cellEditableCondition=void 0===b.cellEditableCondition?e.cellEditableCondition:b.cellEditableCondition,b.enableCellEdit&&(b.editableCellTemplate=b.editableCellTemplate||e.editableCellTemplate||"ui-grid/cellEditor",f.push(c.getTemplate(b.editableCellTemplate).then(function(a){d.editableCellTemplate=a},function(a){throw new Error("Couldn't fetch/use colDef.editableCellTemplate '"+b.editableCellTemplate+"'")}))),b.enableCellEditOnFocus=void 0===b.enableCellEditOnFocus?e.enableCellEditOnFocus:b.enableCellEditOnFocus,a.all(f)},isStartEditKey:function(a){return a.metaKey||a.keyCode===b.keymap.ESC||a.keyCode===b.keymap.SHIFT||a.keyCode===b.keymap.CTRL||a.keyCode===b.keymap.ALT||a.keyCode===b.keymap.WIN||a.keyCode===b.keymap.CAPSLOCK||a.keyCode===b.keymap.LEFT||a.keyCode===b.keymap.TAB&&a.shiftKey||a.keyCode===b.keymap.RIGHT||a.keyCode===b.keymap.TAB||a.keyCode===b.keymap.UP||a.keyCode===b.keymap.ENTER&&a.shiftKey||a.keyCode===b.keymap.DOWN||a.keyCode===b.keymap.ENTER?!1:!0}};return d}]),a.directive("uiGridEdit",["gridUtil","uiGridEditService",function(a,b){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){b.initializeGrid(e.grid)},post:function(a,b,c,d){}}}}}]),a.directive("uiGridViewport",["uiGridEditConstants",function(a){return{replace:!0,priority:-99998,require:["^uiGrid","^uiGridRenderContainer"],scope:!1,compile:function(){return{post:function(b,c,d,e){var f=e[0];if(f.grid.api.edit&&f.grid.api.cellNav){var g=e[1].containerId;"body"===g&&(b.$on(a.events.CANCEL_CELL_EDIT,function(){f.focus()}),b.$on(a.events.END_CELL_EDIT,function(){f.focus()}))}}}}}}]),a.directive("uiGridCell",["$compile","$injector","$timeout","uiGridConstants","uiGridEditConstants","gridUtil","$parse","uiGridEditService","$rootScope","$q",function(a,b,c,d,e,f,g,h,i,j){var k=500;if(b.has("uiGridCellNavService")){b.get("uiGridCellNavService")}return{priority:-100,restrict:"A",scope:!1,require:"?^uiGrid",link:function(b,l,m,n){function o(){l.on("dblclick",u),l.on("touchstart",p),n&&n.grid.api.cellNav&&(G=n.grid.api.cellNav.on.viewPortKeyDown(b,function(a,c){null!==c&&(c.row!==b.row||c.col!==b.col||b.col.colDef.enableCellEditOnFocus||s(a))}),F=n.grid.api.cellNav.on.navigate(b,function(a,d){b.col.colDef.enableCellEditOnFocus&&(d&&a.row===d.row&&a.col===d.col||a.row!==b.row||a.col!==b.col||c(function(){u()}))})),b.beginEditEventsWired=!0}function p(a){"undefined"!=typeof a.originalEvent&&void 0!==a.originalEvent&&(a=a.originalEvent),l.on("touchend",q),C=c(function(){},k),C.then(function(){setTimeout(u,0),l.off("touchend",q)})}function q(a){c.cancel(C),l.off("touchend",q)}function r(){l.off("dblclick",u),l.off("keydown",s),l.off("touchstart",p),F(),G(),b.beginEditEventsWired=!1}function s(a){h.isStartEditKey(a)&&u(a)}function t(a,c){return!c.isSaving&&(angular.isFunction(a.colDef.cellEditableCondition)?a.colDef.cellEditableCondition(b):a.colDef.cellEditableCondition)}function u(a){b.grid.api.core.scrollToIfNecessary(b.row,b.col).then(function(){v(a)})}function v(h){if(!E&&t(b.col,b.row)){var k=b.row.getQualifiedColField(b.col);b.col.colDef.editModelField&&(k=f.preEval("row.entity."+b.col.colDef.editModelField)),B=g(k),A=B(b),z=b.col.editableCellTemplate,z=z.replace(d.MODEL_COL_FIELD,k),z=z.replace(d.COL_FIELD,"grid.getCellValue(row, col)");var m=b.col.colDef.editDropdownFilter?"|"+b.col.colDef.editDropdownFilter:"";z=z.replace(d.CUSTOM_FILTERS,m);var n="text";switch(b.col.colDef.type){case"boolean":n="checkbox";break;case"number":n="number";break;case"date":n="date"}z=z.replace("INPUT_TYPE",n);var o=b.col.colDef.editDropdownOptionsFunction;if(o)j.when(o(b.row.entity,b.col.colDef)).then(function(a){b.editDropdownOptionsArray=a});else{var p=b.col.colDef.editDropdownRowEntityOptionsArrayPath;p?b.editDropdownOptionsArray=y(b.row.entity,p):b.editDropdownOptionsArray=b.col.colDef.editDropdownOptionsArray}b.editDropdownIdLabel=b.col.colDef.editDropdownIdLabel?b.col.colDef.editDropdownIdLabel:"id",b.editDropdownValueLabel=b.col.colDef.editDropdownValueLabel?b.col.colDef.editDropdownValueLabel:"value";var q=function(){E=!0,r();var c=angular.element(z);l.append(c),D=b.$new(),a(c)(D);var d=angular.element(l.children()[0]);d.addClass("ui-grid-cell-contents-hidden")};i.$$phase?q():b.$apply(q);var s=b.col.grid.api.core.on.scrollBegin(b,function(){b.grid.disableScrolling||(w(),b.grid.api.edit.raise.afterCellEdit(b.row.entity,b.col.colDef,B(b),A),s(),u(),v())}),u=b.$on(e.events.END_CELL_EDIT,function(){w(),b.grid.api.edit.raise.afterCellEdit(b.row.entity,b.col.colDef,B(b),A),u(),s(),v()}),v=b.$on(e.events.CANCEL_CELL_EDIT,function(){x(),v(),s(),u()});b.$broadcast(e.events.BEGIN_CELL_EDIT,h),c(function(){b.grid.api.edit.raise.beginCellEdit(b.row.entity,b.col.colDef,h)})}}function w(){if(b.grid.disableScrolling=!1,E){n&&n.grid.api.cellNav&&n.focus();var a=angular.element(l.children()[0]);D.$destroy();for(var c=l.children(),e=1;e<c.length;e++)angular.element(c[e]).remove();a.removeClass("ui-grid-cell-contents-hidden"),E=!1,o(),b.grid.api.core.notifyDataChange(d.dataChange.EDIT)}}function x(){b.grid.disableScrolling=!1,E&&(B.assign(b,A),b.$apply(),b.grid.api.edit.raise.cancelCellEdit(b.row.entity,b.col.colDef),w())}function y(a,b){b=b.replace(/\[(\w+)\]/g,".$1"),b=b.replace(/^\./,"");for(var c=b.split(".");c.length;){var d=c.shift();if(!(d in a))return;a=a[d]}return a}var z,A,B,C,D,E=!1;if(b.col.colDef.enableCellEdit){var F=function(){},G=function(){},H=function(){b.col.colDef.enableCellEdit&&b.row.enableCellEdit!==!1?b.beginEditEventsWired||o():b.beginEditEventsWired&&r()};H();var I=b.$watch("row",function(a,b){a!==b&&H()});b.$on("$destroy",I)}}}}]),a.directive("uiGridEditor",["gridUtil","uiGridConstants","uiGridEditConstants","$timeout","uiGridEditService",function(a,b,c,d,e){return{scope:!0,require:["?^uiGrid","?^uiGridRenderContainer","ngModel"],compile:function(){return{pre:function(a,b,c){},post:function(a,f,g,h){var i,j,k;h[0]&&(i=h[0]),h[1]&&(j=h[1]),h[2]&&(k=h[2]),a.$on(c.events.BEGIN_CELL_EDIT,function(b,c){if(d(function(){if(f[0].focus(),!f[0].select||!a.col.colDef.enableCellEditOnFocus&&i&&i.grid.api.cellNav)try{f[0].setSelectionRange(f[0].value.length,f[0].value.length)}catch(b){}else f[0].select()}),i&&i.grid.api.cellNav)var g=i.grid.api.cellNav.on.viewPortKeyPress(a,function(a,b){e.isStartEditKey(a)&&(k.$setViewValue(String.fromCharCode("number"==typeof a.which?a.which:a.keyCode),a),k.$render()),g()});f.on("blur",function(b){a.stopEdit(b)})}),a.deepEdit=!1,a.stopEdit=function(b){a.inputForm&&!a.inputForm.$valid?(b.stopPropagation(),a.$emit(c.events.CANCEL_CELL_EDIT)):a.$emit(c.events.END_CELL_EDIT),a.deepEdit=!1},f.on("click",function(b){"checkbox"!==f[0].type&&(a.deepEdit=!0,d(function(){a.grid.disableScrolling=!0}))}),f.on("keydown",function(d){switch(d.keyCode){case b.keymap.ESC:d.stopPropagation(),a.$emit(c.events.CANCEL_CELL_EDIT)}if(!a.deepEdit||d.keyCode!==b.keymap.LEFT&&d.keyCode!==b.keymap.RIGHT&&d.keyCode!==b.keymap.UP&&d.keyCode!==b.keymap.DOWN)if(i&&i.grid.api.cellNav)d.uiGridTargetRenderContainerId=j.containerId,null!==i.cellNav.handleKeyDown(d)&&a.stopEdit(d);else switch(d.keyCode){case b.keymap.ENTER:case b.keymap.TAB:d.stopPropagation(),d.preventDefault(),a.stopEdit(d)}else d.stopPropagation();return!0})}}}}}]),a.directive("uiGridEditor",["$filter",function(a){function b(a){if("undefined"==typeof a||""===a)return null;var b=a.split("-");if(3!==b.length)return null;var c=parseInt(b[0],10),d=parseInt(b[1],10),e=parseInt(b[2],10);return 1>d||1>c||1>e?null:new Date(c,d-1,e)}return{priority:-100,require:"?ngModel",link:function(c,d,e,f){2===angular.version.minor&&e.type&&"date"===e.type&&f&&(f.$formatters.push(function(b){return f.$setValidity(null,!b||!isNaN(b.getTime())),a("date")(b,"yyyy-MM-dd")}),f.$parsers.push(function(a){if(a&&a.length>0){var c=b(a);return f.$setValidity(null,c&&!isNaN(c.getTime())),c}return f.$setValidity(null,!0),null}))}}}]),a.directive("uiGridEditDropdown",["uiGridConstants","uiGridEditConstants",function(a,b){return{require:["?^uiGrid","?^uiGridRenderContainer"],scope:!0,compile:function(){return{pre:function(a,b,c){},post:function(c,d,e,f){var g=f[0],h=f[1];c.$on(b.events.BEGIN_CELL_EDIT,function(){d[0].focus(),d[0].style.width=d[0].parentElement.offsetWidth-1+"px",d.on("blur",function(a){c.stopEdit(a)})}),c.stopEdit=function(a){c.$emit(b.events.END_CELL_EDIT)},d.on("keydown",function(d){switch(d.keyCode){case a.keymap.ESC:d.stopPropagation(),c.$emit(b.events.CANCEL_CELL_EDIT)}if(g&&g.grid.api.cellNav)d.uiGridTargetRenderContainerId=h.containerId,null!==g.cellNav.handleKeyDown(d)&&c.stopEdit(d);else switch(d.keyCode){case a.keymap.ENTER:case a.keymap.TAB:d.stopPropagation(),d.preventDefault(),c.stopEdit(d)}return!0})}}}}}]),a.directive("uiGridEditFileChooser",["gridUtil","uiGridConstants","uiGridEditConstants","$timeout",function(a,b,c,d){return{scope:!0,require:["?^uiGrid","?^uiGridRenderContainer"],compile:function(){return{pre:function(a,b,c){},post:function(b,d,e,f){var g,h;f[0]&&(g=f[0]),f[1]&&(h=f[1]);var i=(g.grid,function(d){var e=d.srcElement||d.target;e&&e.files&&e.files.length>0?("function"==typeof b.col.colDef.editFileChooserCallback?b.col.colDef.editFileChooserCallback(b.row,b.col,e.files):a.logError("You need to set colDef.editFileChooserCallback to use the file chooser"),e.form.reset(),b.$emit(c.events.END_CELL_EDIT)):b.$emit(c.events.CANCEL_CELL_EDIT)});d[0].addEventListener("change",i,!1),b.$on(c.events.BEGIN_CELL_EDIT,function(){d[0].focus(),d[0].select(),d.on("blur",function(a){b.$emit(c.events.END_CELL_EDIT)})})}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.expandable",["ui.grid"]);a.service("uiGridExpandableService",["gridUtil","$compile",function(a,b){var c={initializeGrid:function(b){b.expandable={},b.expandable.expandedAll=!1,b.options.enableExpandable=b.options.enableExpandable!==!1,b.options.expandableRowHeight=b.options.expandableRowHeight||150,b.options.expandableRowHeaderWidth=b.options.expandableRowHeaderWidth||40,b.options.enableExpandable&&!b.options.expandableRowTemplate&&(a.logError("You have not set the expandableRowTemplate, disabling expandable module"),b.options.enableExpandable=!1);var d={events:{expandable:{rowExpandedBeforeStateChanged:function(a,b){},rowExpandedStateChanged:function(a,b){}}},methods:{expandable:{toggleRowExpansion:function(a){var d=b.getRow(a);null!==d&&c.toggleRowExpansion(b,d)},expandAllRows:function(){c.expandAllRows(b)},collapseAllRows:function(){c.collapseAllRows(b)},toggleAllRows:function(){c.toggleAllRows(b)},expandRow:function(a){var d=b.getRow(a);null===d||d.isExpanded||c.toggleRowExpansion(b,d)},collapseRow:function(a){var d=b.getRow(a);null!==d&&d.isExpanded&&c.toggleRowExpansion(b,d)},getExpandedRows:function(){return c.getExpandedRows(b).map(function(a){return a.entity})}}}};b.api.registerEventsFromObject(d.events),b.api.registerMethodsFromObject(d.methods)},toggleRowExpansion:function(a,b){a.api.expandable.raise.rowExpandedBeforeStateChanged(b),b.isExpanded=!b.isExpanded,angular.isUndefined(b.expandedRowHeight)&&(b.expandedRowHeight=a.options.expandableRowHeight),b.isExpanded?b.height=b.grid.options.rowHeight+b.expandedRowHeight:(b.height=b.grid.options.rowHeight,a.expandable.expandedAll=!1),a.api.expandable.raise.rowExpandedStateChanged(b)},expandAllRows:function(a,b){a.renderContainers.body.visibleRowCache.forEach(function(b){b.isExpanded||c.toggleRowExpansion(a,b)}),a.expandable.expandedAll=!0,a.queueGridRefresh()},collapseAllRows:function(a){a.renderContainers.body.visibleRowCache.forEach(function(b){b.isExpanded&&c.toggleRowExpansion(a,b)}),a.expandable.expandedAll=!1,a.queueGridRefresh()},toggleAllRows:function(a){a.expandable.expandedAll?c.collapseAllRows(a):c.expandAllRows(a)},getExpandedRows:function(a){return a.rows.filter(function(a){return a.isExpanded})}};return c}]),a.directive("uiGridExpandable",["uiGridExpandableService","$templateCache",function(a,b){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(c,d,e,f){if(a.initializeGrid(f.grid),f.grid.options.enableExpandable&&f.grid.options.enableExpandableRowHeader!==!1){var g={name:"expandableButtons",displayName:"",exporterSuppressExport:!0,enableColumnResizing:!1,enableColumnMenu:!1,width:f.grid.options.expandableRowHeaderWidth||40};g.cellTemplate=b.get("ui-grid/expandableRowHeader"),g.headerCellTemplate=b.get("ui-grid/expandableTopRowHeader"),f.grid.addRowHeaderColumn(g,-90)}},post:function(a,b,c,d){}}}}}]),a.directive("uiGrid",["uiGridExpandableService","$templateCache",function(a,b){return{replace:!0,priority:599,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,b,c,d){d.grid.api.core.on.renderingComplete(a,function(){a.row&&a.row.grid&&a.row.grid.options&&a.row.grid.options.enableExpandable&&(d.grid.parentRow=a.row)})},post:function(a,b,c,d){}}}}}]),a.directive("uiGridExpandableRow",["uiGridExpandableService","$timeout","$compile","uiGridConstants","gridUtil","$interval","$log",function(a,b,c,d,e,f,g){return{replace:!1,priority:0,scope:!1,compile:function(){return{pre:function(a,b,d,f){e.getTemplate(a.grid.options.expandableRowTemplate).then(function(d){if(a.grid.options.expandableRowScope){var e=a.grid.options.expandableRowScope;for(var f in e)e.hasOwnProperty(f)&&(a[f]=e[f])}var g=angular.element(d);b.append(g),g=c(g)(a),a.row.expandedRendered=!0})},post:function(a,b,c,d){a.$on("$destroy",function(){a.row.expandedRendered=!1})}}}}}]),a.directive("uiGridRow",["$compile","gridUtil","$templateCache",function(a,b,c){return{priority:-200,scope:!1,compile:function(a,b){return{pre:function(a,b,c,d){a.grid.options.enableExpandable&&(a.expandableRow={},a.expandableRow.shouldRenderExpand=function(){var b="body"===a.colContainer.name&&a.grid.options.enableExpandable!==!1&&a.row.isExpanded&&(!a.grid.isScrollingVertically||a.row.expandedRendered);return b},a.expandableRow.shouldRenderFiller=function(){var b=a.row.isExpanded&&("body"!==a.colContainer.name||a.grid.isScrollingVertically&&!a.row.expandedRendered);return b})},post:function(a,b,c,d){}}}}}]),a.directive("uiGridViewport",["$compile","gridUtil","$templateCache",function(a,b,c){
+return{priority:-200,scope:!1,compile:function(a,b){var d=angular.element(a.children().children()[0]),e=c.get("ui-grid/expandableScrollFiller"),f=c.get("ui-grid/expandableRow");return d.append(f),d.append(e),{pre:function(a,b,c,d){},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.exporter",["ui.grid"]);a.constant("uiGridExporterConstants",{featureName:"exporter",ALL:"all",VISIBLE:"visible",SELECTED:"selected",CSV_CONTENT:"CSV_CONTENT",BUTTON_LABEL:"BUTTON_LABEL",FILE_NAME:"FILE_NAME"}),a.service("uiGridExporterService",["$q","uiGridExporterConstants","gridUtil","$compile","$interval","i18nService",function(a,b,c,d,e,f){var g={delay:100,initializeGrid:function(a){a.exporter={},this.defaultGridOptions(a.options);var b={events:{exporter:{}},methods:{exporter:{csvExport:function(b,c){g.csvExport(a,b,c)},pdfExport:function(b,c){g.pdfExport(a,b,c)}}}};a.api.registerEventsFromObject(b.events),a.api.registerMethodsFromObject(b.methods),a.api.core.addToGridMenu?g.addToMenu(a):e(function(){a.api.core.addToGridMenu&&g.addToMenu(a)},this.delay,1)},defaultGridOptions:function(a){a.exporterSuppressMenu=a.exporterSuppressMenu===!0,a.exporterMenuLabel=a.exporterMenuLabel?a.exporterMenuLabel:"Export",a.exporterSuppressColumns=a.exporterSuppressColumns?a.exporterSuppressColumns:[],a.exporterCsvColumnSeparator=a.exporterCsvColumnSeparator?a.exporterCsvColumnSeparator:",",a.exporterCsvFilename=a.exporterCsvFilename?a.exporterCsvFilename:"download.csv",a.exporterPdfFilename=a.exporterPdfFilename?a.exporterPdfFilename:"download.pdf",a.exporterOlderExcelCompatibility=a.exporterOlderExcelCompatibility===!0,a.exporterPdfDefaultStyle=a.exporterPdfDefaultStyle?a.exporterPdfDefaultStyle:{fontSize:11},a.exporterPdfTableStyle=a.exporterPdfTableStyle?a.exporterPdfTableStyle:{margin:[0,5,0,15]},a.exporterPdfTableHeaderStyle=a.exporterPdfTableHeaderStyle?a.exporterPdfTableHeaderStyle:{bold:!0,fontSize:12,color:"black"},a.exporterPdfHeader=a.exporterPdfHeader?a.exporterPdfHeader:null,a.exporterPdfFooter=a.exporterPdfFooter?a.exporterPdfFooter:null,a.exporterPdfOrientation=a.exporterPdfOrientation?a.exporterPdfOrientation:"landscape",a.exporterPdfPageSize=a.exporterPdfPageSize?a.exporterPdfPageSize:"A4",a.exporterPdfMaxGridWidth=a.exporterPdfMaxGridWidth?a.exporterPdfMaxGridWidth:720,a.exporterMenuAllData=void 0!==a.exporterMenuAllData?a.exporterMenuAllData:!0,a.exporterMenuVisibleData=void 0!==a.exporterMenuVisibleData?a.exporterMenuVisibleData:!0,a.exporterMenuSelectedData=void 0!==a.exporterMenuSelectedData?a.exporterMenuSelectedData:!0,a.exporterMenuCsv=void 0!==a.exporterMenuCsv?a.exporterMenuCsv:!0,a.exporterMenuPdf=void 0!==a.exporterMenuPdf?a.exporterMenuPdf:!0,a.exporterPdfCustomFormatter=a.exporterPdfCustomFormatter&&"function"==typeof a.exporterPdfCustomFormatter?a.exporterPdfCustomFormatter:function(a){return a},a.exporterHeaderFilterUseName=a.exporterHeaderFilterUseName===!0,a.exporterFieldCallback=a.exporterFieldCallback?a.exporterFieldCallback:function(a,b,c,d){return d},a.exporterAllDataFn=a.exporterAllDataFn?a.exporterAllDataFn:null,null==a.exporterAllDataFn&&a.exporterAllDataPromise&&(a.exporterAllDataFn=a.exporterAllDataPromise)},addToMenu:function(a){a.api.core.addToGridMenu(a,[{title:f.getSafeText("gridMenu.exporterAllAsCsv"),action:function(a){this.grid.api.exporter.csvExport(b.ALL,b.ALL)},shown:function(){return this.grid.options.exporterMenuCsv&&this.grid.options.exporterMenuAllData},order:200},{title:f.getSafeText("gridMenu.exporterVisibleAsCsv"),action:function(a){this.grid.api.exporter.csvExport(b.VISIBLE,b.VISIBLE)},shown:function(){return this.grid.options.exporterMenuCsv&&this.grid.options.exporterMenuVisibleData},order:201},{title:f.getSafeText("gridMenu.exporterSelectedAsCsv"),action:function(a){this.grid.api.exporter.csvExport(b.SELECTED,b.VISIBLE)},shown:function(){return this.grid.options.exporterMenuCsv&&this.grid.options.exporterMenuSelectedData&&this.grid.api.selection&&this.grid.api.selection.getSelectedRows().length>0},order:202},{title:f.getSafeText("gridMenu.exporterAllAsPdf"),action:function(a){this.grid.api.exporter.pdfExport(b.ALL,b.ALL)},shown:function(){return this.grid.options.exporterMenuPdf&&this.grid.options.exporterMenuAllData},order:203},{title:f.getSafeText("gridMenu.exporterVisibleAsPdf"),action:function(a){this.grid.api.exporter.pdfExport(b.VISIBLE,b.VISIBLE)},shown:function(){return this.grid.options.exporterMenuPdf&&this.grid.options.exporterMenuVisibleData},order:204},{title:f.getSafeText("gridMenu.exporterSelectedAsPdf"),action:function(a){this.grid.api.exporter.pdfExport(b.SELECTED,b.VISIBLE)},shown:function(){return this.grid.options.exporterMenuPdf&&this.grid.options.exporterMenuSelectedData&&this.grid.api.selection&&this.grid.api.selection.getSelectedRows().length>0},order:205}])},csvExport:function(a,b,c){var d=this;this.loadAllDataIfNeeded(a,b,c).then(function(){var e=a.options.showHeader?d.getColumnHeaders(a,c):[],f=d.getData(a,b,c),g=d.formatAsCsv(e,f,a.options.exporterCsvColumnSeparator);d.downloadFile(a.options.exporterCsvFilename,g,a.options.exporterCsvColumnSeparator,a.options.exporterOlderExcelCompatibility)})},loadAllDataIfNeeded:function(c,d,e){if(d===b.ALL&&c.rows.length!==c.options.totalItems&&c.options.exporterAllDataFn)return c.options.exporterAllDataFn().then(function(){c.modifyRows(c.options.data)});var f=a.defer();return f.resolve(),f.promise},getColumnHeaders:function(a,c){var d,e=[];if(c===b.ALL)d=a.columns;else{var f=a.renderContainers.left?a.renderContainers.left.visibleColumnCache.filter(function(a){return a.visible}):[],g=a.renderContainers.body?a.renderContainers.body.visibleColumnCache.filter(function(a){return a.visible}):[],h=a.renderContainers.right?a.renderContainers.right.visibleColumnCache.filter(function(a){return a.visible}):[];d=f.concat(g,h)}return d.forEach(function(b,c){b.colDef.exporterSuppressExport!==!0&&-1===a.options.exporterSuppressColumns.indexOf(b.name)&&e.push({name:b.field,displayName:a.options.exporterHeaderFilter?a.options.exporterHeaderFilterUseName?a.options.exporterHeaderFilter(b.name):a.options.exporterHeaderFilter(b.displayName):b.displayName,width:b.drawnWidth?b.drawnWidth:b.width,align:"number"===b.colDef.type?"right":"left"})}),e},getData:function(a,d,e,f){var g,h,i=[];switch(d){case b.ALL:g=a.rows;break;case b.VISIBLE:g=a.getVisibleRows();break;case b.SELECTED:a.api.selection?g=a.api.selection.getSelectedGridRows():c.logError("selection feature must be enabled to allow selected rows to be exported")}if(e===b.ALL)h=a.columns;else{var j=a.renderContainers.left?a.renderContainers.left.visibleColumnCache.filter(function(a){return a.visible}):[],k=a.renderContainers.body?a.renderContainers.body.visibleColumnCache.filter(function(a){return a.visible}):[],l=a.renderContainers.right?a.renderContainers.right.visibleColumnCache.filter(function(a){return a.visible}):[];h=j.concat(k,l)}return g.forEach(function(c,d){if(c.exporterEnableExporting!==!1){var g=[];h.forEach(function(d,h){if((d.visible||e===b.ALL)&&d.colDef.exporterSuppressExport!==!0&&-1===a.options.exporterSuppressColumns.indexOf(d.name)){var i=f?a.getCellDisplayValue(c,d):a.getCellValue(c,d),j={value:a.options.exporterFieldCallback(a,c,d,i)};d.colDef.exporterPdfAlign&&(j.alignment=d.colDef.exporterPdfAlign),g.push(j)}}),i.push(g)}}),i},formatAsCsv:function(a,b,c){var d=this,e=a.map(function(a){return{value:a.displayName}}),f=e.length>0?d.formatRowAsCsv(this,c)(e)+"\n":"";return f+=b.map(this.formatRowAsCsv(this,c)).join("\n")},formatRowAsCsv:function(a,b){return function(c){return c.map(a.formatFieldAsCsv).join(b)}},formatFieldAsCsv:function(a){return null==a.value?"":"number"==typeof a.value?a.value:"boolean"==typeof a.value?a.value?"TRUE":"FALSE":"string"==typeof a.value?'"'+a.value.replace(/"/g,'""')+'"':JSON.stringify(a.value)},isIE:function(){var a=navigator.userAgent.search(/(?:Edge|MSIE|Trident\/.*; rv:)/),b=!1;return-1!==a&&(b=!0),b},downloadFile:function(a,b,c,d){var e,f=document,g=f.createElement("a"),h="application/octet-stream;charset=utf-8",i=this.isIE();if(navigator.msSaveBlob)return navigator.msSaveOrOpenBlob(new Blob([d?"\ufeff":"",b],{type:h}),a);if(i){var j=f.createElement("iframe");return document.body.appendChild(j),j.contentWindow.document.open("text/html","replace"),j.contentWindow.document.write("sep="+c+"\r\n"+b),j.contentWindow.document.close(),j.contentWindow.focus(),j.contentWindow.document.execCommand("SaveAs",!0,a),document.body.removeChild(j),!0}if("download"in g){var k=new Blob([d?"\ufeff":"",b],{type:h});e=URL.createObjectURL(k),g.setAttribute("download",a)}else e="data:"+h+","+encodeURIComponent(b),g.setAttribute("target","_blank");g.href=e,g.setAttribute("style","display:none;"),f.body.appendChild(g),setTimeout(function(){if(g.click)g.click();else if(document.createEvent){var a=document.createEvent("MouseEvents");a.initEvent("click",!0,!0),g.dispatchEvent(a)}f.body.removeChild(g)},this.delay)},pdfExport:function(a,b,c){var d=this;this.loadAllDataIfNeeded(a,b,c).then(function(){var e=d.getColumnHeaders(a,c),f=d.getData(a,b,c),g=d.prepareAsPdf(a,e,f);d.isIE()||-1!==navigator.appVersion.indexOf("Edge")?d.downloadPDF(a.options.exporterPdfFilename,g):pdfMake.createPdf(g).open()})},downloadPDF:function(a,b){var c,d=document;d.createElement("a");c=this.isIE();var e,f=pdfMake.createPdf(b);f.getBuffer(function(b){if(e=new Blob([b]),navigator.msSaveBlob)return navigator.msSaveBlob(e,a);if(c){var f=d.createElement("iframe");return document.body.appendChild(f),f.contentWindow.document.open("text/html","replace"),f.contentWindow.document.write(e),f.contentWindow.document.close(),f.contentWindow.focus(),f.contentWindow.document.execCommand("SaveAs",!0,a),document.body.removeChild(f),!0}})},prepareAsPdf:function(a,b,c){var d=this.calculatePdfHeaderWidths(a,b),e=b.map(function(a){return{text:a.displayName,style:"tableHeader"}}),f=c.map(this.formatRowAsPdf(this)),g=[e].concat(f),h={pageOrientation:a.options.exporterPdfOrientation,pageSize:a.options.exporterPdfPageSize,content:[{style:"tableStyle",table:{headerRows:1,widths:d,body:g}}],styles:{tableStyle:a.options.exporterPdfTableStyle,tableHeader:a.options.exporterPdfTableHeaderStyle},defaultStyle:a.options.exporterPdfDefaultStyle};return a.options.exporterPdfLayout&&(h.layout=a.options.exporterPdfLayout),a.options.exporterPdfHeader&&(h.header=a.options.exporterPdfHeader),a.options.exporterPdfFooter&&(h.footer=a.options.exporterPdfFooter),a.options.exporterPdfCustomFormatter&&(h=a.options.exporterPdfCustomFormatter(h)),h},calculatePdfHeaderWidths:function(a,b){var c=0;b.forEach(function(a){"number"==typeof a.width&&(c+=a.width)});var d=0;b.forEach(function(a){if("*"===a.width&&(d+=100),"string"==typeof a.width&&a.width.match(/(\d)*%/)){var b=parseInt(a.width.match(/(\d)*%/)[0]);a.width=c*b/100,d+=a.width}});var e=c+d;return b.map(function(b){return"*"===b.width?b.width:b.width*a.options.exporterPdfMaxGridWidth/e})},formatRowAsPdf:function(a){return function(b){return b.map(a.formatFieldAsPdfString)}},formatFieldAsPdfString:function(a){var b;return b=null==a.value?"":"number"==typeof a.value?a.value.toString():"boolean"==typeof a.value?a.value?"TRUE":"FALSE":"string"==typeof a.value?a.value.replace(/"/g,'""'):JSON.stringify(a.value).replace(/^"/,"").replace(/"$/,""),a.alignment&&"string"==typeof a.alignment&&(b={text:b,alignment:a.alignment}),b}};return g}]),a.directive("uiGridExporter",["uiGridExporterConstants","uiGridExporterService","gridUtil","$compile",function(a,b,c,d){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,link:function(a,c,d,e){b.initializeGrid(e.grid),e.grid.exporter.$scope=a}}}])}(),function(){"use strict";var a=angular.module("ui.grid.grouping",["ui.grid","ui.grid.treeBase"]);a.constant("uiGridGroupingConstants",{featureName:"grouping",rowHeaderColName:"treeBaseRowHeaderCol",EXPANDED:"expanded",COLLAPSED:"collapsed",aggregation:{COUNT:"count",SUM:"sum",MAX:"max",MIN:"min",AVG:"avg"}}),a.service("uiGridGroupingService",["$q","uiGridGroupingConstants","gridUtil","rowSorter","GridRow","gridClassFactory","i18nService","uiGridConstants","uiGridTreeBaseService",function(a,b,c,d,e,f,g,h,i){var j={initializeGrid:function(a,b){i.initializeGrid(a,b),a.grouping={},a.grouping.groupHeaderCache={},j.defaultGridOptions(a.options),a.registerRowsProcessor(j.groupRows,400),a.registerColumnBuilder(j.groupingColumnBuilder),a.registerColumnsProcessor(j.groupingColumnProcessor,400);var c={events:{grouping:{aggregationChanged:{},groupingChanged:{}}},methods:{grouping:{getGrouping:function(b){var c=j.getGrouping(a);return c.grouping.forEach(function(a){a.colName=a.col.name,delete a.col}),c.aggregations.forEach(function(a){a.colName=a.col.name,delete a.col}),c.aggregations=c.aggregations.filter(function(a){return!a.aggregation.source||"grouping"!==a.aggregation.source}),b&&(c.rowExpandedStates=j.getRowExpandedStates(a.grouping.groupingHeaderCache)),c},setGrouping:function(b){j.setGrouping(a,b)},groupColumn:function(b){var c=a.getColumn(b);j.groupColumn(a,c)},ungroupColumn:function(b){var c=a.getColumn(b);j.ungroupColumn(a,c)},clearGrouping:function(){j.clearGrouping(a)},aggregateColumn:function(b,c,d){var e=a.getColumn(b);j.aggregateColumn(a,e,c,d)}}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods),a.api.core.on.sortChanged(b,j.tidyPriorities)},defaultGridOptions:function(a){a.enableGrouping=a.enableGrouping!==!1,a.groupingShowCounts=a.groupingShowCounts!==!1,a.groupingNullLabel="undefined"==typeof a.groupingNullLabel?"Null":a.groupingNullLabel,a.enableGroupHeaderSelection=a.enableGroupHeaderSelection===!0},groupingColumnBuilder:function(a,d,e){if(a.enableGrouping!==!1){"undefined"==typeof d.grouping&&"undefined"!=typeof a.grouping?(d.grouping=angular.copy(a.grouping),"undefined"!=typeof d.grouping.groupPriority&&d.grouping.groupPriority>-1&&(d.treeAggregationFn=i.nativeAggregations()[b.aggregation.COUNT].aggregationFn,d.treeAggregationFinalizerFn=j.groupedFinalizerFn)):"undefined"==typeof d.grouping&&(d.grouping={}),"undefined"!=typeof d.grouping&&"undefined"!=typeof d.grouping.groupPriority&&d.grouping.groupPriority>=0&&(d.suppressRemoveSort=!0);var f={name:"ui.grid.grouping.group",title:g.get().grouping.group,icon:"ui-grid-icon-indent-right",shown:function(){return"undefined"==typeof this.context.col.grouping||"undefined"==typeof this.context.col.grouping.groupPriority||this.context.col.grouping.groupPriority<0},action:function(){j.groupColumn(this.context.col.grid,this.context.col)}},h={name:"ui.grid.grouping.ungroup",title:g.get().grouping.ungroup,icon:"ui-grid-icon-indent-left",shown:function(){return"undefined"!=typeof this.context.col.grouping&&"undefined"!=typeof this.context.col.grouping.groupPriority&&this.context.col.grouping.groupPriority>=0},action:function(){j.ungroupColumn(this.context.col.grid,this.context.col)}},k={name:"ui.grid.grouping.aggregateRemove",title:g.get().grouping.aggregate_remove,shown:function(){return"undefined"!=typeof this.context.col.treeAggregationFn},action:function(){j.aggregateColumn(this.context.col.grid,this.context.col,null)}},l=function(a,b){b=b||g.get().grouping["aggregate_"+a]||a;var e={name:"ui.grid.grouping.aggregate"+a,title:b,shown:function(){return"undefined"==typeof this.context.col.treeAggregation||"undefined"==typeof this.context.col.treeAggregation.type||this.context.col.treeAggregation.type!==a},action:function(){j.aggregateColumn(this.context.col.grid,this.context.col,a)}};c.arrayContainsObjectWithProperty(d.menuItems,"name","ui.grid.grouping.aggregate"+a)||d.menuItems.push(e)};d.colDef.groupingShowGroupingMenu!==!1&&(c.arrayContainsObjectWithProperty(d.menuItems,"name","ui.grid.grouping.group")||d.menuItems.push(f),c.arrayContainsObjectWithProperty(d.menuItems,"name","ui.grid.grouping.ungroup")||d.menuItems.push(h)),d.colDef.groupingShowAggregationMenu!==!1&&(angular.forEach(i.nativeAggregations(),function(a,b){l(b)}),angular.forEach(e.treeCustomAggregations,function(a,b){l(b,a.menuTitle)}),c.arrayContainsObjectWithProperty(d.menuItems,"name","ui.grid.grouping.aggregateRemove")||d.menuItems.push(k))}},groupingColumnProcessor:function(a,b){return a=j.moveGroupColumns(this,a,b)},groupedFinalizerFn:function(a){var b=this;"undefined"!=typeof a.groupVal?(a.rendered=a.groupVal,b.grid.options.groupingShowCounts&&"date"!==b.colDef.type&&(a.rendered+=" ("+a.value+")")):a.rendered=null},moveGroupColumns:function(a,b,c){return a.options.moveGroupColumns===!1?b:(b.forEach(function(a,b){a.groupingPosition=b}),b.sort(function(a,b){var c,d;return c=a.isRowHeader?a.headerPriority:"undefined"==typeof a.grouping||"undefined"==typeof a.grouping.groupPriority||a.grouping.groupPriority<0?null:a.grouping.groupPriority,d=b.isRowHeader?b.headerPriority:"undefined"==typeof b.grouping||"undefined"==typeof b.grouping.groupPriority||b.grouping.groupPriority<0?null:b.grouping.groupPriority,null!==c&&null===d?-1:null!==d&&null===c?1:null!==c&&null!==d?c-d:a.groupingPosition-b.groupingPosition}),b.forEach(function(a,b){delete a.groupingPosition}),b)},groupColumn:function(a,c){"undefined"==typeof c.grouping&&(c.grouping={});var d=j.getGrouping(a);c.grouping.groupPriority=d.grouping.length,c.sort?("undefined"==typeof c.sort.direction||null===c.sort.direction)&&(c.sort.direction=h.ASC):c.sort={direction:h.ASC},c.treeAggregation={type:b.aggregation.COUNT,source:"grouping"},c.treeAggregationFn=i.nativeAggregations()[b.aggregation.COUNT].aggregationFn,c.treeAggregationFinalizerFn=j.groupedFinalizerFn,a.api.grouping.raise.groupingChanged(c),a.api.core.raise.sortChanged(a,a.getColumnSorting()),a.queueGridRefresh()},ungroupColumn:function(a,b){"undefined"!=typeof b.grouping&&(delete b.grouping.groupPriority,delete b.treeAggregation,delete b.customTreeAggregationFinalizer,j.tidyPriorities(a),a.api.grouping.raise.groupingChanged(b),a.queueGridRefresh())},aggregateColumn:function(a,b,c){"undefined"!=typeof b.grouping&&"undefined"!=typeof b.grouping.groupPriority&&b.grouping.groupPriority>=0&&j.ungroupColumn(a,b);var d={};"undefined"!=typeof a.options.treeCustomAggregations[c]?d=a.options.treeCustomAggregations[c]:"undefined"!=typeof i.nativeAggregations()[c]&&(d=i.nativeAggregations()[c]),b.treeAggregation={type:c,label:g.get().aggregation[d.label]||d.label},b.treeAggregationFn=d.aggregationFn,b.treeAggregationFinalizerFn=d.finalizerFn,a.api.grouping.raise.aggregationChanged(b),a.queueGridRefresh()},setGrouping:function(a,b){"undefined"!=typeof b&&(j.clearGrouping(a),b.grouping&&b.grouping.length&&b.grouping.length>0&&b.grouping.forEach(function(b){var c=a.getColumn(b.colName);c&&j.groupColumn(a,c)}),b.aggregations&&b.aggregations.length&&b.aggregations.forEach(function(b){var c=a.getColumn(b.colName);c&&j.aggregateColumn(a,c,b.aggregation.type)}),b.rowExpandedStates&&j.applyRowExpandedStates(a.grouping.groupingHeaderCache,b.rowExpandedStates))},clearGrouping:function(a){var b=j.getGrouping(a);b.grouping.length>0&&b.grouping.forEach(function(b){b.col||(b.col=a.getColumn(b.colName)),j.ungroupColumn(a,b.col)}),b.aggregations.length>0&&b.aggregations.forEach(function(b){b.col||(b.col=a.getColumn(b.colName)),j.aggregateColumn(a,b.col,null)})},tidyPriorities:function(a){"undefined"!=typeof a&&"undefined"==typeof a.grid||"undefined"==typeof this.grid||(a=this.grid);var b=[],c=[];a.columns.forEach(function(a,d){"undefined"!=typeof a.grouping&&"undefined"!=typeof a.grouping.groupPriority&&a.grouping.groupPriority>=0?b.push(a):"undefined"!=typeof a.sort&&"undefined"!=typeof a.sort.priority&&a.sort.priority>=0&&c.push(a)}),b.sort(function(a,b){return a.grouping.groupPriority-b.grouping.groupPriority}),b.forEach(function(a,b){a.grouping.groupPriority=b,a.suppressRemoveSort=!0,"undefined"==typeof a.sort&&(a.sort={}),a.sort.priority=b});var d=b.length;c.sort(function(a,b){return a.sort.priority-b.sort.priority}),c.forEach(function(a,b){a.sort.priority=d,a.suppressRemoveSort=a.colDef.suppressRemoveSort,d++})},groupRows:function(a){if(0===a.length)return a;var b=this;b.grouping.oldGroupingHeaderCache=b.grouping.groupingHeaderCache||{},b.grouping.groupingHeaderCache={};for(var c=j.initialiseProcessingState(b),e=function(e,h){var i=b.getCellValue(g,e.col);e.initialised&&0===d.getSortFn(b,e.col,a)(i,e.currentValue)||(j.insertGroupHeader(b,a,f,c,h),f++)},f=0;f<a.length;f++){var g=a[f];g.visible&&c.forEach(e)}return delete b.grouping.oldGroupingHeaderCache,a},initialiseProcessingState:function(a){var b=[],c=j.getGrouping(a);return c.grouping.forEach(function(a,c){b.push({fieldName:a.field,col:a.col,initialised:!1,currentValue:null,currentRow:null})}),b},getGrouping:function(a){var b=[],c=[];return a.columns.forEach(function(a,d){a.grouping&&"undefined"!=typeof a.grouping.groupPriority&&a.grouping.groupPriority>=0&&b.push({field:a.field,col:a,groupPriority:a.grouping.groupPriority,grouping:a.grouping}),a.treeAggregation&&a.treeAggregation.type&&c.push({field:a.field,col:a,aggregation:a.treeAggregation})}),b.sort(function(a,b){return a.groupPriority-b.groupPriority}),b.forEach(function(a,b){a.grouping.groupPriority=b,a.groupPriority=b,delete a.grouping}),{grouping:b,aggregations:c}},insertGroupHeader:function(a,b,c,d,g){var h=(d[g].fieldName,d[g].col),i=a.getCellValue(b[c],h),k=i;("undefined"==typeof i||null===i)&&(k=a.options.groupingNullLabel);for(var l=function(a){return angular.isObject(a)?JSON.stringify(a):a},m=a.grouping.oldGroupingHeaderCache,n=0;g>n;n++)m&&m[l(d[n].currentValue)]&&(m=m[l(d[n].currentValue)].children);var o;for(m&&m[l(i)]?(o=m[l(i)].row,o.entity={}):(o=new e({},null,a),f.rowTemplateAssigner.call(a,o)),o.entity["$$"+d[g].col.uid]={groupVal:k},o.treeLevel=g,o.groupHeader=!0,o.internalRow=!0,o.enableCellEdit=!1,o.enableSelection=a.options.enableGroupHeaderSelection,d[g].initialised=!0,d[g].currentValue=i,d[g].currentRow=o,j.finaliseProcessingState(d,g+1),b.splice(c,0,o),m=a.grouping.groupingHeaderCache,n=0;g>n;n++)m=m[l(d[n].currentValue)].children;m[l(i)]={row:o,children:{}}},finaliseProcessingState:function(a,b){for(var c=b;c<a.length;c++)a[c].initialised=!1,a[c].currentRow=null,a[c].currentValue=null},getRowExpandedStates:function(a){if("undefined"==typeof a)return{};var b={};return angular.forEach(a,function(a,c){b[c]={state:a.row.treeNode.state},a.children?b[c].children=j.getRowExpandedStates(a.children):b[c].children={}}),b},applyRowExpandedStates:function(a,b){"undefined"!=typeof b&&angular.forEach(b,function(b,c){a[c]&&(a[c].row.treeNode.state=b.state,b.children&&a[c].children&&j.applyRowExpandedStates(a[c].children,b.children))})}};return j}]),a.directive("uiGridGrouping",["uiGridGroupingConstants","uiGridGroupingService","$templateCache",function(a,b,c){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){e.grid.options.enableGrouping!==!1&&b.initializeGrid(e.grid,a)},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.importer",["ui.grid"]);a.constant("uiGridImporterConstants",{featureName:"importer"}),a.service("uiGridImporterService",["$q","uiGridConstants","uiGridImporterConstants","gridUtil","$compile","$interval","i18nService","$window",function(a,b,c,d,e,f,g,h){var i={initializeGrid:function(a,b){b.importer={$scope:a},this.defaultGridOptions(b.options);var c={events:{importer:{}},methods:{importer:{importFile:function(a){i.importThisFile(b,a)}}}};b.api.registerEventsFromObject(c.events),b.api.registerMethodsFromObject(c.methods),b.options.enableImporter&&b.options.importerShowMenu&&(b.api.core.addToGridMenu?i.addToMenu(b):f(function(){b.api.core.addToGridMenu&&i.addToMenu(b)},100,1))},defaultGridOptions:function(a){a.enableImporter||void 0===a.enableImporter?h.hasOwnProperty("File")&&h.hasOwnProperty("FileReader")&&h.hasOwnProperty("FileList")&&h.hasOwnProperty("Blob")?a.enableImporter=!0:(d.logError("The File APIs are not fully supported in this browser, grid importer cannot be used."),a.enableImporter=!1):a.enableImporter=!1,a.importerProcessHeaders=a.importerProcessHeaders||i.processHeaders,a.importerHeaderFilter=a.importerHeaderFilter||function(a){return a},a.importerErrorCallback&&"function"==typeof a.importerErrorCallback||delete a.importerErrorCallback,a.enableImporter!==!0||a.importerDataAddCallback||(d.logError("You have not set an importerDataAddCallback, importer is disabled"),a.enableImporter=!1),a.importerShowMenu=a.importerShowMenu!==!1,a.importerObjectCallback=a.importerObjectCallback||function(a,b){return b}},addToMenu:function(a){a.api.core.addToGridMenu(a,[{title:g.getSafeText("gridMenu.importerTitle"),order:150},{templateUrl:"ui-grid/importerMenuItemContainer",action:function(b){this.grid.api.importer.importAFile(a)},order:151}])},importThisFile:function(a,b){if(!b)return void d.logError("No file object provided to importThisFile, should be impossible, aborting");var c=new FileReader;switch(b.type){case"application/json":c.onload=i.importJsonClosure(a);break;default:c.onload=i.importCsvClosure(a)}c.readAsText(b)},importJsonClosure:function(a){return function(b){var c,d=[],e=i.parseJson(a,b);null!==e&&(e.forEach(function(b,e){c=i.newObject(a),angular.extend(c,b),c=a.options.importerObjectCallback(a,c),d.push(c)}),i.addObjects(a,d))}},parseJson:function(a,b){var c;try{c=JSON.parse(b.target.result)}catch(d){return void i.alertError(a,"importer.invalidJson","File could not be processed, is it valid json? Content was: ",b.target.result)}return Array.isArray(c)?c:(i.alertError(a,"importer.jsonNotarray","Import failed, file is not an array, file was: ",b.target.result),[])},importCsvClosure:function(a){return function(b){var c=i.parseCsv(b);if(!c||c.length<1)return void i.alertError(a,"importer.invalidCsv","File could not be processed, is it valid csv? Content was: ",b.target.result);var d=i.createCsvObjects(a,c);return d&&0!==d.length?void i.addObjects(a,d):void i.alertError(a,"importer.noObjects","Objects were not able to be derived, content was: ",b.target.result)}},parseCsv:function(a){var b=a.target.result;return CSV.parse(b)},createCsvObjects:function(a,b){var c=a.options.importerProcessHeaders(a,b.shift());if(!c||0===c.length)return i.alertError(a,"importer.noHeaders","Column names could not be derived, content was: ",b),[];var d,e=[];return b.forEach(function(b,f){d=i.newObject(a),null!==b&&b.forEach(function(a,b){null!==c[b]&&(d[c[b]]=a)}),d=a.options.importerObjectCallback(a,d),e.push(d)}),e},processHeaders:function(a,b){var c=[];if(a.options.columnDefs&&0!==a.options.columnDefs.length){var d=i.flattenColumnDefs(a,a.options.columnDefs);return b.forEach(function(a,b){d[a]?c.push(d[a]):d[a.toLowerCase()]?c.push(d[a.toLowerCase()]):c.push(null)}),c}return b.forEach(function(a,b){c.push(a.replace(/[^0-9a-zA-Z\-_]/g,"_"))}),c},flattenColumnDefs:function(a,b){var c={};return b.forEach(function(b,d){b.name&&(c[b.name]=b.field||b.name,c[b.name.toLowerCase()]=b.field||b.name),b.field&&(c[b.field]=b.field||b.name,c[b.field.toLowerCase()]=b.field||b.name),b.displayName&&(c[b.displayName]=b.field||b.name,c[b.displayName.toLowerCase()]=b.field||b.name),b.displayName&&a.options.importerHeaderFilter&&(c[a.options.importerHeaderFilter(b.displayName)]=b.field||b.name,c[a.options.importerHeaderFilter(b.displayName).toLowerCase()]=b.field||b.name)}),c},addObjects:function(a,c,d){if(a.api.rowEdit){var e=a.registerDataChangeCallback(function(){a.api.rowEdit.setRowsDirty(c),e()},[b.dataChange.ROW]);a.importer.$scope.$on("$destroy",e)}a.importer.$scope.$apply(a.options.importerDataAddCallback(a,c))},newObject:function(a){return"undefined"!=typeof a.options&&"undefined"!=typeof a.options.importerNewObject?new a.options.importerNewObject:{}},alertError:function(a,b,c,e){a.options.importerErrorCallback?a.options.importerErrorCallback(a,b,c,e):(h.alert(g.getSafeText(b)),d.logError(c+e))}};return i}]),a.directive("uiGridImporter",["uiGridImporterConstants","uiGridImporterService","gridUtil","$compile",function(a,b,c,d){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,link:function(a,c,d,e){b.initializeGrid(a,e.grid)}}}]),a.directive("uiGridImporterMenuItem",["uiGridImporterConstants","uiGridImporterService","gridUtil","$compile",function(a,b,c,d){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,templateUrl:"ui-grid/importerMenuItem",link:function(a,d,e,f){var g=function(a){var c=a.srcElement||a.target;if(c&&c.files&&1===c.files.length){var d=c.files[0];b.importThisFile(i,d),c.form.reset()}},h=d[0].querySelectorAll(".ui-grid-importer-file-chooser"),i=f.grid;1!==h.length?c.logError("Found > 1 or < 1 file choosers within the menu item, error, cannot continue"):h[0].addEventListener("change",g,!1)}}}])}(),function(){"use strict";var a=angular.module("ui.grid.infiniteScroll",["ui.grid"]);a.service("uiGridInfiniteScrollService",["gridUtil","$compile","$timeout","uiGridConstants","ScrollEvent","$q",function(a,b,c,d,e,f){var g={initializeGrid:function(a,b){if(g.defaultGridOptions(a.options),a.options.enableInfiniteScroll){a.infiniteScroll={dataLoading:!1},g.setScrollDirections(a,a.options.infiniteScrollUp,a.options.infiniteScrollDown),a.api.core.on.scrollEnd(b,g.handleScroll);var c={events:{infiniteScroll:{needLoadMoreData:function(a,b){},needLoadMoreDataTop:function(a,b){}}},methods:{infiniteScroll:{dataLoaded:function(b,c){g.setScrollDirections(a,b,c);var d=g.adjustScroll(a).then(function(){a.infiniteScroll.dataLoading=!1});return d},resetScroll:function(b,c){return g.setScrollDirections(a,b,c),g.adjustInfiniteScrollPosition(a,0)},saveScrollPercentage:function(){a.infiniteScroll.prevScrollTop=a.renderContainers.body.prevScrollTop,a.infiniteScroll.previousVisibleRows=a.getVisibleRowCount()},dataRemovedTop:function(b,c){g.dataRemovedTop(a,b,c)},dataRemovedBottom:function(b,c){g.dataRemovedBottom(a,b,c)},setScrollDirections:function(b,c){g.setScrollDirections(a,b,c)}}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods)}},defaultGridOptions:function(a){a.enableInfiniteScroll=a.enableInfiniteScroll!==!1,a.infiniteScrollRowsFromEnd=a.infiniteScrollRowsFromEnd||20,a.infiniteScrollUp=a.infiniteScrollUp===!0,a.infiniteScrollDown=a.infiniteScrollDown!==!1},setScrollDirections:function(a,b,c){a.infiniteScroll.scrollUp=b===!0,a.suppressParentScrollUp=b===!0,a.infiniteScroll.scrollDown=c!==!1,a.suppressParentScrollDown=c!==!1},handleScroll:function(a){if(!(a.grid.infiniteScroll&&a.grid.infiniteScroll.dataLoading||"ui.grid.adjustInfiniteScrollPosition"===a.source)&&a.y)if(0===a.y.percentage)a.grid.scrollDirection=d.scrollDirection.UP,g.loadData(a.grid);else if(1===a.y.percentage)a.grid.scrollDirection=d.scrollDirection.DOWN,g.loadData(a.grid);else{var b,c=a.grid.options.infiniteScrollRowsFromEnd/a.grid.renderContainers.body.visibleRowCache.length;a.grid.scrollDirection===d.scrollDirection.UP?(b=a.y.percentage,c>=b&&g.loadData(a.grid)):a.grid.scrollDirection===d.scrollDirection.DOWN&&(b=1-a.y.percentage,c>=b&&g.loadData(a.grid))}},loadData:function(a){a.infiniteScroll.previousVisibleRows=a.renderContainers.body.visibleRowCache.length,a.infiniteScroll.direction=a.scrollDirection,delete a.infiniteScroll.prevScrollTop,a.scrollDirection===d.scrollDirection.UP&&a.infiniteScroll.scrollUp?(a.infiniteScroll.dataLoading=!0,a.api.infiniteScroll.raise.needLoadMoreDataTop()):a.scrollDirection===d.scrollDirection.DOWN&&a.infiniteScroll.scrollDown&&(a.infiniteScroll.dataLoading=!0,a.api.infiniteScroll.raise.needLoadMoreData())},adjustScroll:function(a){var b=f.defer();return c(function(){var e,f,h,i,j;e=a.getViewportHeight()+a.headerHeight-a.renderContainers.body.headerHeight-a.scrollbarHeight,f=a.options.rowHeight,void 0===a.infiniteScroll.direction&&g.adjustInfiniteScrollPosition(a,0),h=a.getVisibleRowCount();var k=f*h;a.infiniteScroll.scrollDown&&e>k&&a.api.infiniteScroll.raise.needLoadMoreData(),a.infiniteScroll.direction===d.scrollDirection.UP&&(i=a.infiniteScroll.prevScrollTop||0,j=i+(h-a.infiniteScroll.previousVisibleRows)*f,g.adjustInfiniteScrollPosition(a,j),c(function(){
+b.resolve()})),a.infiniteScroll.direction===d.scrollDirection.DOWN&&(j=a.infiniteScroll.prevScrollTop||a.infiniteScroll.previousVisibleRows*f-e,g.adjustInfiniteScrollPosition(a,j),c(function(){b.resolve()}))},0),b.promise},adjustInfiniteScrollPosition:function(a,b){var c=new e(a,null,null,"ui.grid.adjustInfiniteScrollPosition"),d=a.getVisibleRowCount(),f=a.getViewportHeight()+a.headerHeight-a.renderContainers.body.headerHeight-a.scrollbarHeight,g=a.options.rowHeight,h=d*g-f;0===b&&a.infiniteScroll.scrollUp?c.y={percentage:1/h}:c.y={percentage:b/h},a.scrollContainers("",c)},dataRemovedTop:function(a,b,c){var d,e,f,h;return g.setScrollDirections(a,b,c),d=a.renderContainers.body.visibleRowCache.length,e=a.infiniteScroll.prevScrollTop,h=a.options.rowHeight,f=e-(a.infiniteScroll.previousVisibleRows-d)*h,g.adjustInfiniteScrollPosition(a,f)},dataRemovedBottom:function(a,b,c){var d;return g.setScrollDirections(a,b,c),d=a.infiniteScroll.prevScrollTop,g.adjustInfiniteScrollPosition(a,d)}};return g}]),a.directive("uiGridInfiniteScroll",["uiGridInfiniteScrollService",function(a){return{priority:-200,scope:!1,require:"^uiGrid",compile:function(b,c,d){return{pre:function(b,c,d,e){a.initializeGrid(e.grid,b)},post:function(a,b,c){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.moveColumns",["ui.grid"]);a.service("uiGridMoveColumnService",["$q","$timeout","$log","ScrollEvent","uiGridConstants","gridUtil",function(a,b,c,d,e,f){var g={initializeGrid:function(a){var b=this;this.registerPublicApi(a),this.defaultGridOptions(a.options),a.moveColumns={orderCache:[]},a.registerColumnBuilder(b.movableColumnBuilder),a.registerDataChangeCallback(b.verifyColumnOrder,[e.dataChange.COLUMN])},registerPublicApi:function(a){var b=this,c={events:{colMovable:{columnPositionChanged:function(a,b,c){}}},methods:{colMovable:{moveColumn:function(c,d){var e=a.columns;if(!angular.isNumber(c)||!angular.isNumber(d))return void f.logError("MoveColumn: Please provide valid values for originalPosition and finalPosition");for(var g=0,h=0;h<e.length;h++)(angular.isDefined(e[h].colDef.visible)&&e[h].colDef.visible===!1||e[h].isRowHeader===!0)&&g++;if(c>=e.length-g||d>=e.length-g)return void f.logError("MoveColumn: Invalid values for originalPosition, finalPosition");var i=function(a){for(var b=a,c=0;b>=c;c++)angular.isDefined(e[c])&&(angular.isDefined(e[c].colDef.visible)&&e[c].colDef.visible===!1||e[c].isRowHeader===!0)&&b++;return b};b.redrawColumnAtPosition(a,i(c),i(d))}}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods)},defaultGridOptions:function(a){a.enableColumnMoving=a.enableColumnMoving!==!1},movableColumnBuilder:function(b,c,d){var e=[];return b.enableColumnMoving=void 0===b.enableColumnMoving?d.enableColumnMoving:b.enableColumnMoving,a.all(e)},updateColumnCache:function(a){a.moveColumns.orderCache=a.getOnlyDataColumns()},verifyColumnOrder:function(a){var b,c=a.rowHeaderColumns.length;angular.forEach(a.moveColumns.orderCache,function(d,e){if(b=a.columns.indexOf(d),-1!==b&&b-c!==e){var f=a.columns.splice(b,1)[0];a.columns.splice(e+c,0,f)}})},redrawColumnAtPosition:function(a,c,d){var f=a.columns;if(c!==d){var h=d>c?c+1:c-1,i=Math.min(h,d);for(i;i<=Math.max(h,d)&&!f[i].visible;i++);if(!(i>Math.max(h,d))){var j=f[c];if(j.colDef.enableColumnMoving){if(c>d)for(var k=c;k>d;k--)f[k]=f[k-1];else if(d>c)for(var l=c;d>l;l++)f[l]=f[l+1];f[d]=j,g.updateColumnCache(a),a.queueGridRefresh(),b(function(){a.api.core.notifyDataChange(e.dataChange.COLUMN),a.api.colMovable.raise.columnPositionChanged(j.colDef,c,d)})}}}}};return g}]),a.directive("uiGridMoveColumns",["uiGridMoveColumnService",function(a){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(b,c,d,e){a.initializeGrid(e.grid)},post:function(a,b,c,d){}}}}}]),a.directive("uiGridHeaderCell",["$q","gridUtil","uiGridMoveColumnService","$document","$log","uiGridConstants","ScrollEvent",function(a,b,c,d,e,f,g){return{priority:-10,require:"^uiGrid",compile:function(){return{post:function(a,b,e,f){if(a.col.colDef.enableColumnMoving){var h,i,j,k,l,m,n=angular.element(b[0].querySelectorAll(".ui-grid-cell-contents")),o=!1,p=!1,q=function(b){h=a.grid.element[0].getBoundingClientRect().left,a.grid.hasLeftContainer()&&(h+=a.grid.renderContainers.left.header[0].getBoundingClientRect().width),i=b.pageX||(b.originalEvent?b.originalEvent.pageX:0),j=0,k=h+a.grid.getViewportWidth(),"mousedown"===b.type?(d.on("mousemove",r),d.on("mouseup",s)):"touchstart"===b.type&&(d.on("touchmove",r),d.on("touchend",s))},r=function(a){var b=a.pageX||(a.originalEvent?a.originalEvent.pageX:0),c=b-i;0!==c&&(document.onselectstart=function(){return!1},p=!0,o?o&&(w(c),i=b):v())},s=function(b){if(document.onselectstart=null,l&&(l.remove(),o=!1),u(),t(),p){for(var d=a.grid.columns,e=0,f=0;f<d.length&&d[f].colDef.name!==a.col.colDef.name;f++)e++;var g;if(0>j){var h,i=0;if(a.grid.isRTL()){for(h=e+1;h<d.length;h++)if((angular.isUndefined(d[h].colDef.visible)||d[h].colDef.visible===!0)&&(i+=d[h].drawnWidth||d[h].width||d[h].colDef.width,i>Math.abs(j))){c.redrawColumnAtPosition(a.grid,e,h-1);break}}else for(h=e-1;h>=0;h--)if((angular.isUndefined(d[h].colDef.visible)||d[h].colDef.visible===!0)&&(i+=d[h].drawnWidth||d[h].width||d[h].colDef.width,i>Math.abs(j))){c.redrawColumnAtPosition(a.grid,e,h+1);break}i<Math.abs(j)&&(g=0,a.grid.isRTL()&&(g=d.length-1),c.redrawColumnAtPosition(a.grid,e,g))}else if(j>0){var k,m=0;if(a.grid.isRTL()){for(k=e-1;k>0;k--)if((angular.isUndefined(d[k].colDef.visible)||d[k].colDef.visible===!0)&&(m+=d[k].drawnWidth||d[k].width||d[k].colDef.width,m>j)){c.redrawColumnAtPosition(a.grid,e,k);break}}else for(k=e+1;k<d.length;k++)if((angular.isUndefined(d[k].colDef.visible)||d[k].colDef.visible===!0)&&(m+=d[k].drawnWidth||d[k].width||d[k].colDef.width,m>j)){c.redrawColumnAtPosition(a.grid,e,k-1);break}j>m&&(g=d.length-1,a.grid.isRTL()&&(g=0),c.redrawColumnAtPosition(a.grid,e,g))}}},t=function(){n.on("touchstart",q),n.on("mousedown",q)},u=function(){n.off("touchstart",q),n.off("mousedown",q),d.off("mousemove",r),d.off("touchmove",r),d.off("mouseup",s),d.off("touchend",s)};t();var v=function(){o=!0,l=b.clone(),b.parent().append(l),l.addClass("movingColumn");var c={};c.left=b[0].offsetLeft+"px";var d=a.grid.element[0].getBoundingClientRect().right,e=b[0].getBoundingClientRect().right;e>d&&(m=a.col.drawnWidth+(d-e),c.width=m+"px"),l.css(c)},w=function(b){for(var c=a.grid.columns,d=0,e=0;e<c.length;e++)(angular.isUndefined(c[e].colDef.visible)||c[e].colDef.visible===!0)&&(d+=c[e].drawnWidth||c[e].width||c[e].colDef.width);var i,n=l[0].getBoundingClientRect().left-1,o=l[0].getBoundingClientRect().right;if(i=n-h+b,i=k>i?i:k,(n>=h||b>0)&&(k>=o||0>b))l.css({visibility:"visible",left:l[0].offsetLeft+(k>i?b:k-n)+"px"});else if(d>Math.ceil(f.grid.gridWidth)){b*=8;var p=new g(a.col.grid,null,null,"uiGridHeaderCell.moveElement");p.x={pixels:b},p.grid.scrollContainers("",p)}for(var q=0,r=0;r<c.length;r++)if(angular.isUndefined(c[r].colDef.visible)||c[r].colDef.visible===!0){if(c[r].colDef.name===a.col.colDef.name)break;q+=c[r].drawnWidth||c[r].width||c[r].colDef.width}void 0===a.newScrollLeft?j+=b:j=a.newScrollLeft+i-q,m<a.col.drawnWidth&&(m+=Math.abs(b),l.css({width:m+"px"}))}}}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.pagination",["ng","ui.grid"]);a.service("uiGridPaginationService",["gridUtil",function(a){var b={initializeGrid:function(a){b.defaultGridOptions(a.options);var c={events:{pagination:{paginationChanged:function(a,b){}}},methods:{pagination:{getPage:function(){return a.options.enablePagination?a.options.paginationCurrentPage:null},getTotalPages:function(){return a.options.enablePagination?0===a.options.totalItems?1:Math.ceil(a.options.totalItems/a.options.paginationPageSize):null},nextPage:function(){a.options.enablePagination&&(a.options.totalItems>0?a.options.paginationCurrentPage=Math.min(a.options.paginationCurrentPage+1,c.methods.pagination.getTotalPages()):a.options.paginationCurrentPage++)},previousPage:function(){a.options.enablePagination&&(a.options.paginationCurrentPage=Math.max(a.options.paginationCurrentPage-1,1))},seek:function(b){if(a.options.enablePagination){if(!angular.isNumber(b)||1>b)throw"Invalid page number: "+b;a.options.paginationCurrentPage=Math.min(b,c.methods.pagination.getTotalPages())}}}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods);var d=function(b){if(a.options.useExternalPagination||!a.options.enablePagination)return b;var c=parseInt(a.options.paginationPageSize,10),d=parseInt(a.options.paginationCurrentPage,10),e=b.filter(function(a){return a.visible});a.options.totalItems=e.length;var f=(d-1)*c;return f>e.length&&(d=a.options.paginationCurrentPage=1,f=(d-1)*c),e.slice(f,f+c)};a.registerRowsProcessor(d,900)},defaultGridOptions:function(b){b.enablePagination=b.enablePagination!==!1,b.enablePaginationControls=b.enablePaginationControls!==!1,b.useExternalPagination=b.useExternalPagination===!0,a.isNullOrUndefined(b.totalItems)&&(b.totalItems=0),a.isNullOrUndefined(b.paginationPageSizes)&&(b.paginationPageSizes=[250,500,1e3]),a.isNullOrUndefined(b.paginationPageSize)&&(b.paginationPageSizes.length>0?b.paginationPageSize=b.paginationPageSizes[0]:b.paginationPageSize=0),a.isNullOrUndefined(b.paginationCurrentPage)&&(b.paginationCurrentPage=1),a.isNullOrUndefined(b.paginationTemplate)&&(b.paginationTemplate="ui-grid/pagination")},onPaginationChanged:function(a,b,c){a.api.pagination.raise.paginationChanged(b,c),a.options.useExternalPagination||a.queueGridRefresh()}};return b}]),a.directive("uiGridPagination",["gridUtil","uiGridPaginationService",function(a,b){return{priority:-200,scope:!1,require:"uiGrid",link:{pre:function(c,d,e,f){b.initializeGrid(f.grid),a.getTemplate(f.grid.options.paginationTemplate).then(function(a){var b=angular.element(a);d.append(b),f.innerCompile(b)})}}}}]),a.directive("uiGridPager",["uiGridPaginationService","uiGridConstants","gridUtil","i18nService",function(a,b,c,d){return{priority:-200,scope:!0,require:"^uiGrid",link:function(e,f,g,h){var i=".ui-grid-pager-control-input";e.aria=d.getSafeText("pagination.aria"),e.paginationApi=h.grid.api.pagination,e.sizesLabel=d.getSafeText("pagination.sizes"),e.totalItemsLabel=d.getSafeText("pagination.totalItems"),e.paginationOf=d.getSafeText("pagination.of"),e.paginationThrough=d.getSafeText("pagination.through");var j=h.grid.options;h.grid.renderContainers.body.registerViewportAdjuster(function(a){return a.height=a.height-c.elementHeight(f,"padding"),a});var k=h.grid.registerDataChangeCallback(function(a){a.options.useExternalPagination||(a.options.totalItems=a.rows.length)},[b.dataChange.ROW]);e.$on("$destroy",k);var l=function(){e.showingLow=(j.paginationCurrentPage-1)*j.paginationPageSize+1,e.showingHigh=Math.min(j.paginationCurrentPage*j.paginationPageSize,j.totalItems)},m=e.$watch("grid.options.totalItems + grid.options.paginationPageSize",l),n=e.$watch("grid.options.paginationCurrentPage + grid.options.paginationPageSize",function(b,c){if(b!==c&&void 0!==c){if(!angular.isNumber(j.paginationCurrentPage)||j.paginationCurrentPage<1)return void(j.paginationCurrentPage=1);if(j.totalItems>0&&j.paginationCurrentPage>e.paginationApi.getTotalPages())return void(j.paginationCurrentPage=e.paginationApi.getTotalPages());l(),a.onPaginationChanged(e.grid,j.paginationCurrentPage,j.paginationPageSize)}});e.$on("$destroy",function(){m(),n()}),e.cantPageForward=function(){return j.totalItems>0?j.paginationCurrentPage>=e.paginationApi.getTotalPages():j.data.length<1},e.cantPageToLast=function(){return j.totalItems>0?e.cantPageForward():!0},e.cantPageBackward=function(){return j.paginationCurrentPage<=1};var o=function(a){a&&c.focus.bySelector(f,i)};e.pageFirstPageClick=function(){e.paginationApi.seek(1),o(e.cantPageBackward())},e.pagePreviousPageClick=function(){e.paginationApi.previousPage(),o(e.cantPageBackward())},e.pageNextPageClick=function(){e.paginationApi.nextPage(),o(e.cantPageForward())},e.pageLastPageClick=function(){e.paginationApi.seek(e.paginationApi.getTotalPages()),o(e.cantPageToLast())}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.pinning",["ui.grid"]);a.constant("uiGridPinningConstants",{container:{LEFT:"left",RIGHT:"right",NONE:""}}),a.service("uiGridPinningService",["gridUtil","GridRenderContainer","i18nService","uiGridPinningConstants",function(a,b,c,d){var e={initializeGrid:function(a){e.defaultGridOptions(a.options),a.registerColumnBuilder(e.pinningColumnBuilder);var b={events:{pinning:{columnPinned:function(a,b){}}},methods:{pinning:{pinColumn:function(b,c){e.pinColumn(a,b,c)}}}};a.api.registerEventsFromObject(b.events),a.api.registerMethodsFromObject(b.methods)},defaultGridOptions:function(a){a.enablePinning=a.enablePinning!==!1},pinningColumnBuilder:function(b,f,g){if(b.enablePinning=void 0===b.enablePinning?g.enablePinning:b.enablePinning,b.pinnedLeft?(f.renderContainer="left",f.grid.createLeftContainer()):b.pinnedRight&&(f.renderContainer="right",f.grid.createRightContainer()),b.enablePinning){var h={name:"ui.grid.pinning.pinLeft",title:c.get().pinning.pinLeft,icon:"ui-grid-icon-left-open",shown:function(){return"undefined"==typeof this.context.col.renderContainer||!this.context.col.renderContainer||"left"!==this.context.col.renderContainer},action:function(){e.pinColumn(this.context.col.grid,this.context.col,d.container.LEFT)}},i={name:"ui.grid.pinning.pinRight",title:c.get().pinning.pinRight,icon:"ui-grid-icon-right-open",shown:function(){return"undefined"==typeof this.context.col.renderContainer||!this.context.col.renderContainer||"right"!==this.context.col.renderContainer},action:function(){e.pinColumn(this.context.col.grid,this.context.col,d.container.RIGHT)}},j={name:"ui.grid.pinning.unpin",title:c.get().pinning.unpin,icon:"ui-grid-icon-cancel",shown:function(){return"undefined"!=typeof this.context.col.renderContainer&&null!==this.context.col.renderContainer&&"body"!==this.context.col.renderContainer},action:function(){e.pinColumn(this.context.col.grid,this.context.col,d.container.NONE)}};a.arrayContainsObjectWithProperty(f.menuItems,"name","ui.grid.pinning.pinLeft")||f.menuItems.push(h),a.arrayContainsObjectWithProperty(f.menuItems,"name","ui.grid.pinning.pinRight")||f.menuItems.push(i),a.arrayContainsObjectWithProperty(f.menuItems,"name","ui.grid.pinning.unpin")||f.menuItems.push(j)}},pinColumn:function(a,b,c){c===d.container.NONE?(b.renderContainer=null,b.colDef.pinnedLeft=b.colDef.pinnedRight=!1):(b.renderContainer=c,c===d.container.LEFT?a.createLeftContainer():c===d.container.RIGHT&&a.createRightContainer()),a.refresh().then(function(){a.api.pinning.raise.columnPinned(b.colDef,c)})}};return e}]),a.directive("uiGridPinning",["gridUtil","uiGridPinningService",function(a,b){return{require:"uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){b.initializeGrid(e.grid)},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.resizeColumns",["ui.grid"]);a.service("uiGridResizeColumnsService",["gridUtil","$q","$timeout",function(a,b,c){var d={defaultGridOptions:function(a){a.enableColumnResizing=a.enableColumnResizing!==!1,a.enableColumnResize===!1&&(a.enableColumnResizing=!1)},colResizerColumnBuilder:function(a,c,d){var e=[];return a.enableColumnResizing=void 0===a.enableColumnResizing?d.enableColumnResizing:a.enableColumnResizing,a.enableColumnResize===!1&&(a.enableColumnResizing=!1),b.all(e)},registerPublicApi:function(a){var b={events:{colResizable:{columnSizeChanged:function(a,b){}}}};a.api.registerEventsFromObject(b.events)},fireColumnSizeChanged:function(b,d,e){c(function(){b.api.colResizable?b.api.colResizable.raise.columnSizeChanged(d,e):a.logError("The resizeable api is not registered, this may indicate that you've included the module but not added the 'ui-grid-resize-columns' directive to your grid definition.  Cannot raise any events.")})},findTargetCol:function(a,b,c){var d=a.getRenderContainer();if("left"===b){var e=d.visibleColumnCache.indexOf(a);return d.visibleColumnCache[e-1*c]}return a}};return d}]),a.directive("uiGridResizeColumns",["gridUtil","uiGridResizeColumnsService",function(a,b){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){b.defaultGridOptions(e.grid.options),e.grid.registerColumnBuilder(b.colResizerColumnBuilder),b.registerPublicApi(e.grid)},post:function(a,b,c,d){}}}}}]),a.directive("uiGridHeaderCell",["gridUtil","$templateCache","$compile","$q","uiGridResizeColumnsService","uiGridConstants","$timeout",function(a,b,c,d,e,f,g){return{priority:-10,require:"^uiGrid",compile:function(){return{post:function(a,d,h,i){var j=i.grid;if(j.options.enableColumnResizing){var k=b.get("ui-grid/columnResizer"),l=1;j.isRTL()&&(a.position="left",l=-1);var m=function(){for(var b=d[0].getElementsByClassName("ui-grid-column-resizer"),f=0;f<b.length;f++)angular.element(b[f]).remove();var g=e.findTargetCol(a.col,"left",l),h=a.col.getRenderContainer();if(g&&0!==h.visibleColumnCache.indexOf(a.col)&&g.colDef.enableColumnResizing!==!1){var i=angular.element(k).clone();i.attr("position","left"),d.prepend(i),c(i)(a)}if(a.col.colDef.enableColumnResizing!==!1){var j=angular.element(k).clone();j.attr("position","right"),d.append(j),c(j)(a)}};m();var n=function(){g(m)},o=j.registerDataChangeCallback(n,[f.dataChange.COLUMN]);a.$on("$destroy",o)}}}}}}]),a.directive("uiGridColumnResizer",["$document","gridUtil","uiGridConstants","uiGridResizeColumnsService",function(a,b,c,d){var e=angular.element('<div class="ui-grid-resize-overlay"></div>'),f={priority:0,scope:{col:"=",position:"@",renderIndex:"="},require:"?^uiGrid",link:function(f,g,h,i){function j(a){i.grid.refreshCanvas(!0).then(function(){i.grid.queueGridRefresh()})}function k(a,b){var c=b;return a.minWidth&&c<a.minWidth?c=a.minWidth:a.maxWidth&&c>a.maxWidth&&(c=a.maxWidth),c}function l(a,b){a.originalEvent&&(a=a.originalEvent),a.preventDefault(),o=(a.targetTouches?a.targetTouches[0]:a).clientX-p,0>o?o=0:o>i.grid.gridWidth&&(o=i.grid.gridWidth);var g=d.findTargetCol(f.col,f.position,q);if(g.colDef.enableColumnResizing!==!1){i.grid.element.hasClass("column-resizing")||i.grid.element.addClass("column-resizing");var h=o-n,j=parseInt(g.drawnWidth+h*q,10);o+=(k(g,j)-j)*q,e.css({left:o+"px"}),i.fireEvent(c.events.ITEM_DRAGGING)}}function m(a,b){a.originalEvent&&(a=a.originalEvent),a.preventDefault(),i.grid.element.removeClass("column-resizing"),e.remove(),o=(a.changedTouches?a.changedTouches[0]:a).clientX-p;var c=o-n;if(0===c)return t(),void s();var g=d.findTargetCol(f.col,f.position,q);if(g.colDef.enableColumnResizing!==!1){var h=parseInt(g.drawnWidth+c*q,10);g.width=k(g,h),g.hasCustomWidth=!0,j(c),d.fireColumnSizeChanged(i.grid,g.colDef,c),t(),s()}}var n=0,o=0,p=0,q=1;i.grid.isRTL()&&(f.position="left",q=-1),"left"===f.position?g.addClass("left"):"right"===f.position&&g.addClass("right");var r=function(b,c){b.originalEvent&&(b=b.originalEvent),b.stopPropagation(),p=i.grid.element[0].getBoundingClientRect().left,n=(b.targetTouches?b.targetTouches[0]:b).clientX-p,i.grid.element.append(e),e.css({left:n}),"touchstart"===b.type?(a.on("touchend",m),a.on("touchmove",l),g.off("mousedown",r)):(a.on("mouseup",m),a.on("mousemove",l),g.off("touchstart",r))},s=function(){g.on("mousedown",r),g.on("touchstart",r)},t=function(){a.off("mouseup",m),a.off("touchend",m),a.off("mousemove",l),a.off("touchmove",l),g.off("mousedown",r),g.off("touchstart",r)};s();var u=function(a,e){a.stopPropagation();var h=d.findTargetCol(f.col,f.position,q);if(h.colDef.enableColumnResizing!==!1){var l=0,m=0,n=b.closestElm(g,".ui-grid-render-container"),o=n.querySelectorAll("."+c.COL_CLASS_PREFIX+h.uid+" .ui-grid-cell-contents");Array.prototype.forEach.call(o,function(a){var c;angular.element(a).parent().hasClass("ui-grid-header-cell")&&(c=angular.element(a).parent()[0].querySelectorAll(".ui-grid-column-menu-button")),b.fakeElement(a,{},function(a){var d=angular.element(a);d.attr("style","float: left");var e=b.elementWidth(d);if(c){var f=b.elementWidth(c);e+=f}e>l&&(l=e,m=l-e)})}),h.width=k(h,l),h.hasCustomWidth=!0,j(m),d.fireColumnSizeChanged(i.grid,h.colDef,m)}};g.on("dblclick",u),g.on("$destroy",function(){g.off("dblclick",u),t()})}};return f}])}(),function(){"use strict";var a=angular.module("ui.grid.rowEdit",["ui.grid","ui.grid.edit","ui.grid.cellNav"]);a.constant("uiGridRowEditConstants",{}),a.service("uiGridRowEditService",["$interval","$q","uiGridConstants","uiGridRowEditConstants","gridUtil",function(a,b,c,d,e){var f={initializeGrid:function(a,b){b.rowEdit={};var c={events:{rowEdit:{saveRow:function(a){}}},methods:{rowEdit:{setSavePromise:function(a,c){f.setSavePromise(b,a,c)},getDirtyRows:function(){return b.rowEdit.dirtyRows?b.rowEdit.dirtyRows:[]},getErrorRows:function(){return b.rowEdit.errorRows?b.rowEdit.errorRows:[]},flushDirtyRows:function(){return f.flushDirtyRows(b)},setRowsDirty:function(a){f.setRowsDirty(b,a)},setRowsClean:function(a){f.setRowsClean(b,a)}}}};b.api.registerEventsFromObject(c.events),b.api.registerMethodsFromObject(c.methods),b.api.core.on.renderingComplete(a,function(c){b.api.edit.on.afterCellEdit(a,f.endEditCell),b.api.edit.on.beginCellEdit(a,f.beginEditCell),b.api.edit.on.cancelCellEdit(a,f.cancelEditCell),b.api.cellNav&&b.api.cellNav.on.navigate(a,f.navigate)})},defaultGridOptions:function(a){},saveRow:function(a,b){var c=this;return function(){if(b.isSaving=!0,b.rowEditSavePromise)return b.rowEditSavePromise;var d=a.api.rowEdit.raise.saveRow(b.entity);return b.rowEditSavePromise?b.rowEditSavePromise.then(c.processSuccessPromise(a,b),c.processErrorPromise(a,b)):e.logError("A promise was not returned when saveRow event was raised, either nobody is listening to event, or event handler did not return a promise"),d}},setSavePromise:function(a,b,c){var d=a.getRow(b);d.rowEditSavePromise=c},processSuccessPromise:function(a,b){var c=this;return function(){delete b.isSaving,delete b.isDirty,delete b.isError,delete b.rowEditSaveTimer,delete b.rowEditSavePromise,c.removeRow(a.rowEdit.errorRows,b),c.removeRow(a.rowEdit.dirtyRows,b)}},processErrorPromise:function(a,b){return function(){delete b.isSaving,delete b.rowEditSaveTimer,delete b.rowEditSavePromise,b.isError=!0,a.rowEdit.errorRows||(a.rowEdit.errorRows=[]),f.isRowPresent(a.rowEdit.errorRows,b)||a.rowEdit.errorRows.push(b)}},removeRow:function(a,b){"undefined"!=typeof a&&null!==a&&a.forEach(function(c,d){c.uid===b.uid&&a.splice(d,1)})},isRowPresent:function(a,b){var c=!1;return a.forEach(function(a,d){a.uid===b.uid&&(c=!0)}),c},flushDirtyRows:function(a){var c=[];return a.api.rowEdit.getDirtyRows().forEach(function(b){f.saveRow(a,b)(),c.push(b.rowEditSavePromise)}),b.all(c)},endEditCell:function(a,b,c,d){var g=this.grid,h=g.getRow(a);return h?void((c!==d||h.isDirty)&&(g.rowEdit.dirtyRows||(g.rowEdit.dirtyRows=[]),h.isDirty||(h.isDirty=!0,g.rowEdit.dirtyRows.push(h)),delete h.isError,f.considerSetTimer(g,h))):void e.logError("Unable to find rowEntity in grid data, dirty flag cannot be set")},beginEditCell:function(a,b){var c=this.grid,d=c.getRow(a);return d?void f.cancelTimer(c,d):void e.logError("Unable to find rowEntity in grid data, timer cannot be cancelled")},cancelEditCell:function(a,b){var c=this.grid,d=c.getRow(a);return d?void f.considerSetTimer(c,d):void e.logError("Unable to find rowEntity in grid data, timer cannot be set")},navigate:function(a,b){var c=this.grid;a.row.rowEditSaveTimer&&f.cancelTimer(c,a.row),b&&b.row&&b.row!==a.row&&f.considerSetTimer(c,b.row)},considerSetTimer:function(b,c){if(f.cancelTimer(b,c),c.isDirty&&!c.isSaving&&-1!==b.options.rowEditWaitInterval){var d=b.options.rowEditWaitInterval?b.options.rowEditWaitInterval:2e3;c.rowEditSaveTimer=a(f.saveRow(b,c),d,1)}},cancelTimer:function(b,c){c.rowEditSaveTimer&&!c.isSaving&&(a.cancel(c.rowEditSaveTimer),delete c.rowEditSaveTimer)},setRowsDirty:function(a,b){var c;b.forEach(function(b,d){c=a.getRow(b),c?(a.rowEdit.dirtyRows||(a.rowEdit.dirtyRows=[]),c.isDirty||(c.isDirty=!0,a.rowEdit.dirtyRows.push(c)),delete c.isError,f.considerSetTimer(a,c)):e.logError("requested row not found in rowEdit.setRowsDirty, row was: "+b)})},setRowsClean:function(a,b){var c;b.forEach(function(b,d){c=a.getRow(b),c?(delete c.isDirty,f.removeRow(a.rowEdit.dirtyRows,c),f.cancelTimer(a,c),delete c.isError,f.removeRow(a.rowEdit.errorRows,c)):e.logError("requested row not found in rowEdit.setRowsClean, row was: "+b)})}};return f}]),a.directive("uiGridRowEdit",["gridUtil","uiGridRowEditService","uiGridEditConstants",function(a,b,c){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){b.initializeGrid(a,e.grid)},post:function(a,b,c,d){}}}}}]),a.directive("uiGridViewport",["$compile","uiGridConstants","gridUtil","$parse",function(a,b,c,d){return{priority:-200,scope:!1,compile:function(a,b){var c=angular.element(a.children().children()[0]),d=c.attr("ng-class"),e="";return e=d?d.slice(0,-1)+", 'ui-grid-row-dirty': row.isDirty, 'ui-grid-row-saving': row.isSaving, 'ui-grid-row-error': row.isError}":"{'ui-grid-row-dirty': row.isDirty, 'ui-grid-row-saving': row.isSaving, 'ui-grid-row-error': row.isError}",c.attr("ng-class",e),{pre:function(a,b,c,d){},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.saveState",["ui.grid","ui.grid.selection","ui.grid.cellNav","ui.grid.grouping","ui.grid.pinning","ui.grid.treeView"]);a.constant("uiGridSaveStateConstants",{featureName:"saveState"}),a.service("uiGridSaveStateService",["$q","uiGridSaveStateConstants","gridUtil","$compile","$interval","uiGridConstants",function(a,b,c,d,e,f){var g={initializeGrid:function(a){a.saveState={},this.defaultGridOptions(a.options);var b={events:{saveState:{}},methods:{saveState:{save:function(){return g.save(a)},restore:function(b,c){g.restore(a,b,c)}}}};a.api.registerEventsFromObject(b.events),a.api.registerMethodsFromObject(b.methods)},defaultGridOptions:function(a){a.saveWidths=a.saveWidths!==!1,a.saveOrder=a.saveOrder!==!1,a.saveScroll=a.saveScroll===!0,a.saveFocus=a.saveScroll!==!0&&a.saveFocus!==!1,a.saveVisible=a.saveVisible!==!1,a.saveSort=a.saveSort!==!1,a.saveFilter=a.saveFilter!==!1,a.saveSelection=a.saveSelection!==!1,a.saveGrouping=a.saveGrouping!==!1,a.saveGroupingExpandedStates=a.saveGroupingExpandedStates===!0,a.savePinning=a.savePinning!==!1,a.saveTreeView=a.saveTreeView!==!1},save:function(a){var b={};return b.columns=g.saveColumns(a),b.scrollFocus=g.saveScrollFocus(a),b.selection=g.saveSelection(a),b.grouping=g.saveGrouping(a),b.treeView=g.saveTreeView(a),b.pagination=g.savePagination(a),b},restore:function(a,b,c){c.columns&&g.restoreColumns(a,c.columns),c.scrollFocus&&g.restoreScrollFocus(a,b,c.scrollFocus),c.selection&&g.restoreSelection(a,c.selection),c.grouping&&g.restoreGrouping(a,c.grouping),c.treeView&&g.restoreTreeView(a,c.treeView),c.pagination&&g.restorePagination(a,c.pagination),a.refresh()},saveColumns:function(a){var b=[];return a.getOnlyDataColumns().forEach(function(c){var d={};d.name=c.name,a.options.saveVisible&&(d.visible=c.visible),a.options.saveWidths&&(d.width=c.width),a.options.saveSort&&(d.sort=angular.copy(c.sort)),a.options.saveFilter&&(d.filters=[],c.filters.forEach(function(a){var b={};angular.forEach(a,function(a,c){"condition"!==c&&"$$hashKey"!==c&&"placeholder"!==c&&(b[c]=a)}),d.filters.push(b)})),a.api.pinning&&a.options.savePinning&&(d.pinned=c.renderContainer?c.renderContainer:""),b.push(d)}),b},saveScrollFocus:function(a){if(!a.api.cellNav)return{};var b={};if(a.options.saveFocus){b.focus=!0;var c=a.api.cellNav.getFocusedCell();null!==c&&(null!==c.col&&(b.colName=c.col.colDef.name),null!==c.row&&(b.rowVal=g.getRowVal(a,c.row)))}return(a.options.saveScroll||a.options.saveFocus&&!b.colName&&!b.rowVal)&&(b.focus=!1,a.renderContainers.body.prevRowScrollIndex&&(b.rowVal=g.getRowVal(a,a.renderContainers.body.visibleRowCache[a.renderContainers.body.prevRowScrollIndex])),a.renderContainers.body.prevColScrollIndex&&(b.colName=a.renderContainers.body.visibleColumnCache[a.renderContainers.body.prevColScrollIndex].name)),b},saveSelection:function(a){if(!a.api.selection||!a.options.saveSelection)return[];var b=a.api.selection.getSelectedGridRows().map(function(b){return g.getRowVal(a,b)});return b},saveGrouping:function(a){return a.api.grouping&&a.options.saveGrouping?a.api.grouping.getGrouping(a.options.saveGroupingExpandedStates):{}},savePagination:function(a){return a.api.pagination&&a.options.paginationPageSize?{paginationCurrentPage:a.options.paginationCurrentPage,paginationPageSize:a.options.paginationPageSize}:{}},saveTreeView:function(a){return a.api.treeView&&a.options.saveTreeView?a.api.treeView.getTreeView():{}},getRowVal:function(a,b){if(!b)return null;var c={};return a.options.saveRowIdentity?(c.identity=!0,c.row=a.options.saveRowIdentity(b.entity)):(c.identity=!1,c.row=a.renderContainers.body.visibleRowCache.indexOf(b)),c},restoreColumns:function(a,b){var c=!1;b.forEach(function(b,d){var e=a.getColumn(b.name);if(e&&!a.isRowHeaderColumn(e)){!a.options.saveVisible||e.visible===b.visible&&e.colDef.visible===b.visible||(e.visible=b.visible,e.colDef.visible=b.visible,a.api.core.raise.columnVisibilityChanged(e)),a.options.saveWidths&&e.width!==b.width&&(e.width=b.width,e.hasCustomWidth=!0),!a.options.saveSort||angular.equals(e.sort,b.sort)||void 0===e.sort&&angular.isEmpty(b.sort)||(e.sort=angular.copy(b.sort),c=!0),a.options.saveFilter&&!angular.equals(e.filters,b.filters)&&(b.filters.forEach(function(a,b){angular.extend(e.filters[b],a),("undefined"==typeof a.term||null===a.term)&&delete e.filters[b].term}),a.api.core.raise.filterChanged()),a.api.pinning&&a.options.savePinning&&e.renderContainer!==b.pinned&&a.api.pinning.pinColumn(e,b.pinned);var f=a.getOnlyDataColumns().indexOf(e);if(-1!==f&&a.options.saveOrder&&f!==d){var g=a.columns.splice(f+a.rowHeaderColumns.length,1)[0];a.columns.splice(d+a.rowHeaderColumns.length,0,g)}}}),c&&a.api.core.raise.sortChanged(a,a.getColumnSorting())},restoreScrollFocus:function(a,b,c){if(a.api.cellNav){var d,e;if(c.colName){var f=a.options.columnDefs.filter(function(a){return a.name===c.colName});f.length>0&&(d=f[0])}c.rowVal&&c.rowVal.row&&(e=c.rowVal.identity?g.findRowByIdentity(a,c.rowVal):a.renderContainers.body.visibleRowCache[c.rowVal.row]);var h=e&&e.entity?e.entity:null;(d||h)&&(c.focus?a.api.cellNav.scrollToFocus(h,d):a.scrollTo(h,d))}},restoreSelection:function(a,b){a.api.selection&&(a.api.selection.clearSelectedRows(),b.forEach(function(b){if(b.identity){var c=g.findRowByIdentity(a,b);c&&a.api.selection.selectRow(c.entity)}else a.api.selection.selectRowByVisibleIndex(b.row)}))},restoreGrouping:function(a,b){a.api.grouping&&"undefined"!=typeof b&&null!==b&&!angular.equals(b,{})&&a.api.grouping.setGrouping(b)},restoreTreeView:function(a,b){a.api.treeView&&"undefined"!=typeof b&&null!==b&&!angular.equals(b,{})&&a.api.treeView.setTreeView(b)},restorePagination:function(a,b){a.api.pagination&&a.options.paginationPageSize&&(a.options.paginationCurrentPage=b.paginationCurrentPage,a.options.paginationPageSize=b.paginationPageSize)},findRowByIdentity:function(a,b){if(!a.options.saveRowIdentity)return null;var c=a.rows.filter(function(c){return a.options.saveRowIdentity(c.entity)===b.row?!0:!1});return c.length>0?c[0]:null}};return g}]),a.directive("uiGridSaveState",["uiGridSaveStateConstants","uiGridSaveStateService","gridUtil","$compile",function(a,b,c,d){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,link:function(a,c,d,e){b.initializeGrid(e.grid)}}}])}(),function(){"use strict";var a=angular.module("ui.grid.selection",["ui.grid"]);a.constant("uiGridSelectionConstants",{featureName:"selection",selectionRowHeaderColName:"selectionRowHeaderCol"}),angular.module("ui.grid").config(["$provide",function(a){a.decorator("GridRow",["$delegate",function(a){return a.prototype.setSelected=function(a){a!==this.isSelected&&(this.isSelected=a,this.grid.selection.selectedCount+=a?1:-1);
+},a}])}]),a.service("uiGridSelectionService",["$q","$templateCache","uiGridSelectionConstants","gridUtil",function(a,b,c,d){var e={initializeGrid:function(a){a.selection={},a.selection.lastSelectedRow=null,a.selection.selectAll=!1,a.selection.selectedCount=0,e.defaultGridOptions(a.options);var b={events:{selection:{rowSelectionChanged:function(a,b,c){},rowSelectionChangedBatch:function(a,b,c){}}},methods:{selection:{toggleRowSelection:function(b,c){var d=a.getRow(b);null!==d&&e.toggleRowSelection(a,d,c,a.options.multiSelect,a.options.noUnselect)},selectRow:function(b,c){var d=a.getRow(b);null===d||d.isSelected||e.toggleRowSelection(a,d,c,a.options.multiSelect,a.options.noUnselect)},selectRowByVisibleIndex:function(b,c){var d=a.renderContainers.body.visibleRowCache[b];null===d||"undefined"==typeof d||d.isSelected||e.toggleRowSelection(a,d,c,a.options.multiSelect,a.options.noUnselect)},unSelectRow:function(b,c){var d=a.getRow(b);null!==d&&d.isSelected&&e.toggleRowSelection(a,d,c,a.options.multiSelect,a.options.noUnselect)},selectAllRows:function(b){if(a.options.multiSelect!==!1){var c=[];a.rows.forEach(function(d){d.isSelected||d.enableSelection===!1||(d.setSelected(!0),e.decideRaiseSelectionEvent(a,d,c,b))}),e.decideRaiseSelectionBatchEvent(a,c,b),a.selection.selectAll=!0}},selectAllVisibleRows:function(b){if(a.options.multiSelect!==!1){var c=[];a.rows.forEach(function(d){d.visible?d.isSelected||d.enableSelection===!1||(d.setSelected(!0),e.decideRaiseSelectionEvent(a,d,c,b)):d.isSelected&&(d.setSelected(!1),e.decideRaiseSelectionEvent(a,d,c,b))}),e.decideRaiseSelectionBatchEvent(a,c,b),a.selection.selectAll=!0}},clearSelectedRows:function(b){e.clearSelectedRows(a,b)},getSelectedRows:function(){return e.getSelectedRows(a).map(function(a){return a.entity})},getSelectedGridRows:function(){return e.getSelectedRows(a)},getSelectedCount:function(){return a.selection.selectedCount},setMultiSelect:function(b){a.options.multiSelect=b},setModifierKeysToMultiSelect:function(b){a.options.modifierKeysToMultiSelect=b},getSelectAllState:function(){return a.selection.selectAll}}}};a.api.registerEventsFromObject(b.events),a.api.registerMethodsFromObject(b.methods)},defaultGridOptions:function(a){a.enableRowSelection=a.enableRowSelection!==!1,a.multiSelect=a.multiSelect!==!1,a.noUnselect=a.noUnselect===!0,a.modifierKeysToMultiSelect=a.modifierKeysToMultiSelect===!0,a.enableRowHeaderSelection=a.enableRowHeaderSelection!==!1,"undefined"==typeof a.enableFullRowSelection&&(a.enableFullRowSelection=!a.enableRowHeaderSelection),a.enableSelectAll=a.enableSelectAll!==!1,a.enableSelectionBatchEvent=a.enableSelectionBatchEvent!==!1,a.selectionRowHeaderWidth=angular.isDefined(a.selectionRowHeaderWidth)?a.selectionRowHeaderWidth:30,a.enableFooterTotalSelected=a.enableFooterTotalSelected!==!1,a.isRowSelectable=angular.isDefined(a.isRowSelectable)?a.isRowSelectable:angular.noop},toggleRowSelection:function(a,b,c,d,f){var g=b.isSelected;if(b.enableSelection!==!1||g){var h;d||g?!d&&g&&(h=e.getSelectedRows(a),h.length>1&&(g=!1,e.clearSelectedRows(a,c))):e.clearSelectedRows(a,c),g&&f||(b.setSelected(!g),b.isSelected===!0&&(a.selection.lastSelectedRow=b),h=e.getSelectedRows(a),a.selection.selectAll=a.rows.length===h.length,a.api.selection.raise.rowSelectionChanged(b,c))}},shiftSelect:function(a,b,c,d){if(d){var f=e.getSelectedRows(a),g=f.length>0?a.renderContainers.body.visibleRowCache.indexOf(a.selection.lastSelectedRow):0,h=a.renderContainers.body.visibleRowCache.indexOf(b);if(g>h){var i=g;g=h,h=i}for(var j=[],k=g;h>=k;k++){var l=a.renderContainers.body.visibleRowCache[k];l&&(l.isSelected||l.enableSelection===!1||(l.setSelected(!0),a.selection.lastSelectedRow=l,e.decideRaiseSelectionEvent(a,l,j,c)))}e.decideRaiseSelectionBatchEvent(a,j,c)}},getSelectedRows:function(a){return a.rows.filter(function(a){return a.isSelected})},clearSelectedRows:function(a,b){var c=[];e.getSelectedRows(a).forEach(function(d){d.isSelected&&(d.setSelected(!1),e.decideRaiseSelectionEvent(a,d,c,b))}),e.decideRaiseSelectionBatchEvent(a,c,b),a.selection.selectAll=!1,a.selection.selectedCount=0},decideRaiseSelectionEvent:function(a,b,c,d){a.options.enableSelectionBatchEvent?c.push(b):a.api.selection.raise.rowSelectionChanged(b,d)},decideRaiseSelectionBatchEvent:function(a,b,c){b.length>0&&a.api.selection.raise.rowSelectionChangedBatch(b,c)}};return e}]),a.directive("uiGridSelection",["uiGridSelectionConstants","uiGridSelectionService","$templateCache","uiGridConstants",function(a,b,c,d){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(c,e,f,g){if(b.initializeGrid(g.grid),g.grid.options.enableRowHeaderSelection){var h={name:a.selectionRowHeaderColName,displayName:"",width:g.grid.options.selectionRowHeaderWidth,minWidth:10,cellTemplate:"ui-grid/selectionRowHeader",headerCellTemplate:"ui-grid/selectionHeaderCell",enableColumnResizing:!1,enableColumnMenu:!1,exporterSuppressExport:!0,allowCellFocus:!0};g.grid.addRowHeaderColumn(h,0)}var i=!1,j=function(a){return a.forEach(function(a){a.enableSelection=g.grid.options.isRowSelectable(a)}),a},k=function(){g.grid.options.isRowSelectable!==angular.noop&&i!==!0&&(g.grid.registerRowsProcessor(j,500),i=!0)};k();var l=g.grid.registerDataChangeCallback(k,[d.dataChange.OPTIONS]);c.$on("$destroy",l)},post:function(a,b,c,d){}}}}}]),a.directive("uiGridSelectionRowHeaderButtons",["$templateCache","uiGridSelectionService","gridUtil",function(a,b,c){return{replace:!0,restrict:"E",template:a.get("ui-grid/selectionRowHeaderButtons"),scope:!0,require:"^uiGrid",link:function(a,d,e,f){function g(a,c){c.stopPropagation(),c.shiftKey?b.shiftSelect(i,a,c,i.options.multiSelect):c.ctrlKey||c.metaKey?b.toggleRowSelection(i,a,c,i.options.multiSelect,i.options.noUnselect):b.toggleRowSelection(i,a,c,i.options.multiSelect&&!i.options.modifierKeysToMultiSelect,i.options.noUnselect)}function h(a){(a.ctrlKey||a.shiftKey)&&(a.target.onselectstart=function(){return!1},window.setTimeout(function(){a.target.onselectstart=null},0))}var i=f.grid;a.selectButtonClick=g,"ie"===c.detectBrowser()&&d.on("mousedown",h)}}}]),a.directive("uiGridSelectionSelectAllButtons",["$templateCache","uiGridSelectionService",function(a,b){return{replace:!0,restrict:"E",template:a.get("ui-grid/selectionSelectAllButtons"),scope:!1,link:function(a,c,d,e){var f=a.col.grid;a.headerButtonClick=function(a,c){f.selection.selectAll?(b.clearSelectedRows(f,c),f.options.noUnselect&&f.api.selection.selectRowByVisibleIndex(0,c),f.selection.selectAll=!1):f.options.multiSelect&&(f.api.selection.selectAllVisibleRows(c),f.selection.selectAll=!0)}}}}]),a.directive("uiGridViewport",["$compile","uiGridConstants","uiGridSelectionConstants","gridUtil","$parse","uiGridSelectionService",function(a,b,c,d,e,f){return{priority:-200,scope:!1,compile:function(a,b){var c=angular.element(a.children().children()[0]),d=c.attr("ng-class"),e="";return e=d?d.slice(0,-1)+",'ui-grid-row-selected': row.isSelected}":"{'ui-grid-row-selected': row.isSelected}",c.attr("ng-class",e),{pre:function(a,b,c,d){},post:function(a,b,c,d){}}}}}]),a.directive("uiGridCell",["$compile","uiGridConstants","uiGridSelectionConstants","gridUtil","$parse","uiGridSelectionService","$timeout",function(a,b,c,d,e,f,g){return{priority:-200,restrict:"A",require:"?^uiGrid",scope:!1,link:function(a,c,d,e){function h(){a.grid.options.enableRowSelection&&a.grid.options.enableFullRowSelection&&(c.addClass("ui-grid-disable-selection"),c.on("touchstart",m),c.on("touchend",n),c.on("click",l),a.registered=!0)}function i(){a.registered&&(c.removeClass("ui-grid-disable-selection"),c.off("touchstart",m),c.off("touchend",n),c.off("click",l),a.registered=!1)}var j=0,k=300;e.grid.api.cellNav&&e.grid.api.cellNav.on.viewPortKeyDown(a,function(b,c){null!==c&&c.row===a.row&&c.col===a.col&&32===b.keyCode&&"selectionRowHeaderCol"===a.col.colDef.name&&(f.toggleRowSelection(a.grid,a.row,b,a.grid.options.multiSelect&&!a.grid.options.modifierKeysToMultiSelect,a.grid.options.noUnselect),a.$apply())});var l=function(b){c.off("touchend",n),b.shiftKey?f.shiftSelect(a.grid,a.row,b,a.grid.options.multiSelect):b.ctrlKey||b.metaKey?f.toggleRowSelection(a.grid,a.row,b,a.grid.options.multiSelect,a.grid.options.noUnselect):f.toggleRowSelection(a.grid,a.row,b,a.grid.options.multiSelect&&!a.grid.options.modifierKeysToMultiSelect,a.grid.options.noUnselect),a.$apply(),g(function(){c.on("touchend",n)},k)},m=function(a){j=(new Date).getTime(),c.off("click",l)},n=function(a){var b=(new Date).getTime(),d=b-j;k>d&&l(a),g(function(){c.on("click",l)},k)};h();var o=a.grid.registerDataChangeCallback(function(){a.grid.options.enableRowSelection&&a.grid.options.enableFullRowSelection&&!a.registered?h():a.grid.options.enableRowSelection&&a.grid.options.enableFullRowSelection||!a.registered||i()},[b.dataChange.OPTIONS]);c.on("$destroy",o)}}}]),a.directive("uiGridGridFooter",["$compile","uiGridConstants","gridUtil",function(a,b,c){return{restrict:"EA",replace:!0,priority:-1e3,require:"^uiGrid",scope:!0,compile:function(b,d){return{pre:function(b,d,e,f){f.grid.options.showGridFooter&&c.getTemplate("ui-grid/gridFooterSelectedItems").then(function(c){var e=angular.element(c),f=a(e)(b);angular.element(d[0].getElementsByClassName("ui-grid-grid-footer")[0]).append(f)})},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.treeBase",["ui.grid"]);a.constant("uiGridTreeBaseConstants",{featureName:"treeBase",rowHeaderColName:"treeBaseRowHeaderCol",EXPANDED:"expanded",COLLAPSED:"collapsed",aggregation:{COUNT:"count",SUM:"sum",MAX:"max",MIN:"min",AVG:"avg"}}),a.service("uiGridTreeBaseService",["$q","uiGridTreeBaseConstants","gridUtil","GridRow","gridClassFactory","i18nService","uiGridConstants","rowSorter",function(a,b,c,d,e,f,g,h){var i={initializeGrid:function(a,b){a.treeBase={},a.treeBase.numberLevels=0,a.treeBase.expandAll=!1,a.treeBase.tree=[],i.defaultGridOptions(a.options),a.registerRowsProcessor(i.treeRows,410),a.registerColumnBuilder(i.treeBaseColumnBuilder),i.createRowHeader(a);var c={events:{treeBase:{rowExpanded:{},rowCollapsed:{}}},methods:{treeBase:{expandAllRows:function(){i.expandAllRows(a)},collapseAllRows:function(){i.collapseAllRows(a)},toggleRowTreeState:function(b){i.toggleRowTreeState(a,b)},expandRow:function(b){i.expandRow(a,b)},expandRowChildren:function(b){i.expandRowChildren(a,b)},collapseRow:function(b){i.collapseRow(a,b)},collapseRowChildren:function(b){i.collapseRowChildren(a,b)},getTreeExpandedState:function(){return{expandedState:i.getTreeState(a)}},setTreeState:function(b){i.setTreeState(a,b)},getRowChildren:function(a){return a.treeNode.children.map(function(a){return a.row})}}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods)},defaultGridOptions:function(a){a.treeRowHeaderBaseWidth=a.treeRowHeaderBaseWidth||30,a.treeIndent=a.treeIndent||10,a.showTreeRowHeader=a.showTreeRowHeader!==!1,a.showTreeExpandNoChildren=a.showTreeExpandNoChildren!==!1,a.treeRowHeaderAlwaysVisible=a.treeRowHeaderAlwaysVisible!==!1,a.treeCustomAggregations=a.treeCustomAggregations||{},a.enableExpandAll=a.enableExpandAll!==!1},treeBaseColumnBuilder:function(a,b,c){"undefined"!=typeof a.customTreeAggregationFn&&(b.treeAggregationFn=a.customTreeAggregationFn),"undefined"!=typeof a.treeAggregationType&&(b.treeAggregation={type:a.treeAggregationType},"undefined"!=typeof c.treeCustomAggregations[a.treeAggregationType]?(b.treeAggregationFn=c.treeCustomAggregations[a.treeAggregationType].aggregationFn,b.treeAggregationFinalizerFn=c.treeCustomAggregations[a.treeAggregationType].finalizerFn,b.treeAggregation.label=c.treeCustomAggregations[a.treeAggregationType].label):"undefined"!=typeof i.nativeAggregations()[a.treeAggregationType]&&(b.treeAggregationFn=i.nativeAggregations()[a.treeAggregationType].aggregationFn,b.treeAggregation.label=i.nativeAggregations()[a.treeAggregationType].label)),"undefined"!=typeof a.treeAggregationLabel&&("undefined"==typeof b.treeAggregation&&(b.treeAggregation={}),b.treeAggregation.label=a.treeAggregationLabel),b.treeAggregationUpdateEntity=a.treeAggregationUpdateEntity!==!1,"undefined"==typeof b.customTreeAggregationFinalizerFn&&(b.customTreeAggregationFinalizerFn=a.customTreeAggregationFinalizerFn)},createRowHeader:function(a){var c={name:b.rowHeaderColName,displayName:"",width:a.options.treeRowHeaderBaseWidth,minWidth:10,cellTemplate:"ui-grid/treeBaseRowHeader",headerCellTemplate:"ui-grid/treeBaseHeaderCell",enableColumnResizing:!1,enableColumnMenu:!1,exporterSuppressExport:!0,allowCellFocus:!0};c.visible=a.options.treeRowHeaderAlwaysVisible,a.addRowHeaderColumn(c,-100)},expandAllRows:function(a){a.treeBase.tree.forEach(function(c){i.setAllNodes(a,c,b.EXPANDED)}),a.treeBase.expandAll=!0,a.queueGridRefresh()},collapseAllRows:function(a){a.treeBase.tree.forEach(function(c){i.setAllNodes(a,c,b.COLLAPSED)}),a.treeBase.expandAll=!1,a.queueGridRefresh()},setAllNodes:function(a,c,d){"undefined"!=typeof c.state&&c.state!==d&&(c.state=d,d===b.EXPANDED?a.api.treeBase.raise.rowExpanded(c.row):a.api.treeBase.raise.rowCollapsed(c.row)),c.children&&c.children.forEach(function(b){i.setAllNodes(a,b,d)})},toggleRowTreeState:function(a,c){"undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0||(c.treeNode.state===b.EXPANDED?i.collapseRow(a,c):i.expandRow(a,c),a.queueGridRefresh())},expandRow:function(a,c){"undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0||c.treeNode.state!==b.EXPANDED&&(c.treeNode.state=b.EXPANDED,a.api.treeBase.raise.rowExpanded(c),a.treeBase.expandAll=i.allExpanded(a.treeBase.tree),a.queueGridRefresh())},expandRowChildren:function(a,c){"undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0||(i.setAllNodes(a,c.treeNode,b.EXPANDED),a.treeBase.expandAll=i.allExpanded(a.treeBase.tree),a.queueGridRefresh())},collapseRow:function(a,c){"undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0||c.treeNode.state!==b.COLLAPSED&&(c.treeNode.state=b.COLLAPSED,a.treeBase.expandAll=!1,a.api.treeBase.raise.rowCollapsed(c),a.queueGridRefresh())},collapseRowChildren:function(a,c){"undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0||(i.setAllNodes(a,c.treeNode,b.COLLAPSED),a.treeBase.expandAll=!1,a.queueGridRefresh())},allExpanded:function(a){var b=!0;return a.forEach(function(a){i.allExpandedInternal(a)||(b=!1)}),b},allExpandedInternal:function(a){if(a.children&&a.children.length>0){if(a.state===b.COLLAPSED)return!1;var c=!0;return a.children.forEach(function(a){i.allExpandedInternal(a)||(c=!1)}),c}return!0},treeRows:function(a){if(0===a.length)return a;var c=this;b.EXPANDED;return c.treeBase.tree=i.createTree(c,a),i.updateRowHeaderWidth(c),i.sortTree(c),i.fixFilter(c),i.renderTree(c.treeBase.tree)},updateRowHeaderWidth:function(a){var c=a.getColumn(b.rowHeaderColName),d=a.options.treeRowHeaderBaseWidth+a.options.treeIndent*Math.max(a.treeBase.numberLevels-1,0);c&&d!==c.width&&(c.width=d,a.queueRefresh());var e=!0;a.options.showTreeRowHeader===!1&&(e=!1),a.options.treeRowHeaderAlwaysVisible===!1&&a.treeBase.numberLevels<=0&&(e=!1),c.visible!==e&&(c.visible=e,c.colDef.visible=e,a.queueGridRefresh())},renderTree:function(a){var c=[];return a.forEach(function(a){a.row.visible&&c.push(a.row),a.state===b.EXPANDED&&a.children&&a.children.length>0&&(c=c.concat(i.renderTree(a.children)))}),c},createTree:function(a,c){var d,e=-1,f=[];a.treeBase.tree=[],a.treeBase.numberLevels=0;var g=i.getAggregations(a),h=function(c){if("undefined"!=typeof c.entity.$$treeLevel&&c.treeLevel!==c.entity.$$treeLevel&&(c.treeLevel=c.entity.$$treeLevel),c.treeLevel<=e){for(;c.treeLevel<=e;){var h=f.pop();i.finaliseAggregations(h),e--}d=f.length>0?i.setCurrentState(f):b.EXPANDED}("undefined"==typeof c.treeLevel||null===c.treeLevel||c.treeLevel<0)&&c.visible&&i.aggregate(a,c,f),i.addOrUseNode(a,c,f,g),"undefined"!=typeof c.treeLevel&&null!==c.treeLevel&&c.treeLevel>=0&&(f.push(c),e++,d=i.setCurrentState(f)),a.treeBase.numberLevels<c.treeLevel+1&&(a.treeBase.numberLevels=c.treeLevel+1)};for(c.forEach(h);f.length>0;){var j=f.pop();i.finaliseAggregations(j)}return a.treeBase.tree},addOrUseNode:function(a,c,d,e){var f=[];e.forEach(function(a){f.push(i.buildAggregationObject(a.col))});var g={state:b.COLLAPSED,row:c,parentRow:null,aggregations:f,children:[]};c.treeNode&&(g.state=c.treeNode.state),d.length>0&&(g.parentRow=d[d.length-1]),c.treeNode=g,0===d.length?a.treeBase.tree.push(g):d[d.length-1].treeNode.children.push(g)},setCurrentState:function(a){var c=b.EXPANDED;return a.forEach(function(a){a.treeNode.state===b.COLLAPSED&&(c=b.COLLAPSED)}),c},sortTree:function(a){a.columns.forEach(function(a){a.sort&&a.sort.ignoreSort&&delete a.sort.ignoreSort}),a.treeBase.tree=i.sortInternal(a,a.treeBase.tree)},sortInternal:function(a,c){var d=c.map(function(a){return a.row});d=h.sort(a,d,a.columns);var e=d.map(function(a){return a.treeNode});return e.forEach(function(c){c.state===b.EXPANDED&&c.children&&c.children.length>0&&(c.children=i.sortInternal(a,c.children))}),e},fixFilter:function(a){var b;a.treeBase.tree.forEach(function(a){a.children&&a.children.length>0&&(b=a.row.visible,i.fixFilterInternal(a.children,b))})},fixFilterInternal:function(a,b){return a.forEach(function(a){a.row.visible&&!b&&(i.setParentsVisible(a),b=!0),a.children&&a.children.length>0&&i.fixFilterInternal(a.children,b&&a.row.visible)&&(b=!0)}),b},setParentsVisible:function(a){for(;a.parentRow;)a.parentRow.visible=!0,a=a.parentRow.treeNode},buildAggregationObject:function(a){var b={col:a};return a.treeAggregation&&a.treeAggregation.type&&(b.type=a.treeAggregation.type),a.treeAggregation&&a.treeAggregation.label&&(b.label=a.treeAggregation.label),b},getAggregations:function(a){var b=[];return a.columns.forEach(function(c){"undefined"!=typeof c.treeAggregationFn&&(b.push(i.buildAggregationObject(c)),a.options.showColumnFooter&&"undefined"==typeof c.colDef.aggregationType&&c.treeAggregation&&(c.treeFooterAggregation=i.buildAggregationObject(c),c.aggregationType=i.treeFooterAggregationType))}),b},aggregate:function(a,b,c){0===c.length&&b.treeNode&&b.treeNode.aggregations&&b.treeNode.aggregations.forEach(function(c){if("undefined"!=typeof c.col.treeFooterAggregation){var d=a.getCellValue(b,c.col),e=Number(d);c.col.treeAggregationFn(c.col.treeFooterAggregation,d,e,b)}}),c.forEach(function(c,d){c.treeNode.aggregations&&c.treeNode.aggregations.forEach(function(c){var e=a.getCellValue(b,c.col),f=Number(e);c.col.treeAggregationFn(c,e,f,b),0===d&&"undefined"!=typeof c.col.treeFooterAggregation&&c.col.treeAggregationFn(c.col.treeFooterAggregation,e,f,b)})})},nativeAggregations:function(){var a={count:{label:f.get().aggregation.count,menuTitle:f.get().grouping.aggregate_count,aggregationFn:function(a,b,c){"undefined"==typeof a.value?a.value=1:a.value++}},sum:{label:f.get().aggregation.sum,menuTitle:f.get().grouping.aggregate_sum,aggregationFn:function(a,b,c){isNaN(c)||("undefined"==typeof a.value?a.value=c:a.value+=c)}},min:{label:f.get().aggregation.min,menuTitle:f.get().grouping.aggregate_min,aggregationFn:function(a,b,c){"undefined"==typeof a.value?a.value=b:"undefined"!=typeof b&&null!==b&&(b<a.value||null===a.value)&&(a.value=b)}},max:{label:f.get().aggregation.max,menuTitle:f.get().grouping.aggregate_max,aggregationFn:function(a,b,c){"undefined"==typeof a.value?a.value=b:"undefined"!=typeof b&&null!==b&&(b>a.value||null===a.value)&&(a.value=b)}},avg:{label:f.get().aggregation.avg,menuTitle:f.get().grouping.aggregate_avg,aggregationFn:function(a,b,c){"undefined"==typeof a.count?a.count=1:a.count++,isNaN(c)||("undefined"==typeof a.value||"undefined"==typeof a.sum?(a.value=c,a.sum=c):(a.sum+=c,a.value=a.sum/a.count))}}};return a},finaliseAggregation:function(a,b){b.col.treeAggregationUpdateEntity&&"undefined"!=typeof a&&"undefined"!=typeof a.entity["$$"+b.col.uid]&&angular.extend(b,a.entity["$$"+b.col.uid]),"function"==typeof b.col.treeAggregationFinalizerFn&&b.col.treeAggregationFinalizerFn(b),"function"==typeof b.col.customTreeAggregationFinalizerFn&&b.col.customTreeAggregationFinalizerFn(b),"undefined"==typeof b.rendered&&(b.rendered=b.label?b.label+b.value:b.value)},finaliseAggregations:function(a){null!=a&&"undefined"!=typeof a.treeNode.aggregations&&a.treeNode.aggregations.forEach(function(b){if(i.finaliseAggregation(a,b),b.col.treeAggregationUpdateEntity){var c={};angular.forEach(b,function(a,d){b.hasOwnProperty(d)&&"col"!==d&&(c[d]=a)}),a.entity["$$"+b.col.uid]=c}})},treeFooterAggregationType:function(a,b){return i.finaliseAggregation(void 0,b.treeFooterAggregation),"undefined"==typeof b.treeFooterAggregation.value||null===b.treeFooterAggregation.rendered?"":b.treeFooterAggregation.rendered}};return i}]),a.directive("uiGridTreeBaseRowHeaderButtons",["$templateCache","uiGridTreeBaseService",function(a,b){return{replace:!0,restrict:"E",template:a.get("ui-grid/treeBaseRowHeaderButtons"),scope:!0,require:"^uiGrid",link:function(a,c,d,e){var f=e.grid;a.treeButtonClick=function(a,c){b.toggleRowTreeState(f,a,c)}}}}]),a.directive("uiGridTreeBaseExpandAllButtons",["$templateCache","uiGridTreeBaseService",function(a,b){return{replace:!0,restrict:"E",template:a.get("ui-grid/treeBaseExpandAllButtons"),scope:!1,link:function(a,c,d,e){var f=a.col.grid;a.headerButtonClick=function(a,c){f.treeBase.expandAll?b.collapseAllRows(f,c):b.expandAllRows(f,c)}}}}]),a.directive("uiGridViewport",["$compile","uiGridConstants","gridUtil","$parse",function(a,b,c,d){return{priority:-200,scope:!1,compile:function(a,b){var c=angular.element(a.children().children()[0]),d=c.attr("ng-class"),e="";return e=d?d.slice(0,-1)+",'ui-grid-tree-header-row': row.treeLevel > -1}":"{'ui-grid-tree-header-row': row.treeLevel > -1}",c.attr("ng-class",e),{pre:function(a,b,c,d){},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.treeView",["ui.grid","ui.grid.treeBase"]);a.constant("uiGridTreeViewConstants",{featureName:"treeView",rowHeaderColName:"treeBaseRowHeaderCol",EXPANDED:"expanded",COLLAPSED:"collapsed",aggregation:{COUNT:"count",SUM:"sum",MAX:"max",MIN:"min",AVG:"avg"}}),a.service("uiGridTreeViewService",["$q","uiGridTreeViewConstants","uiGridTreeBaseConstants","uiGridTreeBaseService","gridUtil","GridRow","gridClassFactory","i18nService","uiGridConstants",function(a,b,c,d,e,f,g,h,i){var j={initializeGrid:function(a,b){d.initializeGrid(a,b),a.treeView={},a.registerRowsProcessor(j.adjustSorting,60);var c={events:{treeView:{}},methods:{treeView:{}}};a.api.registerEventsFromObject(c.events),a.api.registerMethodsFromObject(c.methods)},defaultGridOptions:function(a){a.enableTreeView=a.enableTreeView!==!1},adjustSorting:function(a){var b=this;return b.columns.forEach(function(a){a.sort&&(a.sort.ignoreSort=!0)}),a}};return j}]),a.directive("uiGridTreeView",["uiGridTreeViewConstants","uiGridTreeViewService","$templateCache",function(a,b,c){return{replace:!0,priority:0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){e.grid.options.enableTreeView!==!1&&b.initializeGrid(e.grid,a)},post:function(a,b,c,d){}}}}}])}(),function(){"use strict";var a=angular.module("ui.grid.validate",["ui.grid"]);a.service("uiGridValidateService",["$sce","$q","$http","i18nService","uiGridConstants",function(a,b,c,d,e){var f={validatorFactories:{},setExternalFactoryFunction:function(a){f.externalFactoryFunction=a},clearExternalFactory:function(){delete f.externalFactoryFunction},getValidatorFromExternalFactory:function(a,b){return f.externalFactoryFunction(a,b).validatorFactory(b)},getMessageFromExternalFactory:function(a,b){return f.externalFactoryFunction(a,b).messageFunction(b)},setValidator:function(a,b,c){f.validatorFactories[a]={validatorFactory:b,messageFunction:c}},getValidator:function(a,b){if(f.externalFactoryFunction){var c=f.getValidatorFromExternalFactory(a,b);if(c)return c}if(!f.validatorFactories[a])throw"Invalid validator name: "+a;return f.validatorFactories[a].validatorFactory(b)},getMessage:function(a,b){if(f.externalFactoryFunction){var c=f.getMessageFromExternalFactory(a,b);if(c)return c}return f.validatorFactories[a].messageFunction(b)},isInvalid:function(a,b){return a["$$invalid"+b.name]},setInvalid:function(a,b){a["$$invalid"+b.name]=!0},setValid:function(a,b){delete a["$$invalid"+b.name]},setError:function(a,b,c){a["$$errors"+b.name]||(a["$$errors"+b.name]={}),a["$$errors"+b.name][c]=!0},clearError:function(a,b,c){a["$$errors"+b.name]&&c in a["$$errors"+b.name]&&delete a["$$errors"+b.name][c]},getErrorMessages:function(a,b){var c=[];return a["$$errors"+b.name]&&0!==Object.keys(a["$$errors"+b.name]).length?(Object.keys(a["$$errors"+b.name]).sort().forEach(function(a){c.push(f.getMessage(a,b.validators[a]))}),c):c},getFormattedErrors:function(b,c){var e="",g=f.getErrorMessages(b,c);return g.length?(g.forEach(function(a){e+=a+"<br/>"}),a.trustAsHtml("<p><b>"+d.getSafeText("validate.error")+"</b></p>"+e)):void 0},getTitleFormattedErrors:function(b,c){var e="\n",g="",h=f.getErrorMessages(b,c);return h.length?(h.forEach(function(a){g+=a+e}),a.trustAsHtml(d.getSafeText("validate.error")+e+g)):void 0},runValidators:function(a,c,d,e,g){if(d!==e){if("undefined"==typeof c.name||!c.name)throw new Error("colDef.name is required to perform validation");f.setValid(a,c);var h=function(a,b,c){return function(h){h||(f.setInvalid(a,b),f.setError(a,b,c),g&&g.api.validate.raise.validationFailed(a,b,d,e))}},i=[];for(var j in c.validators){f.clearError(a,c,j);var k=f.getValidator(j,c.validators[j]),l=b.when(k(e,d,a,c)).then(h(a,c,j));i.push(l)}return b.all(i)}},createDefaultValidators:function(){f.setValidator("minLength",function(a){return function(b,c,d,e){return void 0===c||null===c||""===c?!0:c.length>=a}},function(a){return d.getSafeText("validate.minLength").replace("THRESHOLD",a)}),f.setValidator("maxLength",function(a){return function(b,c,d,e){return void 0===c||null===c||""===c?!0:c.length<=a}},function(a){return d.getSafeText("validate.maxLength").replace("THRESHOLD",a)}),f.setValidator("required",function(a){return function(b,c,d,e){return a?!(void 0===c||null===c||""===c):!0}},function(a){return d.getSafeText("validate.required")})},initializeGrid:function(a,b){b.validate={isInvalid:f.isInvalid,getFormattedErrors:f.getFormattedErrors,getTitleFormattedErrors:f.getTitleFormattedErrors,runValidators:f.runValidators};var c={events:{validate:{validationFailed:function(a,b,c,d){}}},methods:{validate:{isInvalid:function(a,c){return b.validate.isInvalid(a,c)},getErrorMessages:function(a,c){return b.validate.getErrorMessages(a,c)},getFormattedErrors:function(a,c){return b.validate.getFormattedErrors(a,c)},getTitleFormattedErrors:function(a,c){return b.validate.getTitleFormattedErrors(a,c)}}}};b.api.registerEventsFromObject(c.events),b.api.registerMethodsFromObject(c.methods),b.edit&&b.api.edit.on.afterCellEdit(a,function(a,c,d,e){b.validate.runValidators(a,c,d,e,b)}),f.createDefaultValidators()}};return f}]),a.directive("uiGridValidate",["gridUtil","uiGridValidateService",function(a,b){return{priority:0,replace:!0,require:"^uiGrid",scope:!1,compile:function(){return{pre:function(a,c,d,e){b.initializeGrid(a,e.grid)},post:function(a,b,c,d){}}}}}])}(),angular.module("ui.grid").run(["$templateCache",function(a){"use strict";a.put("ui-grid/ui-grid-filter",'<div class="ui-grid-filter-container" ng-repeat="colFilter in col.filters" ng-class="{\'ui-grid-filter-cancel-button-hidden\' : colFilter.disableCancelFilterButton === true }"><div ng-if="colFilter.type !== \'select\'"><input type="text" class="ui-grid-filter-input ui-grid-filter-input-{{$index}}" ng-model="colFilter.term" ng-attr-placeholder="{{colFilter.placeholder || \'\'}}" aria-label="{{colFilter.ariaLabel || aria.defaultFilterLabel}}"><div role="button" class="ui-grid-filter-button" ng-click="removeFilter(colFilter, $index)" ng-if="!colFilter.disableCancelFilterButton" ng-disabled="colFilter.term === undefined || colFilter.term === null || colFilter.term === \'\'" ng-show="colFilter.term !== undefined && colFilter.term !== null && colFilter.term !== \'\'"><i class="ui-grid-icon-cancel" ui-grid-one-bind-aria-label="aria.removeFilter">&nbsp;</i></div></div><div ng-if="colFilter.type === \'select\'"><select class="ui-grid-filter-select ui-grid-filter-input-{{$index}}" ng-model="colFilter.term" ng-attr-placeholder="{{colFilter.placeholder || aria.defaultFilterLabel}}" aria-label="{{colFilter.ariaLabel || \'\'}}" ng-options="option.value as option.label for option in colFilter.selectOptions"><option value=""></option></select><div role="button" class="ui-grid-filter-button-select" ng-click="removeFilter(colFilter, $index)" ng-if="!colFilter.disableCancelFilterButton" ng-disabled="colFilter.term === undefined || colFilter.term === null || colFilter.term === \'\'" ng-show="colFilter.term !== undefined && colFilter.term != null"><i class="ui-grid-icon-cancel" ui-grid-one-bind-aria-label="aria.removeFilter">&nbsp;</i></div></div></div>'),a.put("ui-grid/ui-grid-footer",'<div class="ui-grid-footer-panel ui-grid-footer-aggregates-row"><!-- tfooter --><div class="ui-grid-footer ui-grid-footer-viewport"><div class="ui-grid-footer-canvas"><div class="ui-grid-footer-cell-wrapper" ng-style="colContainer.headerCellWrapperStyle()"><div role="row" class="ui-grid-footer-cell-row"><div ui-grid-footer-cell role="gridcell" ng-repeat="col in colContainer.renderedColumns track by col.uid" col="col" render-index="$index" class="ui-grid-footer-cell ui-grid-clearfix"></div></div></div></div></div></div>'),a.put("ui-grid/ui-grid-grid-footer",'<div class="ui-grid-footer-info ui-grid-grid-footer"><span>{{\'search.totalItems\' | t}} {{grid.rows.length}}</span> <span ng-if="grid.renderContainers.body.visibleRowCache.length !== grid.rows.length" class="ngLabel">({{"search.showingItems" | t}} {{grid.renderContainers.body.visibleRowCache.length}})</span></div>'),a.put("ui-grid/ui-grid-group-panel",'<div class="ui-grid-group-panel"><div ui-t="groupPanel.description" class="description" ng-show="groupings.length == 0"></div><ul ng-show="groupings.length > 0" class="ngGroupList"><li class="ngGroupItem" ng-repeat="group in configGroups"><span class="ngGroupElement"><span class="ngGroupName">{{group.displayName}} <span ng-click="removeGroup($index)" class="ngRemoveGroup">x</span></span> <span ng-hide="$last" class="ngGroupArrow"></span></span></li></ul></div>'),a.put("ui-grid/ui-grid-header",'<div role="rowgroup" class="ui-grid-header"><!-- theader --><div class="ui-grid-top-panel"><div class="ui-grid-header-viewport"><div class="ui-grid-header-canvas"><div class="ui-grid-header-cell-wrapper" ng-style="colContainer.headerCellWrapperStyle()"><div role="row" class="ui-grid-header-cell-row"><div class="ui-grid-header-cell ui-grid-clearfix" ng-repeat="col in colContainer.renderedColumns track by col.uid" ui-grid-header-cell col="col" render-index="$index"></div></div></div></div></div></div></div>'),a.put("ui-grid/ui-grid-menu-button",'<div class="ui-grid-menu-button"><div role="button" ui-grid-one-bind-id-grid="\'grid-menu\'" class="ui-grid-icon-container" ng-click="toggleMenu()" aria-haspopup="true"><i class="ui-grid-icon-menu" ui-grid-one-bind-aria-label="i18n.aria.buttonLabel">&nbsp;</i></div><div ui-grid-menu menu-items="menuItems"></div></div>'),a.put("ui-grid/ui-grid-no-header",'<div class="ui-grid-top-panel"></div>'),a.put("ui-grid/ui-grid-row","<div ng-repeat=\"(colRenderIndex, col) in colContainer.renderedColumns track by col.uid\" ui-grid-one-bind-id-grid=\"rowRenderIndex + '-' + col.uid + '-cell'\" class=\"ui-grid-cell\" ng-class=\"{ 'ui-grid-row-header-cell': col.isRowHeader }\" role=\"{{col.isRowHeader ? 'rowheader' : 'gridcell'}}\" ui-grid-cell></div>"),a.put("ui-grid/ui-grid",'<div ui-i18n="en" class="ui-grid"><!-- TODO (c0bra): add "scoped" attr here, eventually? --><style ui-grid-style>.grid{{ grid.id }} {\n      /* Styles for the grid */\n    }\n\n    .grid{{ grid.id }} .ui-grid-row, .grid{{ grid.id }} .ui-grid-cell, .grid{{ grid.id }} .ui-grid-cell .ui-grid-vertical-bar {\n      height: {{ grid.options.rowHeight }}px;\n    }\n\n    .grid{{ grid.id }} .ui-grid-row:last-child .ui-grid-cell {\n      border-bottom-width: {{ ((grid.getTotalRowHeight() < grid.getViewportHeight()) && \'1\') || \'0\' }}px;\n    }\n\n    {{ grid.verticalScrollbarStyles }}\n    {{ grid.horizontalScrollbarStyles }}\n\n    /*\n    .ui-grid[dir=rtl] .ui-grid-viewport {\n      padding-left: {{ grid.verticalScrollbarWidth }}px;\n    }\n    */\n\n    {{ grid.customStyles }}</style><div class="ui-grid-contents-wrapper"><div ui-grid-menu-button ng-if="grid.options.enableGridMenu"></div><div ng-if="grid.hasLeftContainer()" style="width: 0" ui-grid-pinned-container="\'left\'"></div><div ui-grid-render-container container-id="\'body\'" col-container-name="\'body\'" row-container-name="\'body\'" bind-scroll-horizontal="true" bind-scroll-vertical="true" enable-horizontal-scrollbar="grid.options.enableHorizontalScrollbar" enable-vertical-scrollbar="grid.options.enableVerticalScrollbar"></div><div ng-if="grid.hasRightContainer()" style="width: 0" ui-grid-pinned-container="\'right\'"></div><div ui-grid-grid-footer ng-if="grid.options.showGridFooter"></div><div ui-grid-column-menu ng-if="grid.options.enableColumnMenus"></div><div ng-transclude></div></div></div>'),
+a.put("ui-grid/uiGridCell",'<div class="ui-grid-cell-contents" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>'),a.put("ui-grid/uiGridColumnMenu",'<div class="ui-grid-column-menu"><div ui-grid-menu menu-items="menuItems"><!-- <div class="ui-grid-column-menu">\n    <div class="inner" ng-show="menuShown">\n      <ul>\n        <div ng-show="grid.options.enableSorting">\n          <li ng-click="sortColumn($event, asc)" ng-class="{ \'selected\' : col.sort.direction == asc }"><i class="ui-grid-icon-sort-alt-up"></i> Sort Ascending</li>\n          <li ng-click="sortColumn($event, desc)" ng-class="{ \'selected\' : col.sort.direction == desc }"><i class="ui-grid-icon-sort-alt-down"></i> Sort Descending</li>\n          <li ng-show="col.sort.direction" ng-click="unsortColumn()"><i class="ui-grid-icon-cancel"></i> Remove Sort</li>\n        </div>\n      </ul>\n    </div>\n  </div> --></div></div>'),a.put("ui-grid/uiGridFooterCell",'<div class="ui-grid-cell-contents" col-index="renderIndex"><div>{{ col.getAggregationText() + ( col.getAggregationValue() CUSTOM_FILTERS ) }}</div></div>'),a.put("ui-grid/uiGridHeaderCell",'<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : (!col.sort.direction ? \'none\' : \'other\'))}}"><div role="button" tabindex="0" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex" title="TOOLTIP"><span class="ui-grid-header-cell-label" ui-grid-one-bind-id-grid="col.uid + \'-header-text\'">{{ col.displayName CUSTOM_FILTERS }}</span> <span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" ui-grid-visible="col.sort.direction" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-blank\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 )  : null}}" aria-hidden="true"></i> <sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div><div role="button" tabindex="0" ui-grid-one-bind-id-grid="col.uid + \'-menu-button\'" class="ui-grid-column-menu-button" ng-if="grid.options.enableColumnMenus && !col.isRowHeader  && col.colDef.enableColumnMenu !== false" ng-click="toggleMenu($event)" ng-class="{\'ui-grid-column-menu-button-last-col\': isLastCol}" ui-grid-one-bind-aria-label="i18n.headerCell.aria.columnMenuButtonLabel" aria-haspopup="true"><i class="ui-grid-icon-angle-down" aria-hidden="true">&nbsp;</i></div><div ui-grid-filter></div></div>'),a.put("ui-grid/uiGridMenu",'<div class="ui-grid-menu" ng-if="shown"><style ui-grid-style>{{dynamicStyles}}</style><div class="ui-grid-menu-mid" ng-show="shownMid"><div class="ui-grid-menu-inner"><ul role="menu" class="ui-grid-menu-items"><li ng-repeat="item in menuItems" role="menuitem" ui-grid-menu-item ui-grid-one-bind-id="\'menuitem-\'+$index" action="item.action" name="item.title" active="item.active" icon="item.icon" shown="item.shown" context="item.context" template-url="item.templateUrl" leave-open="item.leaveOpen" screen-reader-only="item.screenReaderOnly"></li></ul></div></div></div>'),a.put("ui-grid/uiGridMenuItem",'<button type="button" class="ui-grid-menu-item" ng-click="itemAction($event, title)" ng-show="itemShown()" ng-class="{ \'ui-grid-menu-item-active\': active(), \'ui-grid-sr-only\': (!focus && screenReaderOnly) }" aria-pressed="{{active()}}" tabindex="0" ng-focus="focus=true" ng-blur="focus=false"><i ng-class="icon" aria-hidden="true">&nbsp;</i> {{ name }}</button>'),a.put("ui-grid/uiGridRenderContainer","<div role=\"grid\" ui-grid-one-bind-id-grid=\"'grid-container'\" class=\"ui-grid-render-container\" ng-style=\"{ 'margin-left': colContainer.getMargin('left') + 'px', 'margin-right': colContainer.getMargin('right') + 'px' }\"><!-- All of these dom elements are replaced in place --><div ui-grid-header></div><div ui-grid-viewport></div><div ng-if=\"colContainer.needsHScrollbarPlaceholder()\" class=\"ui-grid-scrollbar-placeholder\" ng-style=\"{height:colContainer.grid.scrollbarHeight + 'px'}\"></div><ui-grid-footer ng-if=\"grid.options.showColumnFooter\"></ui-grid-footer></div>"),a.put("ui-grid/uiGridViewport",'<div role="rowgroup" class="ui-grid-viewport" ng-style="colContainer.getViewportStyle()"><!-- tbody --><div class="ui-grid-canvas"><div ng-repeat="(rowRenderIndex, row) in rowContainer.renderedRows track by $index" class="ui-grid-row" ng-style="Viewport.rowStyle(rowRenderIndex)"><div role="row" ui-grid-row="row" row-render-index="rowRenderIndex"></div></div></div></div>'),a.put("ui-grid/cellEditor",'<div><form name="inputForm"><input type="INPUT_TYPE" ng-class="\'colt\' + col.uid" ui-grid-editor ng-model="MODEL_COL_FIELD"></form></div>'),a.put("ui-grid/dropdownEditor",'<div><form name="inputForm"><select ng-class="\'colt\' + col.uid" ui-grid-edit-dropdown ng-model="MODEL_COL_FIELD" ng-options="field[editDropdownIdLabel] as field[editDropdownValueLabel] CUSTOM_FILTERS for field in editDropdownOptionsArray"></select></form></div>'),a.put("ui-grid/fileChooserEditor",'<div><form name="inputForm"><input ng-class="\'colt\' + col.uid" ui-grid-edit-file-chooser type="file" id="files" name="files[]" ng-model="MODEL_COL_FIELD"></form></div>'),a.put("ui-grid/expandableRow",'<div ui-grid-expandable-row ng-if="expandableRow.shouldRenderExpand()" class="expandableRow" style="float:left; margin-top: 1px; margin-bottom: 1px" ng-style="{width: (grid.renderContainers.body.getCanvasWidth()) + \'px\', height: row.expandedRowHeight + \'px\'}"></div>'),a.put("ui-grid/expandableRowHeader",'<div class="ui-grid-row-header-cell ui-grid-expandable-buttons-cell"><div class="ui-grid-cell-contents"><i ng-if="!row.groupHeader==true" ng-class="{ \'ui-grid-icon-plus-squared\' : !row.isExpanded, \'ui-grid-icon-minus-squared\' : row.isExpanded }" ng-click="grid.api.expandable.toggleRowExpansion(row.entity)"></i></div></div>'),a.put("ui-grid/expandableScrollFiller","<div ng-if=\"expandableRow.shouldRenderFiller()\" ng-class=\"{scrollFiller:true, scrollFillerClass:(colContainer.name === 'body')}\" ng-style=\"{ width: (grid.getViewportWidth()) + 'px', height: row.expandedRowHeight + 2 + 'px', 'margin-left': grid.options.rowHeader.rowHeaderWidth + 'px' }\"><i class=\"ui-grid-icon-spin5 ui-grid-animate-spin\" ng-style=\"{'margin-top': ( row.expandedRowHeight/2 - 5) + 'px', 'margin-left' : ((grid.getViewportWidth() - grid.options.rowHeader.rowHeaderWidth)/2 - 5) + 'px'}\"></i></div>"),a.put("ui-grid/expandableTopRowHeader",'<div class="ui-grid-row-header-cell ui-grid-expandable-buttons-cell"><div class="ui-grid-cell-contents"><i ng-class="{ \'ui-grid-icon-plus-squared\' : !grid.expandable.expandedAll, \'ui-grid-icon-minus-squared\' : grid.expandable.expandedAll }" ng-click="grid.api.expandable.toggleAllRows()"></i></div></div>'),a.put("ui-grid/csvLink",'<span class="ui-grid-exporter-csv-link-span"><a href="data:text/csv;charset=UTF-8,CSV_CONTENT" download="FILE_NAME">LINK_LABEL</a></span>'),a.put("ui-grid/importerMenuItem",'<li class="ui-grid-menu-item"><form><input class="ui-grid-importer-file-chooser" type="file" id="files" name="files[]"></form></li>'),a.put("ui-grid/importerMenuItemContainer","<div ui-grid-importer-menu-item></div>"),a.put("ui-grid/pagination",'<div role="contentinfo" class="ui-grid-pager-panel" ui-grid-pager ng-show="grid.options.enablePaginationControls"><div role="navigation" class="ui-grid-pager-container"><div role="menubar" class="ui-grid-pager-control"><button type="button" role="menuitem" class="ui-grid-pager-first" ui-grid-one-bind-title="aria.pageToFirst" ui-grid-one-bind-aria-label="aria.pageToFirst" ng-click="pageFirstPageClick()" ng-disabled="cantPageBackward()"><div ng-class="grid.isRTL() ? \'last-triangle\' : \'first-triangle\'"><div ng-class="grid.isRTL() ? \'last-bar-rtl\' : \'first-bar\'"></div></div></button> <button type="button" role="menuitem" class="ui-grid-pager-previous" ui-grid-one-bind-title="aria.pageBack" ui-grid-one-bind-aria-label="aria.pageBack" ng-click="pagePreviousPageClick()" ng-disabled="cantPageBackward()"><div ng-class="grid.isRTL() ? \'last-triangle prev-triangle\' : \'first-triangle prev-triangle\'"></div></button> <input type="number" ui-grid-one-bind-title="aria.pageSelected" ui-grid-one-bind-aria-label="aria.pageSelected" class="ui-grid-pager-control-input" ng-model="grid.options.paginationCurrentPage" min="1" max="{{ paginationApi.getTotalPages() }}" required> <span class="ui-grid-pager-max-pages-number" ng-show="paginationApi.getTotalPages() > 0"><abbr ui-grid-one-bind-title="paginationOf">/</abbr> {{ paginationApi.getTotalPages() }}</span> <button type="button" role="menuitem" class="ui-grid-pager-next" ui-grid-one-bind-title="aria.pageForward" ui-grid-one-bind-aria-label="aria.pageForward" ng-click="pageNextPageClick()" ng-disabled="cantPageForward()"><div ng-class="grid.isRTL() ? \'first-triangle next-triangle\' : \'last-triangle next-triangle\'"></div></button> <button type="button" role="menuitem" class="ui-grid-pager-last" ui-grid-one-bind-title="aria.pageToLast" ui-grid-one-bind-aria-label="aria.pageToLast" ng-click="pageLastPageClick()" ng-disabled="cantPageToLast()"><div ng-class="grid.isRTL() ? \'first-triangle\' : \'last-triangle\'"><div ng-class="grid.isRTL() ? \'first-bar-rtl\' : \'last-bar\'"></div></div></button></div><div class="ui-grid-pager-row-count-picker" ng-if="grid.options.paginationPageSizes.length > 1"><select ui-grid-one-bind-aria-labelledby-grid="\'items-per-page-label\'" ng-model="grid.options.paginationPageSize" ng-options="o as o for o in grid.options.paginationPageSizes"></select><span ui-grid-one-bind-id-grid="\'items-per-page-label\'" class="ui-grid-pager-row-count-label">&nbsp;{{sizesLabel}}</span></div><span ng-if="grid.options.paginationPageSizes.length <= 1" class="ui-grid-pager-row-count-label">{{grid.options.paginationPageSize}}&nbsp;{{sizesLabel}}</span></div><div class="ui-grid-pager-count-container"><div class="ui-grid-pager-count"><span ng-show="grid.options.totalItems > 0">{{showingLow}} <abbr ui-grid-one-bind-title="paginationThrough">-</abbr> {{showingHigh}} {{paginationOf}} {{grid.options.totalItems}} {{totalItemsLabel}}</span></div></div></div>'),a.put("ui-grid/columnResizer",'<div ui-grid-column-resizer ng-if="grid.options.enableColumnResizing" class="ui-grid-column-resizer" col="col" position="right" render-index="renderIndex" unselectable="on"></div>'),a.put("ui-grid/gridFooterSelectedItems",'<span ng-if="grid.selection.selectedCount !== 0 && grid.options.enableFooterTotalSelected">({{"search.selectedItems" | t}} {{grid.selection.selectedCount}})</span>'),a.put("ui-grid/selectionHeaderCell",'<div><!-- <div class="ui-grid-vertical-bar">&nbsp;</div> --><div class="ui-grid-cell-contents" col-index="renderIndex"><ui-grid-selection-select-all-buttons ng-if="grid.options.enableSelectAll"></ui-grid-selection-select-all-buttons></div></div>'),a.put("ui-grid/selectionRowHeader",'<div class="ui-grid-disable-selection"><div class="ui-grid-cell-contents"><ui-grid-selection-row-header-buttons></ui-grid-selection-row-header-buttons></div></div>'),a.put("ui-grid/selectionRowHeaderButtons",'<div class="ui-grid-selection-row-header-buttons ui-grid-icon-ok" ng-class="{\'ui-grid-row-selected\': row.isSelected}" ng-click="selectButtonClick(row, $event)">&nbsp;</div>'),a.put("ui-grid/selectionSelectAllButtons",'<div class="ui-grid-selection-row-header-buttons ui-grid-icon-ok" ng-class="{\'ui-grid-all-selected\': grid.selection.selectAll}" ng-click="headerButtonClick($event)"></div>'),a.put("ui-grid/treeBaseExpandAllButtons",'<div class="ui-grid-tree-base-row-header-buttons" ng-class="{\'ui-grid-icon-minus-squared\': grid.treeBase.numberLevels > 0 && grid.treeBase.expandAll, \'ui-grid-icon-plus-squared\': grid.treeBase.numberLevels > 0 && !grid.treeBase.expandAll}" ng-click="headerButtonClick($event)"></div>'),a.put("ui-grid/treeBaseHeaderCell",'<div><div class="ui-grid-cell-contents" col-index="renderIndex"><ui-grid-tree-base-expand-all-buttons ng-if="grid.options.enableExpandAll"></ui-grid-tree-base-expand-all-buttons></div></div>'),a.put("ui-grid/treeBaseRowHeader",'<div class="ui-grid-cell-contents"><ui-grid-tree-base-row-header-buttons></ui-grid-tree-base-row-header-buttons></div>'),a.put("ui-grid/treeBaseRowHeaderButtons","<div class=\"ui-grid-tree-base-row-header-buttons\" ng-class=\"{'ui-grid-tree-base-header': row.treeLevel > -1 }\" ng-click=\"treeButtonClick(row, $event)\"><i ng-class=\"{'ui-grid-icon-minus-squared': ( ( grid.options.showTreeExpandNoChildren && row.treeLevel > -1 ) || ( row.treeNode.children && row.treeNode.children.length > 0 ) ) && row.treeNode.state === 'expanded', 'ui-grid-icon-plus-squared': ( ( grid.options.showTreeExpandNoChildren && row.treeLevel > -1 ) || ( row.treeNode.children && row.treeNode.children.length > 0 ) ) && row.treeNode.state === 'collapsed'}\" ng-style=\"{'padding-left': grid.options.treeIndent * row.treeLevel + 'px'}\"></i> &nbsp;</div>"),a.put("ui-grid/cellTitleValidator",'<div class="ui-grid-cell-contents" ng-class="{invalid:grid.validate.isInvalid(row.entity,col.colDef)}" title="{{grid.validate.getTitleFormattedErrors(row.entity,col.colDef)}}">{{COL_FIELD CUSTOM_FILTERS}}</div>'),a.put("ui-grid/cellTooltipValidator",'<div class="ui-grid-cell-contents" ng-class="{invalid:grid.validate.isInvalid(row.entity,col.colDef)}" tooltip-html-unsafe="{{grid.validate.getFormattedErrors(row.entity,col.colDef)}}" tooltip-enable="grid.validate.isInvalid(row.entity,col.colDef)" tooltip-append-to-body="true" tooltip-placement="top" title="TOOLTIP">{{COL_FIELD CUSTOM_FILTERS}}</div>')}]);
 /**
  * State-based routing for AngularJS
  * @version v0.2.18
@@ -80579,22 +79121,24 @@ $templateCache.put("selectize/select.tpl.html","<div class=\"ui-select-container
 })(window, window.angular);
 
 /*!
- * jQuery JavaScript Library v2.2.4
- * http://jquery.com/
+ * jQuery JavaScript Library v3.1.1
+ * https://jquery.com/
  *
  * Includes Sizzle.js
- * http://sizzlejs.com/
+ * https://sizzlejs.com/
  *
  * Copyright jQuery Foundation and other contributors
  * Released under the MIT license
- * http://jquery.org/license
+ * https://jquery.org/license
  *
- * Date: 2016-05-20T17:23Z
+ * Date: 2016-09-22T22:30Z
  */
+( function( global, factory ) {
 
-(function( global, factory ) {
+	"use strict";
 
 	if ( typeof module === "object" && typeof module.exports === "object" ) {
+
 		// For CommonJS and CommonJS-like environments where a proper `window`
 		// is present, execute the factory and get jQuery.
 		// For environments that do not have a `window` with a `document`
@@ -80615,16 +79159,19 @@ $templateCache.put("selectize/select.tpl.html","<div class=\"ui-select-container
 	}
 
 // Pass this if window is not defined yet
-}(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
+} )( typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
-// Support: Firefox 18+
-// Can't be in strict mode, several libs including ASP.NET trace
-// the stack via arguments.caller.callee and Firefox dies if
-// you try to trace through "use strict" call chains. (#13335)
-//"use strict";
+// Edge <= 12 - 13+, Firefox <=18 - 45+, IE 10 - 11, Safari 5.1 - 9+, iOS 6 - 9.1
+// throw exceptions when non-strict code (e.g., ASP.NET 4.5) accesses strict mode
+// arguments.callee.caller (trac-13335). But as of jQuery 3.0 (2016), strict mode should be common
+// enough that all such attempts are guarded in a try block.
+"use strict";
+
 var arr = [];
 
 var document = window.document;
+
+var getProto = Object.getPrototypeOf;
 
 var slice = arr.slice;
 
@@ -80640,12 +79187,30 @@ var toString = class2type.toString;
 
 var hasOwn = class2type.hasOwnProperty;
 
+var fnToString = hasOwn.toString;
+
+var ObjectFunctionString = fnToString.call( Object );
+
 var support = {};
 
 
 
+	function DOMEval( code, doc ) {
+		doc = doc || document;
+
+		var script = doc.createElement( "script" );
+
+		script.text = code;
+		doc.head.appendChild( script ).parentNode.removeChild( script );
+	}
+/* global Symbol */
+// Defining this global in .eslintrc.json would create a danger of using the global
+// unguarded in another place, it seems safer to define global only for this module
+
+
+
 var
-	version = "2.2.4",
+	version = "3.1.1",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -80655,13 +79220,13 @@ var
 		return new jQuery.fn.init( selector, context );
 	},
 
-	// Support: Android<4.1
+	// Support: Android <=4.0 only
 	// Make sure we trim BOM and NBSP
 	rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,
 
 	// Matches dashed string for camelizing
 	rmsPrefix = /^-ms-/,
-	rdashAlpha = /-([\da-z])/gi,
+	rdashAlpha = /-([a-z])/g,
 
 	// Used by jQuery.camelCase as callback to replace()
 	fcamelCase = function( all, letter ) {
@@ -80675,9 +79240,6 @@ jQuery.fn = jQuery.prototype = {
 
 	constructor: jQuery,
 
-	// Start with an empty selector
-	selector: "",
-
 	// The default length of a jQuery object is 0
 	length: 0,
 
@@ -80688,13 +79250,14 @@ jQuery.fn = jQuery.prototype = {
 	// Get the Nth element in the matched element set OR
 	// Get the whole matched element set as a clean array
 	get: function( num ) {
-		return num != null ?
 
-			// Return just the one element from the set
-			( num < 0 ? this[ num + this.length ] : this[ num ] ) :
+		// Return all the elements in a clean array
+		if ( num == null ) {
+			return slice.call( this );
+		}
 
-			// Return all the elements in a clean array
-			slice.call( this );
+		// Return just the one element from the set
+		return num < 0 ? this[ num + this.length ] : this[ num ];
 	},
 
 	// Take an array of elements and push it onto the stack
@@ -80706,7 +79269,6 @@ jQuery.fn = jQuery.prototype = {
 
 		// Add the old object onto the stack (as a reference)
 		ret.prevObject = this;
-		ret.context = this.context;
 
 		// Return the newly-formed element set
 		return ret;
@@ -80847,41 +79409,45 @@ jQuery.extend( {
 
 	isNumeric: function( obj ) {
 
-		// parseFloat NaNs numeric-cast false positives (null|true|false|"")
-		// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
-		// subtraction forces infinities to NaN
-		// adding 1 corrects loss of precision from parseFloat (#15100)
-		var realStringObj = obj && obj.toString();
-		return !jQuery.isArray( obj ) && ( realStringObj - parseFloat( realStringObj ) + 1 ) >= 0;
+		// As of jQuery 3.0, isNumeric is limited to
+		// strings and numbers (primitives or objects)
+		// that can be coerced to finite numbers (gh-2662)
+		var type = jQuery.type( obj );
+		return ( type === "number" || type === "string" ) &&
+
+			// parseFloat NaNs numeric-cast false positives ("")
+			// ...but misinterprets leading-number strings, particularly hex literals ("0x...")
+			// subtraction forces infinities to NaN
+			!isNaN( obj - parseFloat( obj ) );
 	},
 
 	isPlainObject: function( obj ) {
-		var key;
+		var proto, Ctor;
 
-		// Not plain objects:
-		// - Any object or value whose internal [[Class]] property is not "[object Object]"
-		// - DOM nodes
-		// - window
-		if ( jQuery.type( obj ) !== "object" || obj.nodeType || jQuery.isWindow( obj ) ) {
+		// Detect obvious negatives
+		// Use toString instead of jQuery.type to catch host objects
+		if ( !obj || toString.call( obj ) !== "[object Object]" ) {
 			return false;
 		}
 
-		// Not own constructor property must be Object
-		if ( obj.constructor &&
-				!hasOwn.call( obj, "constructor" ) &&
-				!hasOwn.call( obj.constructor.prototype || {}, "isPrototypeOf" ) ) {
-			return false;
+		proto = getProto( obj );
+
+		// Objects with no prototype (e.g., `Object.create( null )`) are plain
+		if ( !proto ) {
+			return true;
 		}
 
-		// Own properties are enumerated firstly, so to speed up,
-		// if last one is own, then all properties are own
-		for ( key in obj ) {}
-
-		return key === undefined || hasOwn.call( obj, key );
+		// Objects with prototype are plain iff they were constructed by a global Object function
+		Ctor = hasOwn.call( proto, "constructor" ) && proto.constructor;
+		return typeof Ctor === "function" && fnToString.call( Ctor ) === ObjectFunctionString;
 	},
 
 	isEmptyObject: function( obj ) {
+
+		/* eslint-disable no-unused-vars */
+		// See https://github.com/eslint/eslint/issues/6125
 		var name;
+
 		for ( name in obj ) {
 			return false;
 		}
@@ -80893,7 +79459,7 @@ jQuery.extend( {
 			return obj + "";
 		}
 
-		// Support: Android<4.0, iOS<6 (functionish RegExp)
+		// Support: Android <=2.3 only (functionish RegExp)
 		return typeof obj === "object" || typeof obj === "function" ?
 			class2type[ toString.call( obj ) ] || "object" :
 			typeof obj;
@@ -80901,32 +79467,11 @@ jQuery.extend( {
 
 	// Evaluates a script in a global context
 	globalEval: function( code ) {
-		var script,
-			indirect = eval;
-
-		code = jQuery.trim( code );
-
-		if ( code ) {
-
-			// If the code includes a valid, prologue position
-			// strict mode pragma, execute code by injecting a
-			// script tag into the document.
-			if ( code.indexOf( "use strict" ) === 1 ) {
-				script = document.createElement( "script" );
-				script.text = code;
-				document.head.appendChild( script ).parentNode.removeChild( script );
-			} else {
-
-				// Otherwise, avoid the DOM node creation, insertion
-				// and removal by using an indirect global eval
-
-				indirect( code );
-			}
-		}
+		DOMEval( code );
 	},
 
 	// Convert dashed to camelCase; used by the css and data modules
-	// Support: IE9-11+
+	// Support: IE <=9 - 11, Edge 12 - 13
 	// Microsoft forgot to hump their vendor prefix (#9572)
 	camelCase: function( string ) {
 		return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
@@ -80957,7 +79502,7 @@ jQuery.extend( {
 		return obj;
 	},
 
-	// Support: Android<4.1
+	// Support: Android <=4.0 only
 	trim: function( text ) {
 		return text == null ?
 			"" :
@@ -80986,6 +79531,8 @@ jQuery.extend( {
 		return arr == null ? -1 : indexOf.call( arr, elem, i );
 	},
 
+	// Support: Android <=4.0 only, PhantomJS 1 only
+	// push.apply(_, arraylike) throws on ancient WebKit
 	merge: function( first, second ) {
 		var len = +second.length,
 			j = 0,
@@ -81090,15 +79637,9 @@ jQuery.extend( {
 	support: support
 } );
 
-// JSHint would error on this code due to the Symbol not being defined in ES5.
-// Defining this global in .jshintrc would create a danger of using the global
-// unguarded in another place, it seems safer to just disable JSHint for these
-// three lines.
-/* jshint ignore: start */
 if ( typeof Symbol === "function" ) {
 	jQuery.fn[ Symbol.iterator ] = arr[ Symbol.iterator ];
 }
-/* jshint ignore: end */
 
 // Populate the class2type map
 jQuery.each( "Boolean Number String Function Array Date RegExp Object Error Symbol".split( " " ),
@@ -81108,7 +79649,7 @@ function( i, name ) {
 
 function isArrayLike( obj ) {
 
-	// Support: iOS 8.2 (not reproducible in simulator)
+	// Support: real iOS 8.2 only (not reproducible in simulator)
 	// `in` check used to prevent JIT error (gh-2145)
 	// hasOwn isn't used here due to false negatives
 	// regarding Nodelist length in IE
@@ -81124,14 +79665,14 @@ function isArrayLike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v2.2.1
- * http://sizzlejs.com/
+ * Sizzle CSS Selector Engine v2.3.3
+ * https://sizzlejs.com/
  *
  * Copyright jQuery Foundation and other contributors
  * Released under the MIT license
  * http://jquery.org/license
  *
- * Date: 2015-10-17
+ * Date: 2016-08-08
  */
 (function( window ) {
 
@@ -81172,9 +79713,6 @@ var i,
 		return 0;
 	},
 
-	// General-purpose constants
-	MAX_NEGATIVE = 1 << 31,
-
 	// Instance methods
 	hasOwn = ({}).hasOwnProperty,
 	arr = [],
@@ -81183,7 +79721,7 @@ var i,
 	push = arr.push,
 	slice = arr.slice,
 	// Use a stripped-down indexOf as it's faster than native
-	// http://jsperf.com/thor-indexof-vs-for/5
+	// https://jsperf.com/thor-indexof-vs-for/5
 	indexOf = function( list, elem ) {
 		var i = 0,
 			len = list.length;
@@ -81203,7 +79741,7 @@ var i,
 	whitespace = "[\\x20\\t\\r\\n\\f]",
 
 	// http://www.w3.org/TR/CSS21/syndata.html#value-def-identifier
-	identifier = "(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",
+	identifier = "(?:\\\\.|[\\w-]|[^\0-\\xa0])+",
 
 	// Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
 	attributes = "\\[" + whitespace + "*(" + identifier + ")(?:" + whitespace +
@@ -81260,9 +79798,9 @@ var i,
 	rquickExpr = /^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,
 
 	rsibling = /[+~]/,
-	rescape = /'|\\/g,
 
-	// CSS escapes http://www.w3.org/TR/CSS21/syndata.html#escaped-characters
+	// CSS escapes
+	// http://www.w3.org/TR/CSS21/syndata.html#escaped-characters
 	runescape = new RegExp( "\\\\([\\da-f]{1,6}" + whitespace + "?|(" + whitespace + ")|.)", "ig" ),
 	funescape = function( _, escaped, escapedWhitespace ) {
 		var high = "0x" + escaped - 0x10000;
@@ -81278,13 +79816,39 @@ var i,
 				String.fromCharCode( high >> 10 | 0xD800, high & 0x3FF | 0xDC00 );
 	},
 
+	// CSS string/identifier serialization
+	// https://drafts.csswg.org/cssom/#common-serializing-idioms
+	rcssescape = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g,
+	fcssescape = function( ch, asCodePoint ) {
+		if ( asCodePoint ) {
+
+			// U+0000 NULL becomes U+FFFD REPLACEMENT CHARACTER
+			if ( ch === "\0" ) {
+				return "\uFFFD";
+			}
+
+			// Control characters and (dependent upon position) numbers get escaped as code points
+			return ch.slice( 0, -1 ) + "\\" + ch.charCodeAt( ch.length - 1 ).toString( 16 ) + " ";
+		}
+
+		// Other potentially-special ASCII characters get backslash-escaped
+		return "\\" + ch;
+	},
+
 	// Used for iframes
 	// See setDocument()
 	// Removing the function wrapper causes a "Permission Denied"
 	// error in IE
 	unloadHandler = function() {
 		setDocument();
-	};
+	},
+
+	disabledAncestor = addCombinator(
+		function( elem ) {
+			return elem.disabled === true && ("form" in elem || "label" in elem);
+		},
+		{ dir: "parentNode", next: "legend" }
+	);
 
 // Optimize for push.apply( _, NodeList )
 try {
@@ -81316,7 +79880,7 @@ try {
 }
 
 function Sizzle( selector, context, results, seed ) {
-	var m, i, elem, nid, nidselect, match, groups, newSelector,
+	var m, i, elem, nid, match, groups, newSelector,
 		newContext = context && context.ownerDocument,
 
 		// nodeType defaults to 9, since context defaults to document
@@ -81409,7 +79973,7 @@ function Sizzle( selector, context, results, seed ) {
 
 					// Capture the context ID, setting it first if necessary
 					if ( (nid = context.getAttribute( "id" )) ) {
-						nid = nid.replace( rescape, "\\$&" );
+						nid = nid.replace( rcssescape, fcssescape );
 					} else {
 						context.setAttribute( "id", (nid = expando) );
 					}
@@ -81417,9 +79981,8 @@ function Sizzle( selector, context, results, seed ) {
 					// Prefix every selector in the list
 					groups = tokenize( selector );
 					i = groups.length;
-					nidselect = ridentifier.test( nid ) ? "#" + nid : "[id='" + nid + "']";
 					while ( i-- ) {
-						groups[i] = nidselect + " " + toSelector( groups[i] );
+						groups[i] = "#" + nid + " " + toSelector( groups[i] );
 					}
 					newSelector = groups.join( "," );
 
@@ -81480,22 +80043,22 @@ function markFunction( fn ) {
 
 /**
  * Support testing using an element
- * @param {Function} fn Passed the created div and expects a boolean result
+ * @param {Function} fn Passed the created element and returns a boolean result
  */
 function assert( fn ) {
-	var div = document.createElement("div");
+	var el = document.createElement("fieldset");
 
 	try {
-		return !!fn( div );
+		return !!fn( el );
 	} catch (e) {
 		return false;
 	} finally {
 		// Remove from its parent by default
-		if ( div.parentNode ) {
-			div.parentNode.removeChild( div );
+		if ( el.parentNode ) {
+			el.parentNode.removeChild( el );
 		}
 		// release memory in IE
-		div = null;
+		el = null;
 	}
 }
 
@@ -81522,8 +80085,7 @@ function addHandle( attrs, handler ) {
 function siblingCheck( a, b ) {
 	var cur = b && a,
 		diff = cur && a.nodeType === 1 && b.nodeType === 1 &&
-			( ~b.sourceIndex || MAX_NEGATIVE ) -
-			( ~a.sourceIndex || MAX_NEGATIVE );
+			a.sourceIndex - b.sourceIndex;
 
 	// Use IE sourceIndex if available on both nodes
 	if ( diff ) {
@@ -81561,6 +80123,62 @@ function createButtonPseudo( type ) {
 	return function( elem ) {
 		var name = elem.nodeName.toLowerCase();
 		return (name === "input" || name === "button") && elem.type === type;
+	};
+}
+
+/**
+ * Returns a function to use in pseudos for :enabled/:disabled
+ * @param {Boolean} disabled true for :disabled; false for :enabled
+ */
+function createDisabledPseudo( disabled ) {
+
+	// Known :disabled false positives: fieldset[disabled] > legend:nth-of-type(n+2) :can-disable
+	return function( elem ) {
+
+		// Only certain elements can match :enabled or :disabled
+		// https://html.spec.whatwg.org/multipage/scripting.html#selector-enabled
+		// https://html.spec.whatwg.org/multipage/scripting.html#selector-disabled
+		if ( "form" in elem ) {
+
+			// Check for inherited disabledness on relevant non-disabled elements:
+			// * listed form-associated elements in a disabled fieldset
+			//   https://html.spec.whatwg.org/multipage/forms.html#category-listed
+			//   https://html.spec.whatwg.org/multipage/forms.html#concept-fe-disabled
+			// * option elements in a disabled optgroup
+			//   https://html.spec.whatwg.org/multipage/forms.html#concept-option-disabled
+			// All such elements have a "form" property.
+			if ( elem.parentNode && elem.disabled === false ) {
+
+				// Option elements defer to a parent optgroup if present
+				if ( "label" in elem ) {
+					if ( "label" in elem.parentNode ) {
+						return elem.parentNode.disabled === disabled;
+					} else {
+						return elem.disabled === disabled;
+					}
+				}
+
+				// Support: IE 6 - 11
+				// Use the isDisabled shortcut property to check for disabled fieldset ancestors
+				return elem.isDisabled === disabled ||
+
+					// Where there is no isDisabled, check manually
+					/* jshint -W018 */
+					elem.isDisabled !== !disabled &&
+						disabledAncestor( elem ) === disabled;
+			}
+
+			return elem.disabled === disabled;
+
+		// Try to winnow out elements that can't be disabled before trusting the disabled property.
+		// Some victims get caught in our net (label, legend, menu, track), but it shouldn't
+		// even exist on them, let alone have a boolean value.
+		} else if ( "label" in elem ) {
+			return elem.disabled === disabled;
+		}
+
+		// Remaining elements are neither :enabled nor :disabled
+		return false;
 	};
 }
 
@@ -81616,7 +80234,7 @@ isXML = Sizzle.isXML = function( elem ) {
  * @returns {Object} Returns the current document
  */
 setDocument = Sizzle.setDocument = function( node ) {
-	var hasCompare, parent,
+	var hasCompare, subWindow,
 		doc = node ? node.ownerDocument || node : preferredDoc;
 
 	// Return early if doc is invalid or already selected
@@ -81631,14 +80249,16 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 	// Support: IE 9-11, Edge
 	// Accessing iframe documents after unload throws "permission denied" errors (jQuery #13936)
-	if ( (parent = document.defaultView) && parent.top !== parent ) {
-		// Support: IE 11
-		if ( parent.addEventListener ) {
-			parent.addEventListener( "unload", unloadHandler, false );
+	if ( preferredDoc !== document &&
+		(subWindow = document.defaultView) && subWindow.top !== subWindow ) {
+
+		// Support: IE 11, Edge
+		if ( subWindow.addEventListener ) {
+			subWindow.addEventListener( "unload", unloadHandler, false );
 
 		// Support: IE 9 - 10 only
-		} else if ( parent.attachEvent ) {
-			parent.attachEvent( "onunload", unloadHandler );
+		} else if ( subWindow.attachEvent ) {
+			subWindow.attachEvent( "onunload", unloadHandler );
 		}
 	}
 
@@ -81648,18 +80268,18 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// Support: IE<8
 	// Verify that getAttribute really returns attributes and not properties
 	// (excepting IE8 booleans)
-	support.attributes = assert(function( div ) {
-		div.className = "i";
-		return !div.getAttribute("className");
+	support.attributes = assert(function( el ) {
+		el.className = "i";
+		return !el.getAttribute("className");
 	});
 
 	/* getElement(s)By*
 	---------------------------------------------------------------------- */
 
 	// Check if getElementsByTagName("*") returns only elements
-	support.getElementsByTagName = assert(function( div ) {
-		div.appendChild( document.createComment("") );
-		return !div.getElementsByTagName("*").length;
+	support.getElementsByTagName = assert(function( el ) {
+		el.appendChild( document.createComment("") );
+		return !el.getElementsByTagName("*").length;
 	});
 
 	// Support: IE<9
@@ -81667,32 +80287,28 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 	// Support: IE<10
 	// Check if getElementById returns elements by name
-	// The broken getElementById methods don't pick up programatically-set names,
+	// The broken getElementById methods don't pick up programmatically-set names,
 	// so use a roundabout getElementsByName test
-	support.getById = assert(function( div ) {
-		docElem.appendChild( div ).id = expando;
+	support.getById = assert(function( el ) {
+		docElem.appendChild( el ).id = expando;
 		return !document.getElementsByName || !document.getElementsByName( expando ).length;
 	});
 
-	// ID find and filter
+	// ID filter and find
 	if ( support.getById ) {
-		Expr.find["ID"] = function( id, context ) {
-			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
-				var m = context.getElementById( id );
-				return m ? [ m ] : [];
-			}
-		};
 		Expr.filter["ID"] = function( id ) {
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
 				return elem.getAttribute("id") === attrId;
 			};
 		};
+		Expr.find["ID"] = function( id, context ) {
+			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
+				var elem = context.getElementById( id );
+				return elem ? [ elem ] : [];
+			}
+		};
 	} else {
-		// Support: IE6/7
-		// getElementById is not reliable as a find shortcut
-		delete Expr.find["ID"];
-
 		Expr.filter["ID"] =  function( id ) {
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
@@ -81700,6 +80316,36 @@ setDocument = Sizzle.setDocument = function( node ) {
 					elem.getAttributeNode("id");
 				return node && node.value === attrId;
 			};
+		};
+
+		// Support: IE 6 - 7 only
+		// getElementById is not reliable as a find shortcut
+		Expr.find["ID"] = function( id, context ) {
+			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
+				var node, i, elems,
+					elem = context.getElementById( id );
+
+				if ( elem ) {
+
+					// Verify the id attribute
+					node = elem.getAttributeNode("id");
+					if ( node && node.value === id ) {
+						return [ elem ];
+					}
+
+					// Fall back on getElementsByName
+					elems = context.getElementsByName( id );
+					i = 0;
+					while ( (elem = elems[i++]) ) {
+						node = elem.getAttributeNode("id");
+						if ( node && node.value === id ) {
+							return [ elem ];
+						}
+					}
+				}
+
+				return [];
+			}
 		};
 	}
 
@@ -81754,77 +80400,87 @@ setDocument = Sizzle.setDocument = function( node ) {
 	// We allow this because of a bug in IE8/9 that throws an error
 	// whenever `document.activeElement` is accessed on an iframe
 	// So, we allow :focus to pass through QSA all the time to avoid the IE error
-	// See http://bugs.jquery.com/ticket/13378
+	// See https://bugs.jquery.com/ticket/13378
 	rbuggyQSA = [];
 
 	if ( (support.qsa = rnative.test( document.querySelectorAll )) ) {
 		// Build QSA regex
 		// Regex strategy adopted from Diego Perini
-		assert(function( div ) {
+		assert(function( el ) {
 			// Select is set to empty string on purpose
 			// This is to test IE's treatment of not explicitly
 			// setting a boolean content attribute,
 			// since its presence should be enough
-			// http://bugs.jquery.com/ticket/12359
-			docElem.appendChild( div ).innerHTML = "<a id='" + expando + "'></a>" +
+			// https://bugs.jquery.com/ticket/12359
+			docElem.appendChild( el ).innerHTML = "<a id='" + expando + "'></a>" +
 				"<select id='" + expando + "-\r\\' msallowcapture=''>" +
 				"<option selected=''></option></select>";
 
 			// Support: IE8, Opera 11-12.16
 			// Nothing should be selected when empty strings follow ^= or $= or *=
 			// The test attribute must be unknown in Opera but "safe" for WinRT
-			// http://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
-			if ( div.querySelectorAll("[msallowcapture^='']").length ) {
+			// https://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
+			if ( el.querySelectorAll("[msallowcapture^='']").length ) {
 				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
 			}
 
 			// Support: IE8
 			// Boolean attributes and "value" are not treated correctly
-			if ( !div.querySelectorAll("[selected]").length ) {
+			if ( !el.querySelectorAll("[selected]").length ) {
 				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
 			}
 
 			// Support: Chrome<29, Android<4.4, Safari<7.0+, iOS<7.0+, PhantomJS<1.9.8+
-			if ( !div.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
+			if ( !el.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
 				rbuggyQSA.push("~=");
 			}
 
 			// Webkit/Opera - :checked should return selected option elements
 			// http://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
 			// IE8 throws error here and will not see later tests
-			if ( !div.querySelectorAll(":checked").length ) {
+			if ( !el.querySelectorAll(":checked").length ) {
 				rbuggyQSA.push(":checked");
 			}
 
 			// Support: Safari 8+, iOS 8+
 			// https://bugs.webkit.org/show_bug.cgi?id=136851
-			// In-page `selector#id sibing-combinator selector` fails
-			if ( !div.querySelectorAll( "a#" + expando + "+*" ).length ) {
+			// In-page `selector#id sibling-combinator selector` fails
+			if ( !el.querySelectorAll( "a#" + expando + "+*" ).length ) {
 				rbuggyQSA.push(".#.+[+~]");
 			}
 		});
 
-		assert(function( div ) {
+		assert(function( el ) {
+			el.innerHTML = "<a href='' disabled='disabled'></a>" +
+				"<select disabled='disabled'><option/></select>";
+
 			// Support: Windows 8 Native Apps
 			// The type and name attributes are restricted during .innerHTML assignment
 			var input = document.createElement("input");
 			input.setAttribute( "type", "hidden" );
-			div.appendChild( input ).setAttribute( "name", "D" );
+			el.appendChild( input ).setAttribute( "name", "D" );
 
 			// Support: IE8
 			// Enforce case-sensitivity of name attribute
-			if ( div.querySelectorAll("[name=d]").length ) {
+			if ( el.querySelectorAll("[name=d]").length ) {
 				rbuggyQSA.push( "name" + whitespace + "*[*^$|!~]?=" );
 			}
 
 			// FF 3.5 - :enabled/:disabled and hidden elements (hidden elements are still enabled)
 			// IE8 throws error here and will not see later tests
-			if ( !div.querySelectorAll(":enabled").length ) {
+			if ( el.querySelectorAll(":enabled").length !== 2 ) {
+				rbuggyQSA.push( ":enabled", ":disabled" );
+			}
+
+			// Support: IE9-11+
+			// IE's :disabled selector does not pick up the children of disabled fieldsets
+			docElem.appendChild( el ).disabled = true;
+			if ( el.querySelectorAll(":disabled").length !== 2 ) {
 				rbuggyQSA.push( ":enabled", ":disabled" );
 			}
 
 			// Opera 10-11 does not throw on post-comma invalid pseudos
-			div.querySelectorAll("*,:x");
+			el.querySelectorAll("*,:x");
 			rbuggyQSA.push(",.*:");
 		});
 	}
@@ -81835,14 +80491,14 @@ setDocument = Sizzle.setDocument = function( node ) {
 		docElem.oMatchesSelector ||
 		docElem.msMatchesSelector) )) ) {
 
-		assert(function( div ) {
+		assert(function( el ) {
 			// Check to see if it's possible to do matchesSelector
 			// on a disconnected node (IE 9)
-			support.disconnectedMatch = matches.call( div, "div" );
+			support.disconnectedMatch = matches.call( el, "*" );
 
 			// This should fail with an exception
 			// Gecko does not error, returns false instead
-			matches.call( div, "[s!='']:x" );
+			matches.call( el, "[s!='']:x" );
 			rbuggyMatches.push( "!=", pseudos );
 		});
 	}
@@ -82042,6 +80698,10 @@ Sizzle.attr = function( elem, name ) {
 			(val = elem.getAttributeNode(name)) && val.specified ?
 				val.value :
 				null;
+};
+
+Sizzle.escape = function( sel ) {
+	return (sel + "").replace( rcssescape, fcssescape );
 };
 
 Sizzle.error = function( msg ) {
@@ -82511,13 +81171,8 @@ Expr = Sizzle.selectors = {
 		},
 
 		// Boolean properties
-		"enabled": function( elem ) {
-			return elem.disabled === false;
-		},
-
-		"disabled": function( elem ) {
-			return elem.disabled === true;
-		},
+		"enabled": createDisabledPseudo( false ),
+		"disabled": createDisabledPseudo( true ),
 
 		"checked": function( elem ) {
 			// In CSS3, :checked should return both checked and selected elements
@@ -82719,7 +81374,9 @@ function toSelector( tokens ) {
 
 function addCombinator( matcher, combinator, base ) {
 	var dir = combinator.dir,
-		checkNonElements = base && dir === "parentNode",
+		skip = combinator.next,
+		key = skip || dir,
+		checkNonElements = base && key === "parentNode",
 		doneName = done++;
 
 	return combinator.first ?
@@ -82730,6 +81387,7 @@ function addCombinator( matcher, combinator, base ) {
 					return matcher( elem, context, xml );
 				}
 			}
+			return false;
 		} :
 
 		// Check against all ancestor/preceding elements
@@ -82755,14 +81413,16 @@ function addCombinator( matcher, combinator, base ) {
 						// Defend against cloned attroperties (jQuery gh-1709)
 						uniqueCache = outerCache[ elem.uniqueID ] || (outerCache[ elem.uniqueID ] = {});
 
-						if ( (oldCache = uniqueCache[ dir ]) &&
+						if ( skip && skip === elem.nodeName.toLowerCase() ) {
+							elem = elem[ dir ] || elem;
+						} else if ( (oldCache = uniqueCache[ key ]) &&
 							oldCache[ 0 ] === dirruns && oldCache[ 1 ] === doneName ) {
 
 							// Assign to newCache so results back-propagate to previous elements
 							return (newCache[ 2 ] = oldCache[ 2 ]);
 						} else {
 							// Reuse newcache so results back-propagate to previous elements
-							uniqueCache[ dir ] = newCache;
+							uniqueCache[ key ] = newCache;
 
 							// A match means we're done; a fail means we have to keep checking
 							if ( (newCache[ 2 ] = matcher( elem, context, xml )) ) {
@@ -82772,6 +81432,7 @@ function addCombinator( matcher, combinator, base ) {
 					}
 				}
 			}
+			return false;
 		};
 }
 
@@ -83134,8 +81795,7 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 		// Reduce context if the leading compound selector is an ID
 		tokens = match[0] = match[0].slice( 0 );
 		if ( tokens.length > 2 && (token = tokens[0]).type === "ID" &&
-				support.getById && context.nodeType === 9 && documentIsHTML &&
-				Expr.relative[ tokens[1].type ] ) {
+				context.nodeType === 9 && documentIsHTML && Expr.relative[ tokens[1].type ] ) {
 
 			context = ( Expr.find["ID"]( token.matches[0].replace(runescape, funescape), context ) || [] )[0];
 			if ( !context ) {
@@ -83205,17 +81865,17 @@ setDocument();
 
 // Support: Webkit<537.32 - Safari 6.0.3/Chrome 25 (fixed in Chrome 27)
 // Detached nodes confoundingly follow *each other*
-support.sortDetached = assert(function( div1 ) {
+support.sortDetached = assert(function( el ) {
 	// Should return 1, but returns 4 (following)
-	return div1.compareDocumentPosition( document.createElement("div") ) & 1;
+	return el.compareDocumentPosition( document.createElement("fieldset") ) & 1;
 });
 
 // Support: IE<8
 // Prevent attribute/property "interpolation"
-// http://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
-if ( !assert(function( div ) {
-	div.innerHTML = "<a href='#'></a>";
-	return div.firstChild.getAttribute("href") === "#" ;
+// https://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
+if ( !assert(function( el ) {
+	el.innerHTML = "<a href='#'></a>";
+	return el.firstChild.getAttribute("href") === "#" ;
 }) ) {
 	addHandle( "type|href|height|width", function( elem, name, isXML ) {
 		if ( !isXML ) {
@@ -83226,10 +81886,10 @@ if ( !assert(function( div ) {
 
 // Support: IE<9
 // Use defaultValue in place of getAttribute("value")
-if ( !support.attributes || !assert(function( div ) {
-	div.innerHTML = "<input/>";
-	div.firstChild.setAttribute( "value", "" );
-	return div.firstChild.getAttribute( "value" ) === "";
+if ( !support.attributes || !assert(function( el ) {
+	el.innerHTML = "<input/>";
+	el.firstChild.setAttribute( "value", "" );
+	return el.firstChild.getAttribute( "value" ) === "";
 }) ) {
 	addHandle( "value", function( elem, name, isXML ) {
 		if ( !isXML && elem.nodeName.toLowerCase() === "input" ) {
@@ -83240,8 +81900,8 @@ if ( !support.attributes || !assert(function( div ) {
 
 // Support: IE<9
 // Use getAttributeNode to fetch booleans when getAttribute lies
-if ( !assert(function( div ) {
-	return div.getAttribute("disabled") == null;
+if ( !assert(function( el ) {
+	return el.getAttribute("disabled") == null;
 }) ) {
 	addHandle( booleans, function( elem, name, isXML ) {
 		var val;
@@ -83262,11 +81922,15 @@ return Sizzle;
 
 jQuery.find = Sizzle;
 jQuery.expr = Sizzle.selectors;
+
+// Deprecated
 jQuery.expr[ ":" ] = jQuery.expr.pseudos;
 jQuery.uniqueSort = jQuery.unique = Sizzle.uniqueSort;
 jQuery.text = Sizzle.getText;
 jQuery.isXMLDoc = Sizzle.isXML;
 jQuery.contains = Sizzle.contains;
+jQuery.escapeSelector = Sizzle.escape;
+
 
 
 
@@ -83301,7 +81965,7 @@ var siblings = function( n, elem ) {
 
 var rneedsContext = jQuery.expr.match.needsContext;
 
-var rsingleTag = ( /^<([\w-]+)\s*\/?>(?:<\/\1>|)$/ );
+var rsingleTag = ( /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i );
 
 
 
@@ -83311,29 +81975,33 @@ var risSimple = /^.[^:#\[\.,]*$/;
 function winnow( elements, qualifier, not ) {
 	if ( jQuery.isFunction( qualifier ) ) {
 		return jQuery.grep( elements, function( elem, i ) {
-			/* jshint -W018 */
 			return !!qualifier.call( elem, i, elem ) !== not;
 		} );
-
 	}
 
+	// Single element
 	if ( qualifier.nodeType ) {
 		return jQuery.grep( elements, function( elem ) {
 			return ( elem === qualifier ) !== not;
 		} );
-
 	}
 
-	if ( typeof qualifier === "string" ) {
-		if ( risSimple.test( qualifier ) ) {
-			return jQuery.filter( qualifier, elements, not );
-		}
-
-		qualifier = jQuery.filter( qualifier, elements );
+	// Arraylike of elements (jQuery, arguments, Array)
+	if ( typeof qualifier !== "string" ) {
+		return jQuery.grep( elements, function( elem ) {
+			return ( indexOf.call( qualifier, elem ) > -1 ) !== not;
+		} );
 	}
 
+	// Simple selector that can be filtered directly, removing non-Elements
+	if ( risSimple.test( qualifier ) ) {
+		return jQuery.filter( qualifier, elements, not );
+	}
+
+	// Complex selector, compare the two sets, removing non-Elements
+	qualifier = jQuery.filter( qualifier, elements );
 	return jQuery.grep( elements, function( elem ) {
-		return ( indexOf.call( qualifier, elem ) > -1 ) !== not;
+		return ( indexOf.call( qualifier, elem ) > -1 ) !== not && elem.nodeType === 1;
 	} );
 }
 
@@ -83344,18 +82012,19 @@ jQuery.filter = function( expr, elems, not ) {
 		expr = ":not(" + expr + ")";
 	}
 
-	return elems.length === 1 && elem.nodeType === 1 ?
-		jQuery.find.matchesSelector( elem, expr ) ? [ elem ] : [] :
-		jQuery.find.matches( expr, jQuery.grep( elems, function( elem ) {
-			return elem.nodeType === 1;
-		} ) );
+	if ( elems.length === 1 && elem.nodeType === 1 ) {
+		return jQuery.find.matchesSelector( elem, expr ) ? [ elem ] : [];
+	}
+
+	return jQuery.find.matches( expr, jQuery.grep( elems, function( elem ) {
+		return elem.nodeType === 1;
+	} ) );
 };
 
 jQuery.fn.extend( {
 	find: function( selector ) {
-		var i,
+		var i, ret,
 			len = this.length,
-			ret = [],
 			self = this;
 
 		if ( typeof selector !== "string" ) {
@@ -83368,14 +82037,13 @@ jQuery.fn.extend( {
 			} ) );
 		}
 
+		ret = this.pushStack( [] );
+
 		for ( i = 0; i < len; i++ ) {
 			jQuery.find( selector, self[ i ], ret );
 		}
 
-		// Needed because $( selector, context ) becomes $( context ).find( selector )
-		ret = this.pushStack( len > 1 ? jQuery.unique( ret ) : ret );
-		ret.selector = this.selector ? this.selector + " " + selector : selector;
-		return ret;
+		return len > 1 ? jQuery.uniqueSort( ret ) : ret;
 	},
 	filter: function( selector ) {
 		return this.pushStack( winnow( this, selector || [], false ) );
@@ -83407,7 +82075,8 @@ var rootjQuery,
 	// A simple way to check for HTML strings
 	// Prioritize #id over <tag> to avoid XSS via location.hash (#9521)
 	// Strict HTML recognition (#11290: must start with <)
-	rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
+	// Shortcut simple #id case for speed
+	rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]+))$/,
 
 	init = jQuery.fn.init = function( selector, context, root ) {
 		var match, elem;
@@ -83470,17 +82139,12 @@ var rootjQuery,
 				} else {
 					elem = document.getElementById( match[ 2 ] );
 
-					// Support: Blackberry 4.6
-					// gEBID returns nodes no longer in the document (#6963)
-					if ( elem && elem.parentNode ) {
+					if ( elem ) {
 
 						// Inject the element directly into the jQuery object
-						this.length = 1;
 						this[ 0 ] = elem;
+						this.length = 1;
 					}
-
-					this.context = document;
-					this.selector = selector;
 					return this;
 				}
 
@@ -83496,7 +82160,7 @@ var rootjQuery,
 
 		// HANDLE: $(DOMElement)
 		} else if ( selector.nodeType ) {
-			this.context = this[ 0 ] = selector;
+			this[ 0 ] = selector;
 			this.length = 1;
 			return this;
 
@@ -83508,11 +82172,6 @@ var rootjQuery,
 
 				// Execute immediately if ready is not present
 				selector( jQuery );
-		}
-
-		if ( selector.selector !== undefined ) {
-			this.selector = selector.selector;
-			this.context = selector.context;
 		}
 
 		return jQuery.makeArray( selector, this );
@@ -83555,23 +82214,24 @@ jQuery.fn.extend( {
 			i = 0,
 			l = this.length,
 			matched = [],
-			pos = rneedsContext.test( selectors ) || typeof selectors !== "string" ?
-				jQuery( selectors, context || this.context ) :
-				0;
+			targets = typeof selectors !== "string" && jQuery( selectors );
 
-		for ( ; i < l; i++ ) {
-			for ( cur = this[ i ]; cur && cur !== context; cur = cur.parentNode ) {
+		// Positional selectors never match, since there's no _selection_ context
+		if ( !rneedsContext.test( selectors ) ) {
+			for ( ; i < l; i++ ) {
+				for ( cur = this[ i ]; cur && cur !== context; cur = cur.parentNode ) {
 
-				// Always skip document fragments
-				if ( cur.nodeType < 11 && ( pos ?
-					pos.index( cur ) > -1 :
+					// Always skip document fragments
+					if ( cur.nodeType < 11 && ( targets ?
+						targets.index( cur ) > -1 :
 
-					// Don't pass non-elements to Sizzle
-					cur.nodeType === 1 &&
-						jQuery.find.matchesSelector( cur, selectors ) ) ) {
+						// Don't pass non-elements to Sizzle
+						cur.nodeType === 1 &&
+							jQuery.find.matchesSelector( cur, selectors ) ) ) {
 
-					matched.push( cur );
-					break;
+						matched.push( cur );
+						break;
+					}
 				}
 			}
 		}
@@ -83686,14 +82346,14 @@ jQuery.each( {
 		return this.pushStack( matched );
 	};
 } );
-var rnotwhite = ( /\S+/g );
+var rnothtmlwhite = ( /[^\x20\t\r\n\f]+/g );
 
 
 
 // Convert String-formatted options into Object-formatted ones
 function createOptions( options ) {
 	var object = {};
-	jQuery.each( options.match( rnotwhite ) || [], function( _, flag ) {
+	jQuery.each( options.match( rnothtmlwhite ) || [], function( _, flag ) {
 		object[ flag ] = true;
 	} );
 	return object;
@@ -83878,7 +82538,7 @@ jQuery.Callbacks = function( options ) {
 			// Abort any pending executions
 			lock: function() {
 				locked = queue = [];
-				if ( !memory ) {
+				if ( !memory && !firing ) {
 					list = memory = "";
 				}
 				return this;
@@ -83916,15 +82576,58 @@ jQuery.Callbacks = function( options ) {
 };
 
 
+function Identity( v ) {
+	return v;
+}
+function Thrower( ex ) {
+	throw ex;
+}
+
+function adoptValue( value, resolve, reject ) {
+	var method;
+
+	try {
+
+		// Check for promise aspect first to privilege synchronous behavior
+		if ( value && jQuery.isFunction( ( method = value.promise ) ) ) {
+			method.call( value ).done( resolve ).fail( reject );
+
+		// Other thenables
+		} else if ( value && jQuery.isFunction( ( method = value.then ) ) ) {
+			method.call( value, resolve, reject );
+
+		// Other non-thenables
+		} else {
+
+			// Support: Android 4.0 only
+			// Strict mode functions invoked without .call/.apply get global-object context
+			resolve.call( undefined, value );
+		}
+
+	// For Promises/A+, convert exceptions into rejections
+	// Since jQuery.when doesn't unwrap thenables, we can skip the extra checks appearing in
+	// Deferred#then to conditionally suppress rejection.
+	} catch ( value ) {
+
+		// Support: Android 4.0 only
+		// Strict mode functions invoked without .call/.apply get global-object context
+		reject.call( undefined, value );
+	}
+}
+
 jQuery.extend( {
 
 	Deferred: function( func ) {
 		var tuples = [
 
-				// action, add listener, listener list, final state
-				[ "resolve", "done", jQuery.Callbacks( "once memory" ), "resolved" ],
-				[ "reject", "fail", jQuery.Callbacks( "once memory" ), "rejected" ],
-				[ "notify", "progress", jQuery.Callbacks( "memory" ) ]
+				// action, add listener, callbacks,
+				// ... .then handlers, argument index, [final state]
+				[ "notify", "progress", jQuery.Callbacks( "memory" ),
+					jQuery.Callbacks( "memory" ), 2 ],
+				[ "resolve", "done", jQuery.Callbacks( "once memory" ),
+					jQuery.Callbacks( "once memory" ), 0, "resolved" ],
+				[ "reject", "fail", jQuery.Callbacks( "once memory" ),
+					jQuery.Callbacks( "once memory" ), 1, "rejected" ]
 			],
 			state = "pending",
 			promise = {
@@ -83935,13 +82638,23 @@ jQuery.extend( {
 					deferred.done( arguments ).fail( arguments );
 					return this;
 				},
-				then: function( /* fnDone, fnFail, fnProgress */ ) {
+				"catch": function( fn ) {
+					return promise.then( null, fn );
+				},
+
+				// Keep pipe for back-compat
+				pipe: function( /* fnDone, fnFail, fnProgress */ ) {
 					var fns = arguments;
+
 					return jQuery.Deferred( function( newDefer ) {
 						jQuery.each( tuples, function( i, tuple ) {
-							var fn = jQuery.isFunction( fns[ i ] ) && fns[ i ];
 
-							// deferred[ done | fail | progress ] for forwarding actions to newDefer
+							// Map tuples (progress, done, fail) to arguments (done, fail, progress)
+							var fn = jQuery.isFunction( fns[ tuple[ 4 ] ] ) && fns[ tuple[ 4 ] ];
+
+							// deferred.progress(function() { bind to newDefer or newDefer.notify })
+							// deferred.done(function() { bind to newDefer or newDefer.resolve })
+							// deferred.fail(function() { bind to newDefer or newDefer.reject })
 							deferred[ tuple[ 1 ] ]( function() {
 								var returned = fn && fn.apply( this, arguments );
 								if ( returned && jQuery.isFunction( returned.promise ) ) {
@@ -83951,13 +82664,177 @@ jQuery.extend( {
 										.fail( newDefer.reject );
 								} else {
 									newDefer[ tuple[ 0 ] + "With" ](
-										this === promise ? newDefer.promise() : this,
+										this,
 										fn ? [ returned ] : arguments
 									);
 								}
 							} );
 						} );
 						fns = null;
+					} ).promise();
+				},
+				then: function( onFulfilled, onRejected, onProgress ) {
+					var maxDepth = 0;
+					function resolve( depth, deferred, handler, special ) {
+						return function() {
+							var that = this,
+								args = arguments,
+								mightThrow = function() {
+									var returned, then;
+
+									// Support: Promises/A+ section 2.3.3.3.3
+									// https://promisesaplus.com/#point-59
+									// Ignore double-resolution attempts
+									if ( depth < maxDepth ) {
+										return;
+									}
+
+									returned = handler.apply( that, args );
+
+									// Support: Promises/A+ section 2.3.1
+									// https://promisesaplus.com/#point-48
+									if ( returned === deferred.promise() ) {
+										throw new TypeError( "Thenable self-resolution" );
+									}
+
+									// Support: Promises/A+ sections 2.3.3.1, 3.5
+									// https://promisesaplus.com/#point-54
+									// https://promisesaplus.com/#point-75
+									// Retrieve `then` only once
+									then = returned &&
+
+										// Support: Promises/A+ section 2.3.4
+										// https://promisesaplus.com/#point-64
+										// Only check objects and functions for thenability
+										( typeof returned === "object" ||
+											typeof returned === "function" ) &&
+										returned.then;
+
+									// Handle a returned thenable
+									if ( jQuery.isFunction( then ) ) {
+
+										// Special processors (notify) just wait for resolution
+										if ( special ) {
+											then.call(
+												returned,
+												resolve( maxDepth, deferred, Identity, special ),
+												resolve( maxDepth, deferred, Thrower, special )
+											);
+
+										// Normal processors (resolve) also hook into progress
+										} else {
+
+											// ...and disregard older resolution values
+											maxDepth++;
+
+											then.call(
+												returned,
+												resolve( maxDepth, deferred, Identity, special ),
+												resolve( maxDepth, deferred, Thrower, special ),
+												resolve( maxDepth, deferred, Identity,
+													deferred.notifyWith )
+											);
+										}
+
+									// Handle all other returned values
+									} else {
+
+										// Only substitute handlers pass on context
+										// and multiple values (non-spec behavior)
+										if ( handler !== Identity ) {
+											that = undefined;
+											args = [ returned ];
+										}
+
+										// Process the value(s)
+										// Default process is resolve
+										( special || deferred.resolveWith )( that, args );
+									}
+								},
+
+								// Only normal processors (resolve) catch and reject exceptions
+								process = special ?
+									mightThrow :
+									function() {
+										try {
+											mightThrow();
+										} catch ( e ) {
+
+											if ( jQuery.Deferred.exceptionHook ) {
+												jQuery.Deferred.exceptionHook( e,
+													process.stackTrace );
+											}
+
+											// Support: Promises/A+ section 2.3.3.3.4.1
+											// https://promisesaplus.com/#point-61
+											// Ignore post-resolution exceptions
+											if ( depth + 1 >= maxDepth ) {
+
+												// Only substitute handlers pass on context
+												// and multiple values (non-spec behavior)
+												if ( handler !== Thrower ) {
+													that = undefined;
+													args = [ e ];
+												}
+
+												deferred.rejectWith( that, args );
+											}
+										}
+									};
+
+							// Support: Promises/A+ section 2.3.3.3.1
+							// https://promisesaplus.com/#point-57
+							// Re-resolve promises immediately to dodge false rejection from
+							// subsequent errors
+							if ( depth ) {
+								process();
+							} else {
+
+								// Call an optional hook to record the stack, in case of exception
+								// since it's otherwise lost when execution goes async
+								if ( jQuery.Deferred.getStackHook ) {
+									process.stackTrace = jQuery.Deferred.getStackHook();
+								}
+								window.setTimeout( process );
+							}
+						};
+					}
+
+					return jQuery.Deferred( function( newDefer ) {
+
+						// progress_handlers.add( ... )
+						tuples[ 0 ][ 3 ].add(
+							resolve(
+								0,
+								newDefer,
+								jQuery.isFunction( onProgress ) ?
+									onProgress :
+									Identity,
+								newDefer.notifyWith
+							)
+						);
+
+						// fulfilled_handlers.add( ... )
+						tuples[ 1 ][ 3 ].add(
+							resolve(
+								0,
+								newDefer,
+								jQuery.isFunction( onFulfilled ) ?
+									onFulfilled :
+									Identity
+							)
+						);
+
+						// rejected_handlers.add( ... )
+						tuples[ 2 ][ 3 ].add(
+							resolve(
+								0,
+								newDefer,
+								jQuery.isFunction( onRejected ) ?
+									onRejected :
+									Thrower
+							)
+						);
 					} ).promise();
 				},
 
@@ -83969,33 +82846,51 @@ jQuery.extend( {
 			},
 			deferred = {};
 
-		// Keep pipe for back-compat
-		promise.pipe = promise.then;
-
 		// Add list-specific methods
 		jQuery.each( tuples, function( i, tuple ) {
 			var list = tuple[ 2 ],
-				stateString = tuple[ 3 ];
+				stateString = tuple[ 5 ];
 
-			// promise[ done | fail | progress ] = list.add
+			// promise.progress = list.add
+			// promise.done = list.add
+			// promise.fail = list.add
 			promise[ tuple[ 1 ] ] = list.add;
 
 			// Handle state
 			if ( stateString ) {
-				list.add( function() {
+				list.add(
+					function() {
 
-					// state = [ resolved | rejected ]
-					state = stateString;
+						// state = "resolved" (i.e., fulfilled)
+						// state = "rejected"
+						state = stateString;
+					},
 
-				// [ reject_list | resolve_list ].disable; progress_list.lock
-				}, tuples[ i ^ 1 ][ 2 ].disable, tuples[ 2 ][ 2 ].lock );
+					// rejected_callbacks.disable
+					// fulfilled_callbacks.disable
+					tuples[ 3 - i ][ 2 ].disable,
+
+					// progress_callbacks.lock
+					tuples[ 0 ][ 2 ].lock
+				);
 			}
 
-			// deferred[ resolve | reject | notify ]
+			// progress_handlers.fire
+			// fulfilled_handlers.fire
+			// rejected_handlers.fire
+			list.add( tuple[ 3 ].fire );
+
+			// deferred.notify = function() { deferred.notifyWith(...) }
+			// deferred.resolve = function() { deferred.resolveWith(...) }
+			// deferred.reject = function() { deferred.rejectWith(...) }
 			deferred[ tuple[ 0 ] ] = function() {
-				deferred[ tuple[ 0 ] + "With" ]( this === deferred ? promise : this, arguments );
+				deferred[ tuple[ 0 ] + "With" ]( this === deferred ? undefined : this, arguments );
 				return this;
 			};
+
+			// deferred.notifyWith = list.fireWith
+			// deferred.resolveWith = list.fireWith
+			// deferred.rejectWith = list.fireWith
 			deferred[ tuple[ 0 ] + "With" ] = list.fireWith;
 		} );
 
@@ -84012,68 +82907,94 @@ jQuery.extend( {
 	},
 
 	// Deferred helper
-	when: function( subordinate /* , ..., subordinateN */ ) {
-		var i = 0,
+	when: function( singleValue ) {
+		var
+
+			// count of uncompleted subordinates
+			remaining = arguments.length,
+
+			// count of unprocessed arguments
+			i = remaining,
+
+			// subordinate fulfillment data
+			resolveContexts = Array( i ),
 			resolveValues = slice.call( arguments ),
-			length = resolveValues.length,
 
-			// the count of uncompleted subordinates
-			remaining = length !== 1 ||
-				( subordinate && jQuery.isFunction( subordinate.promise ) ) ? length : 0,
+			// the master Deferred
+			master = jQuery.Deferred(),
 
-			// the master Deferred.
-			// If resolveValues consist of only a single Deferred, just use that.
-			deferred = remaining === 1 ? subordinate : jQuery.Deferred(),
-
-			// Update function for both resolve and progress values
-			updateFunc = function( i, contexts, values ) {
+			// subordinate callback factory
+			updateFunc = function( i ) {
 				return function( value ) {
-					contexts[ i ] = this;
-					values[ i ] = arguments.length > 1 ? slice.call( arguments ) : value;
-					if ( values === progressValues ) {
-						deferred.notifyWith( contexts, values );
-					} else if ( !( --remaining ) ) {
-						deferred.resolveWith( contexts, values );
+					resolveContexts[ i ] = this;
+					resolveValues[ i ] = arguments.length > 1 ? slice.call( arguments ) : value;
+					if ( !( --remaining ) ) {
+						master.resolveWith( resolveContexts, resolveValues );
 					}
 				};
-			},
+			};
 
-			progressValues, progressContexts, resolveContexts;
+		// Single- and empty arguments are adopted like Promise.resolve
+		if ( remaining <= 1 ) {
+			adoptValue( singleValue, master.done( updateFunc( i ) ).resolve, master.reject );
 
-		// Add listeners to Deferred subordinates; treat others as resolved
-		if ( length > 1 ) {
-			progressValues = new Array( length );
-			progressContexts = new Array( length );
-			resolveContexts = new Array( length );
-			for ( ; i < length; i++ ) {
-				if ( resolveValues[ i ] && jQuery.isFunction( resolveValues[ i ].promise ) ) {
-					resolveValues[ i ].promise()
-						.progress( updateFunc( i, progressContexts, progressValues ) )
-						.done( updateFunc( i, resolveContexts, resolveValues ) )
-						.fail( deferred.reject );
-				} else {
-					--remaining;
-				}
+			// Use .then() to unwrap secondary thenables (cf. gh-3000)
+			if ( master.state() === "pending" ||
+				jQuery.isFunction( resolveValues[ i ] && resolveValues[ i ].then ) ) {
+
+				return master.then();
 			}
 		}
 
-		// If we're not waiting on anything, resolve the master
-		if ( !remaining ) {
-			deferred.resolveWith( resolveContexts, resolveValues );
+		// Multiple arguments are aggregated like Promise.all array elements
+		while ( i-- ) {
+			adoptValue( resolveValues[ i ], updateFunc( i ), master.reject );
 		}
 
-		return deferred.promise();
+		return master.promise();
 	}
 } );
 
 
+// These usually indicate a programmer mistake during development,
+// warn about them ASAP rather than swallowing them by default.
+var rerrorNames = /^(Eval|Internal|Range|Reference|Syntax|Type|URI)Error$/;
+
+jQuery.Deferred.exceptionHook = function( error, stack ) {
+
+	// Support: IE 8 - 9 only
+	// Console exists when dev tools are open, which can happen at any time
+	if ( window.console && window.console.warn && error && rerrorNames.test( error.name ) ) {
+		window.console.warn( "jQuery.Deferred exception: " + error.message, error.stack, stack );
+	}
+};
+
+
+
+
+jQuery.readyException = function( error ) {
+	window.setTimeout( function() {
+		throw error;
+	} );
+};
+
+
+
+
 // The deferred used on DOM ready
-var readyList;
+var readyList = jQuery.Deferred();
 
 jQuery.fn.ready = function( fn ) {
 
-	// Add the callback
-	jQuery.ready.promise().done( fn );
+	readyList
+		.then( fn )
+
+		// Wrap jQuery.readyException in a function so that the lookup
+		// happens at the time of error handling instead of callback
+		// registration.
+		.catch( function( error ) {
+			jQuery.readyException( error );
+		} );
 
 	return this;
 };
@@ -84114,53 +83035,36 @@ jQuery.extend( {
 
 		// If there are functions bound, to execute
 		readyList.resolveWith( document, [ jQuery ] );
-
-		// Trigger any bound ready events
-		if ( jQuery.fn.triggerHandler ) {
-			jQuery( document ).triggerHandler( "ready" );
-			jQuery( document ).off( "ready" );
-		}
 	}
 } );
 
-/**
- * The ready event handler and self cleanup method
- */
+jQuery.ready.then = readyList.then;
+
+// The ready event handler and self cleanup method
 function completed() {
 	document.removeEventListener( "DOMContentLoaded", completed );
 	window.removeEventListener( "load", completed );
 	jQuery.ready();
 }
 
-jQuery.ready.promise = function( obj ) {
-	if ( !readyList ) {
+// Catch cases where $(document).ready() is called
+// after the browser event has already occurred.
+// Support: IE <=9 - 10 only
+// Older IE sometimes signals "interactive" too soon
+if ( document.readyState === "complete" ||
+	( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
 
-		readyList = jQuery.Deferred();
+	// Handle it asynchronously to allow scripts the opportunity to delay ready
+	window.setTimeout( jQuery.ready );
 
-		// Catch cases where $(document).ready() is called
-		// after the browser event has already occurred.
-		// Support: IE9-10 only
-		// Older IE sometimes signals "interactive" too soon
-		if ( document.readyState === "complete" ||
-			( document.readyState !== "loading" && !document.documentElement.doScroll ) ) {
+} else {
 
-			// Handle it asynchronously to allow scripts the opportunity to delay ready
-			window.setTimeout( jQuery.ready );
+	// Use the handy event callback
+	document.addEventListener( "DOMContentLoaded", completed );
 
-		} else {
-
-			// Use the handy event callback
-			document.addEventListener( "DOMContentLoaded", completed );
-
-			// A fallback to window.onload, that will always work
-			window.addEventListener( "load", completed );
-		}
-	}
-	return readyList.promise( obj );
-};
-
-// Kick off the DOM ready check even if the user does not
-jQuery.ready.promise();
+	// A fallback to window.onload, that will always work
+	window.addEventListener( "load", completed );
+}
 
 
 
@@ -84214,13 +83118,16 @@ var access = function( elems, fn, key, value, chainable, emptyGet, raw ) {
 		}
 	}
 
-	return chainable ?
-		elems :
+	if ( chainable ) {
+		return elems;
+	}
 
-		// Gets
-		bulk ?
-			fn.call( elems ) :
-			len ? fn( elems[ 0 ], key ) : emptyGet;
+	// Gets
+	if ( bulk ) {
+		return fn.call( elems );
+	}
+
+	return len ? fn( elems[ 0 ], key ) : emptyGet;
 };
 var acceptData = function( owner ) {
 
@@ -84230,7 +83137,6 @@ var acceptData = function( owner ) {
 	//    - Node.DOCUMENT_NODE
 	//  - Object
 	//    - Any
-	/* jshint -W018 */
 	return owner.nodeType === 1 || owner.nodeType === 9 || !( +owner.nodeType );
 };
 
@@ -84245,34 +83151,7 @@ Data.uid = 1;
 
 Data.prototype = {
 
-	register: function( owner, initial ) {
-		var value = initial || {};
-
-		// If it is a node unlikely to be stringify-ed or looped over
-		// use plain assignment
-		if ( owner.nodeType ) {
-			owner[ this.expando ] = value;
-
-		// Otherwise secure it in a non-enumerable, non-writable property
-		// configurability must be true to allow the property to be
-		// deleted with the delete operator
-		} else {
-			Object.defineProperty( owner, this.expando, {
-				value: value,
-				writable: true,
-				configurable: true
-			} );
-		}
-		return owner[ this.expando ];
-	},
 	cache: function( owner ) {
-
-		// We can accept data for non-element nodes in modern browsers,
-		// but we should not, see #8335.
-		// Always return an empty object.
-		if ( !acceptData( owner ) ) {
-			return {};
-		}
 
 		// Check if the owner object already has a cache
 		var value = owner[ this.expando ];
@@ -84310,15 +83189,16 @@ Data.prototype = {
 			cache = this.cache( owner );
 
 		// Handle: [ owner, key, value ] args
+		// Always use camelCase key (gh-2257)
 		if ( typeof data === "string" ) {
-			cache[ data ] = value;
+			cache[ jQuery.camelCase( data ) ] = value;
 
 		// Handle: [ owner, { properties } ] args
 		} else {
 
 			// Copy the properties one-by-one to the cache object
 			for ( prop in data ) {
-				cache[ prop ] = data[ prop ];
+				cache[ jQuery.camelCase( prop ) ] = data[ prop ];
 			}
 		}
 		return cache;
@@ -84326,10 +83206,11 @@ Data.prototype = {
 	get: function( owner, key ) {
 		return key === undefined ?
 			this.cache( owner ) :
-			owner[ this.expando ] && owner[ this.expando ][ key ];
+
+			// Always use camelCase key (gh-2257)
+			owner[ this.expando ] && owner[ this.expando ][ jQuery.camelCase( key ) ];
 	},
 	access: function( owner, key, value ) {
-		var stored;
 
 		// In cases where either:
 		//
@@ -84345,10 +83226,7 @@ Data.prototype = {
 		if ( key === undefined ||
 				( ( key && typeof key === "string" ) && value === undefined ) ) {
 
-			stored = this.get( owner, key );
-
-			return stored !== undefined ?
-				stored : this.get( owner, jQuery.camelCase( key ) );
+			return this.get( owner, key );
 		}
 
 		// When the key is not a string, or both a key and value
@@ -84364,58 +83242,45 @@ Data.prototype = {
 		return value !== undefined ? value : key;
 	},
 	remove: function( owner, key ) {
-		var i, name, camel,
+		var i,
 			cache = owner[ this.expando ];
 
 		if ( cache === undefined ) {
 			return;
 		}
 
-		if ( key === undefined ) {
-			this.register( owner );
-
-		} else {
+		if ( key !== undefined ) {
 
 			// Support array or space separated string of keys
 			if ( jQuery.isArray( key ) ) {
 
-				// If "name" is an array of keys...
-				// When data is initially created, via ("key", "val") signature,
-				// keys will be converted to camelCase.
-				// Since there is no way to tell _how_ a key was added, remove
-				// both plain key and camelCase key. #12786
-				// This will only penalize the array argument path.
-				name = key.concat( key.map( jQuery.camelCase ) );
+				// If key is an array of keys...
+				// We always set camelCase keys, so remove that.
+				key = key.map( jQuery.camelCase );
 			} else {
-				camel = jQuery.camelCase( key );
+				key = jQuery.camelCase( key );
 
-				// Try the string as a key before any manipulation
-				if ( key in cache ) {
-					name = [ key, camel ];
-				} else {
-
-					// If a key with the spaces exists, use it.
-					// Otherwise, create an array by matching non-whitespace
-					name = camel;
-					name = name in cache ?
-						[ name ] : ( name.match( rnotwhite ) || [] );
-				}
+				// If a key with the spaces exists, use it.
+				// Otherwise, create an array by matching non-whitespace
+				key = key in cache ?
+					[ key ] :
+					( key.match( rnothtmlwhite ) || [] );
 			}
 
-			i = name.length;
+			i = key.length;
 
 			while ( i-- ) {
-				delete cache[ name[ i ] ];
+				delete cache[ key[ i ] ];
 			}
 		}
 
 		// Remove the expando if there's no more data
 		if ( key === undefined || jQuery.isEmptyObject( cache ) ) {
 
-			// Support: Chrome <= 35-45+
+			// Support: Chrome <=35 - 45
 			// Webkit & Blink performance suffers when deleting properties
 			// from DOM nodes, so set to undefined instead
-			// https://code.google.com/p/chromium/issues/detail?id=378607
+			// https://bugs.chromium.org/p/chromium/issues/detail?id=378607 (bug restricted)
 			if ( owner.nodeType ) {
 				owner[ this.expando ] = undefined;
 			} else {
@@ -84447,6 +83312,31 @@ var dataUser = new Data();
 var rbrace = /^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,
 	rmultiDash = /[A-Z]/g;
 
+function getData( data ) {
+	if ( data === "true" ) {
+		return true;
+	}
+
+	if ( data === "false" ) {
+		return false;
+	}
+
+	if ( data === "null" ) {
+		return null;
+	}
+
+	// Only convert to a number if it doesn't change the string
+	if ( data === +data + "" ) {
+		return +data;
+	}
+
+	if ( rbrace.test( data ) ) {
+		return JSON.parse( data );
+	}
+
+	return data;
+}
+
 function dataAttr( elem, key, data ) {
 	var name;
 
@@ -84458,14 +83348,7 @@ function dataAttr( elem, key, data ) {
 
 		if ( typeof data === "string" ) {
 			try {
-				data = data === "true" ? true :
-					data === "false" ? false :
-					data === "null" ? null :
-
-					// Only convert to a number if it doesn't change the string
-					+data + "" === data ? +data :
-					rbrace.test( data ) ? jQuery.parseJSON( data ) :
-					data;
+				data = getData( data );
 			} catch ( e ) {}
 
 			// Make sure we set the data so it isn't changed later
@@ -84516,7 +83399,7 @@ jQuery.fn.extend( {
 					i = attrs.length;
 					while ( i-- ) {
 
-						// Support: IE11+
+						// Support: IE 11 only
 						// The attrs elements can be null (#14894)
 						if ( attrs[ i ] ) {
 							name = attrs[ i ].name;
@@ -84541,7 +83424,7 @@ jQuery.fn.extend( {
 		}
 
 		return access( this, function( value ) {
-			var data, camelKey;
+			var data;
 
 			// The calling jQuery object (element matches) is not empty
 			// (and therefore has an element appears at this[ 0 ]) and the
@@ -84551,29 +83434,15 @@ jQuery.fn.extend( {
 			if ( elem && value === undefined ) {
 
 				// Attempt to get data from the cache
-				// with the key as-is
-				data = dataUser.get( elem, key ) ||
-
-					// Try to find dashed key if it exists (gh-2779)
-					// This is for 2.2.x only
-					dataUser.get( elem, key.replace( rmultiDash, "-$&" ).toLowerCase() );
-
-				if ( data !== undefined ) {
-					return data;
-				}
-
-				camelKey = jQuery.camelCase( key );
-
-				// Attempt to get data from the cache
-				// with the key camelized
-				data = dataUser.get( elem, camelKey );
+				// The key will always be camelCased in Data
+				data = dataUser.get( elem, key );
 				if ( data !== undefined ) {
 					return data;
 				}
 
 				// Attempt to "discover" the data in
 				// HTML5 custom data-* attrs
-				data = dataAttr( elem, camelKey, undefined );
+				data = dataAttr( elem, key );
 				if ( data !== undefined ) {
 					return data;
 				}
@@ -84583,24 +83452,10 @@ jQuery.fn.extend( {
 			}
 
 			// Set the data...
-			camelKey = jQuery.camelCase( key );
 			this.each( function() {
 
-				// First, attempt to store a copy or reference of any
-				// data that might've been store with a camelCased key.
-				var data = dataUser.get( this, camelKey );
-
-				// For HTML5 data-* attribute interop, we have to
-				// store property names with dashes in a camelCase form.
-				// This might not apply to all properties...*
-				dataUser.set( this, camelKey, value );
-
-				// *... In the case of properties that might _actually_
-				// have dashes, we need to also store a copy of that
-				// unchanged property.
-				if ( key.indexOf( "-" ) > -1 && data !== undefined ) {
-					dataUser.set( this, key, value );
-				}
+				// We always store the camelCased key
+				dataUser.set( this, key, value );
 			} );
 		}, null, value, arguments.length > 1, null, true );
 	},
@@ -84753,14 +83608,45 @@ var rcssNum = new RegExp( "^(?:([+-])=|)(" + pnum + ")([a-z%]*)$", "i" );
 
 var cssExpand = [ "Top", "Right", "Bottom", "Left" ];
 
-var isHidden = function( elem, el ) {
+var isHiddenWithinTree = function( elem, el ) {
 
-		// isHidden might be called from jQuery#filter function;
+		// isHiddenWithinTree might be called from jQuery#filter function;
 		// in that case, element will be second argument
 		elem = el || elem;
-		return jQuery.css( elem, "display" ) === "none" ||
-			!jQuery.contains( elem.ownerDocument, elem );
+
+		// Inline style trumps all
+		return elem.style.display === "none" ||
+			elem.style.display === "" &&
+
+			// Otherwise, check computed style
+			// Support: Firefox <=43 - 45
+			// Disconnected elements can have computed display: none, so first confirm that elem is
+			// in the document.
+			jQuery.contains( elem.ownerDocument, elem ) &&
+
+			jQuery.css( elem, "display" ) === "none";
 	};
+
+var swap = function( elem, options, callback, args ) {
+	var ret, name,
+		old = {};
+
+	// Remember the old values, and insert the new ones
+	for ( name in options ) {
+		old[ name ] = elem.style[ name ];
+		elem.style[ name ] = options[ name ];
+	}
+
+	ret = callback.apply( elem, args || [] );
+
+	// Revert the old values
+	for ( name in options ) {
+		elem.style[ name ] = old[ name ];
+	}
+
+	return ret;
+};
+
 
 
 
@@ -84769,8 +83655,12 @@ function adjustCSS( elem, prop, valueParts, tween ) {
 		scale = 1,
 		maxIterations = 20,
 		currentValue = tween ?
-			function() { return tween.cur(); } :
-			function() { return jQuery.css( elem, prop, "" ); },
+			function() {
+				return tween.cur();
+			} :
+			function() {
+				return jQuery.css( elem, prop, "" );
+			},
 		initial = currentValue(),
 		unit = valueParts && valueParts[ 3 ] || ( jQuery.cssNumber[ prop ] ? "" : "px" ),
 
@@ -84821,9 +83711,105 @@ function adjustCSS( elem, prop, valueParts, tween ) {
 	}
 	return adjusted;
 }
+
+
+var defaultDisplayMap = {};
+
+function getDefaultDisplay( elem ) {
+	var temp,
+		doc = elem.ownerDocument,
+		nodeName = elem.nodeName,
+		display = defaultDisplayMap[ nodeName ];
+
+	if ( display ) {
+		return display;
+	}
+
+	temp = doc.body.appendChild( doc.createElement( nodeName ) );
+	display = jQuery.css( temp, "display" );
+
+	temp.parentNode.removeChild( temp );
+
+	if ( display === "none" ) {
+		display = "block";
+	}
+	defaultDisplayMap[ nodeName ] = display;
+
+	return display;
+}
+
+function showHide( elements, show ) {
+	var display, elem,
+		values = [],
+		index = 0,
+		length = elements.length;
+
+	// Determine new display value for elements that need to change
+	for ( ; index < length; index++ ) {
+		elem = elements[ index ];
+		if ( !elem.style ) {
+			continue;
+		}
+
+		display = elem.style.display;
+		if ( show ) {
+
+			// Since we force visibility upon cascade-hidden elements, an immediate (and slow)
+			// check is required in this first loop unless we have a nonempty display value (either
+			// inline or about-to-be-restored)
+			if ( display === "none" ) {
+				values[ index ] = dataPriv.get( elem, "display" ) || null;
+				if ( !values[ index ] ) {
+					elem.style.display = "";
+				}
+			}
+			if ( elem.style.display === "" && isHiddenWithinTree( elem ) ) {
+				values[ index ] = getDefaultDisplay( elem );
+			}
+		} else {
+			if ( display !== "none" ) {
+				values[ index ] = "none";
+
+				// Remember what we're overwriting
+				dataPriv.set( elem, "display", display );
+			}
+		}
+	}
+
+	// Set the display of the elements in a second loop to avoid constant reflow
+	for ( index = 0; index < length; index++ ) {
+		if ( values[ index ] != null ) {
+			elements[ index ].style.display = values[ index ];
+		}
+	}
+
+	return elements;
+}
+
+jQuery.fn.extend( {
+	show: function() {
+		return showHide( this, true );
+	},
+	hide: function() {
+		return showHide( this );
+	},
+	toggle: function( state ) {
+		if ( typeof state === "boolean" ) {
+			return state ? this.show() : this.hide();
+		}
+
+		return this.each( function() {
+			if ( isHiddenWithinTree( this ) ) {
+				jQuery( this ).show();
+			} else {
+				jQuery( this ).hide();
+			}
+		} );
+	}
+} );
 var rcheckableType = ( /^(?:checkbox|radio)$/i );
 
-var rtagName = ( /<([\w:-]+)/ );
+var rtagName = ( /<([a-z][^\/\0>\x20\t\r\n\f]+)/i );
 
 var rscriptType = ( /^$|\/(?:java|ecma)script/i );
 
@@ -84832,7 +83818,7 @@ var rscriptType = ( /^$|\/(?:java|ecma)script/i );
 // We have to close these tags to support XHTML (#13200)
 var wrapMap = {
 
-	// Support: IE9
+	// Support: IE <=9 only
 	option: [ 1, "<select multiple='multiple'>", "</select>" ],
 
 	// XHTML parsers do not magically insert elements in the
@@ -84846,7 +83832,7 @@ var wrapMap = {
 	_default: [ 0, "", "" ]
 };
 
-// Support: IE9
+// Support: IE <=9 only
 wrapMap.optgroup = wrapMap.option;
 
 wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
@@ -84855,17 +83841,25 @@ wrapMap.th = wrapMap.td;
 
 function getAll( context, tag ) {
 
-	// Support: IE9-11+
+	// Support: IE <=9 - 11 only
 	// Use typeof to avoid zero-argument method invocation on host objects (#15151)
-	var ret = typeof context.getElementsByTagName !== "undefined" ?
-			context.getElementsByTagName( tag || "*" ) :
-			typeof context.querySelectorAll !== "undefined" ?
-				context.querySelectorAll( tag || "*" ) :
-			[];
+	var ret;
 
-	return tag === undefined || tag && jQuery.nodeName( context, tag ) ?
-		jQuery.merge( [ context ], ret ) :
-		ret;
+	if ( typeof context.getElementsByTagName !== "undefined" ) {
+		ret = context.getElementsByTagName( tag || "*" );
+
+	} else if ( typeof context.querySelectorAll !== "undefined" ) {
+		ret = context.querySelectorAll( tag || "*" );
+
+	} else {
+		ret = [];
+	}
+
+	if ( tag === undefined || tag && jQuery.nodeName( context, tag ) ) {
+		return jQuery.merge( [ context ], ret );
+	}
+
+	return ret;
 }
 
 
@@ -84901,7 +83895,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 			// Add nodes directly
 			if ( jQuery.type( elem ) === "object" ) {
 
-				// Support: Android<4.1, PhantomJS<2
+				// Support: Android <=4.0 only, PhantomJS 1 only
 				// push.apply(_, arraylike) throws on ancient WebKit
 				jQuery.merge( nodes, elem.nodeType ? [ elem ] : elem );
 
@@ -84924,7 +83918,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 					tmp = tmp.lastChild;
 				}
 
-				// Support: Android<4.1, PhantomJS<2
+				// Support: Android <=4.0 only, PhantomJS 1 only
 				// push.apply(_, arraylike) throws on ancient WebKit
 				jQuery.merge( nodes, tmp.childNodes );
 
@@ -84981,7 +83975,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 		div = fragment.appendChild( document.createElement( "div" ) ),
 		input = document.createElement( "input" );
 
-	// Support: Android 4.0-4.3, Safari<=5.1
+	// Support: Android 4.0 - 4.3 only
 	// Check state lost if the name is set (#11217)
 	// Support: Windows Web Apps (WWA)
 	// `name` and `type` must use .setAttribute for WWA (#14901)
@@ -84991,15 +83985,17 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 
 	div.appendChild( input );
 
-	// Support: Safari<=5.1, Android<4.2
+	// Support: Android <=4.1 only
 	// Older WebKit doesn't clone checked state correctly in fragments
 	support.checkClone = div.cloneNode( true ).cloneNode( true ).lastChild.checked;
 
-	// Support: IE<=11+
+	// Support: IE <=11 only
 	// Make sure textarea (and checkbox) defaultValue is properly cloned
 	div.innerHTML = "<textarea>x</textarea>";
 	support.noCloneChecked = !!div.cloneNode( true ).lastChild.defaultValue;
 } )();
+var documentElement = document.documentElement;
+
 
 
 var
@@ -85015,7 +84011,7 @@ function returnFalse() {
 	return false;
 }
 
-// Support: IE9
+// Support: IE <=9 only
 // See #13393 for more info
 function safeActiveElement() {
 	try {
@@ -85111,6 +84107,12 @@ jQuery.event = {
 			selector = handleObjIn.selector;
 		}
 
+		// Ensure that invalid selectors throw exceptions at attach time
+		// Evaluate against documentElement in case elem is a non-element node (e.g., document)
+		if ( selector ) {
+			jQuery.find.matchesSelector( documentElement, selector );
+		}
+
 		// Make sure that the handler has a unique ID, used to find/remove it later
 		if ( !handler.guid ) {
 			handler.guid = jQuery.guid++;
@@ -85131,7 +84133,7 @@ jQuery.event = {
 		}
 
 		// Handle multiple events separated by a space
-		types = ( types || "" ).match( rnotwhite ) || [ "" ];
+		types = ( types || "" ).match( rnothtmlwhite ) || [ "" ];
 		t = types.length;
 		while ( t-- ) {
 			tmp = rtypenamespace.exec( types[ t ] ) || [];
@@ -85213,7 +84215,7 @@ jQuery.event = {
 		}
 
 		// Once for each type.namespace in types; type may be omitted
-		types = ( types || "" ).match( rnotwhite ) || [ "" ];
+		types = ( types || "" ).match( rnothtmlwhite ) || [ "" ];
 		t = types.length;
 		while ( t-- ) {
 			tmp = rtypenamespace.exec( types[ t ] ) || [];
@@ -85274,19 +84276,23 @@ jQuery.event = {
 		}
 	},
 
-	dispatch: function( event ) {
+	dispatch: function( nativeEvent ) {
 
 		// Make a writable jQuery.Event from the native event object
-		event = jQuery.event.fix( event );
+		var event = jQuery.event.fix( nativeEvent );
 
-		var i, j, ret, matched, handleObj,
-			handlerQueue = [],
-			args = slice.call( arguments ),
+		var i, j, ret, matched, handleObj, handlerQueue,
+			args = new Array( arguments.length ),
 			handlers = ( dataPriv.get( this, "events" ) || {} )[ event.type ] || [],
 			special = jQuery.event.special[ event.type ] || {};
 
 		// Use the fix-ed jQuery.Event rather than the (read-only) native event
 		args[ 0 ] = event;
+
+		for ( i = 1; i < arguments.length; i++ ) {
+			args[ i ] = arguments[ i ];
+		}
+
 		event.delegateTarget = this;
 
 		// Call the preDispatch hook for the mapped type, and let it bail if desired
@@ -85335,146 +84341,95 @@ jQuery.event = {
 	},
 
 	handlers: function( event, handlers ) {
-		var i, matches, sel, handleObj,
+		var i, handleObj, sel, matchedHandlers, matchedSelectors,
 			handlerQueue = [],
 			delegateCount = handlers.delegateCount,
 			cur = event.target;
 
-		// Support (at least): Chrome, IE9
 		// Find delegate handlers
-		// Black-hole SVG <use> instance trees (#13180)
-		//
-		// Support: Firefox<=42+
-		// Avoid non-left-click in FF but don't block IE radio events (#3861, gh-2343)
-		if ( delegateCount && cur.nodeType &&
-			( event.type !== "click" || isNaN( event.button ) || event.button < 1 ) ) {
+		if ( delegateCount &&
+
+			// Support: IE <=9
+			// Black-hole SVG <use> instance trees (trac-13180)
+			cur.nodeType &&
+
+			// Support: Firefox <=42
+			// Suppress spec-violating clicks indicating a non-primary pointer button (trac-3861)
+			// https://www.w3.org/TR/DOM-Level-3-Events/#event-type-click
+			// Support: IE 11 only
+			// ...but not arrow key "clicks" of radio inputs, which can have `button` -1 (gh-2343)
+			!( event.type === "click" && event.button >= 1 ) ) {
 
 			for ( ; cur !== this; cur = cur.parentNode || this ) {
 
 				// Don't check non-elements (#13208)
 				// Don't process clicks on disabled elements (#6911, #8165, #11382, #11764)
-				if ( cur.nodeType === 1 && ( cur.disabled !== true || event.type !== "click" ) ) {
-					matches = [];
+				if ( cur.nodeType === 1 && !( event.type === "click" && cur.disabled === true ) ) {
+					matchedHandlers = [];
+					matchedSelectors = {};
 					for ( i = 0; i < delegateCount; i++ ) {
 						handleObj = handlers[ i ];
 
 						// Don't conflict with Object.prototype properties (#13203)
 						sel = handleObj.selector + " ";
 
-						if ( matches[ sel ] === undefined ) {
-							matches[ sel ] = handleObj.needsContext ?
+						if ( matchedSelectors[ sel ] === undefined ) {
+							matchedSelectors[ sel ] = handleObj.needsContext ?
 								jQuery( sel, this ).index( cur ) > -1 :
 								jQuery.find( sel, this, null, [ cur ] ).length;
 						}
-						if ( matches[ sel ] ) {
-							matches.push( handleObj );
+						if ( matchedSelectors[ sel ] ) {
+							matchedHandlers.push( handleObj );
 						}
 					}
-					if ( matches.length ) {
-						handlerQueue.push( { elem: cur, handlers: matches } );
+					if ( matchedHandlers.length ) {
+						handlerQueue.push( { elem: cur, handlers: matchedHandlers } );
 					}
 				}
 			}
 		}
 
 		// Add the remaining (directly-bound) handlers
+		cur = this;
 		if ( delegateCount < handlers.length ) {
-			handlerQueue.push( { elem: this, handlers: handlers.slice( delegateCount ) } );
+			handlerQueue.push( { elem: cur, handlers: handlers.slice( delegateCount ) } );
 		}
 
 		return handlerQueue;
 	},
 
-	// Includes some event props shared by KeyEvent and MouseEvent
-	props: ( "altKey bubbles cancelable ctrlKey currentTarget detail eventPhase " +
-		"metaKey relatedTarget shiftKey target timeStamp view which" ).split( " " ),
+	addProp: function( name, hook ) {
+		Object.defineProperty( jQuery.Event.prototype, name, {
+			enumerable: true,
+			configurable: true,
 
-	fixHooks: {},
+			get: jQuery.isFunction( hook ) ?
+				function() {
+					if ( this.originalEvent ) {
+							return hook( this.originalEvent );
+					}
+				} :
+				function() {
+					if ( this.originalEvent ) {
+							return this.originalEvent[ name ];
+					}
+				},
 
-	keyHooks: {
-		props: "char charCode key keyCode".split( " " ),
-		filter: function( event, original ) {
-
-			// Add which for key events
-			if ( event.which == null ) {
-				event.which = original.charCode != null ? original.charCode : original.keyCode;
+			set: function( value ) {
+				Object.defineProperty( this, name, {
+					enumerable: true,
+					configurable: true,
+					writable: true,
+					value: value
+				} );
 			}
-
-			return event;
-		}
+		} );
 	},
 
-	mouseHooks: {
-		props: ( "button buttons clientX clientY offsetX offsetY pageX pageY " +
-			"screenX screenY toElement" ).split( " " ),
-		filter: function( event, original ) {
-			var eventDoc, doc, body,
-				button = original.button;
-
-			// Calculate pageX/Y if missing and clientX/Y available
-			if ( event.pageX == null && original.clientX != null ) {
-				eventDoc = event.target.ownerDocument || document;
-				doc = eventDoc.documentElement;
-				body = eventDoc.body;
-
-				event.pageX = original.clientX +
-					( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) -
-					( doc && doc.clientLeft || body && body.clientLeft || 0 );
-				event.pageY = original.clientY +
-					( doc && doc.scrollTop  || body && body.scrollTop  || 0 ) -
-					( doc && doc.clientTop  || body && body.clientTop  || 0 );
-			}
-
-			// Add which for click: 1 === left; 2 === middle; 3 === right
-			// Note: button is not normalized, so don't use it
-			if ( !event.which && button !== undefined ) {
-				event.which = ( button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) ) );
-			}
-
-			return event;
-		}
-	},
-
-	fix: function( event ) {
-		if ( event[ jQuery.expando ] ) {
-			return event;
-		}
-
-		// Create a writable copy of the event object and normalize some properties
-		var i, prop, copy,
-			type = event.type,
-			originalEvent = event,
-			fixHook = this.fixHooks[ type ];
-
-		if ( !fixHook ) {
-			this.fixHooks[ type ] = fixHook =
-				rmouseEvent.test( type ) ? this.mouseHooks :
-				rkeyEvent.test( type ) ? this.keyHooks :
-				{};
-		}
-		copy = fixHook.props ? this.props.concat( fixHook.props ) : this.props;
-
-		event = new jQuery.Event( originalEvent );
-
-		i = copy.length;
-		while ( i-- ) {
-			prop = copy[ i ];
-			event[ prop ] = originalEvent[ prop ];
-		}
-
-		// Support: Cordova 2.5 (WebKit) (#13255)
-		// All events should have a target; Cordova deviceready doesn't
-		if ( !event.target ) {
-			event.target = document;
-		}
-
-		// Support: Safari 6.0+, Chrome<28
-		// Target should not be a text node (#504, #13143)
-		if ( event.target.nodeType === 3 ) {
-			event.target = event.target.parentNode;
-		}
-
-		return fixHook.filter ? fixHook.filter( event, originalEvent ) : event;
+	fix: function( originalEvent ) {
+		return originalEvent[ jQuery.expando ] ?
+			originalEvent :
+			new jQuery.Event( originalEvent );
 	},
 
 	special: {
@@ -85557,10 +84512,20 @@ jQuery.Event = function( src, props ) {
 		this.isDefaultPrevented = src.defaultPrevented ||
 				src.defaultPrevented === undefined &&
 
-				// Support: Android<4.0
+				// Support: Android <=2.3 only
 				src.returnValue === false ?
 			returnTrue :
 			returnFalse;
+
+		// Create target properties
+		// Support: Safari <=6 - 7 only
+		// Target should not be a text node (#504, #13143)
+		this.target = ( src.target && src.target.nodeType === 3 ) ?
+			src.target.parentNode :
+			src.target;
+
+		this.currentTarget = src.currentTarget;
+		this.relatedTarget = src.relatedTarget;
 
 	// Event type
 	} else {
@@ -85580,7 +84545,7 @@ jQuery.Event = function( src, props ) {
 };
 
 // jQuery.Event is based on DOM3 Events as specified by the ECMAScript Language Binding
-// http://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331/ecma-script-binding.html
+// https://www.w3.org/TR/2003/WD-DOM-Level-3-Events-20030331/ecma-script-binding.html
 jQuery.Event.prototype = {
 	constructor: jQuery.Event,
 	isDefaultPrevented: returnFalse,
@@ -85619,13 +84584,74 @@ jQuery.Event.prototype = {
 	}
 };
 
+// Includes all common event props including KeyEvent and MouseEvent specific props
+jQuery.each( {
+	altKey: true,
+	bubbles: true,
+	cancelable: true,
+	changedTouches: true,
+	ctrlKey: true,
+	detail: true,
+	eventPhase: true,
+	metaKey: true,
+	pageX: true,
+	pageY: true,
+	shiftKey: true,
+	view: true,
+	"char": true,
+	charCode: true,
+	key: true,
+	keyCode: true,
+	button: true,
+	buttons: true,
+	clientX: true,
+	clientY: true,
+	offsetX: true,
+	offsetY: true,
+	pointerId: true,
+	pointerType: true,
+	screenX: true,
+	screenY: true,
+	targetTouches: true,
+	toElement: true,
+	touches: true,
+
+	which: function( event ) {
+		var button = event.button;
+
+		// Add which for key events
+		if ( event.which == null && rkeyEvent.test( event.type ) ) {
+			return event.charCode != null ? event.charCode : event.keyCode;
+		}
+
+		// Add which for click: 1 === left; 2 === middle; 3 === right
+		if ( !event.which && button !== undefined && rmouseEvent.test( event.type ) ) {
+			if ( button & 1 ) {
+				return 1;
+			}
+
+			if ( button & 2 ) {
+				return 3;
+			}
+
+			if ( button & 4 ) {
+				return 2;
+			}
+
+			return 0;
+		}
+
+		return event.which;
+	}
+}, jQuery.event.addProp );
+
 // Create mouseenter/leave events using mouseover/out and event-time checks
 // so that event delegation works in jQuery.
 // Do the same for pointerenter/pointerleave and pointerover/pointerout
 //
 // Support: Safari 7 only
 // Safari sends mouseenter too often; see:
-// https://code.google.com/p/chromium/issues/detail?id=470258
+// https://bugs.chromium.org/p/chromium/issues/detail?id=470258
 // for the description of the bug (it existed in older Chrome versions as well).
 jQuery.each( {
 	mouseenter: "mouseover",
@@ -85656,6 +84682,7 @@ jQuery.each( {
 } );
 
 jQuery.fn.extend( {
+
 	on: function( types, selector, data, fn ) {
 		return on( this, types, selector, data, fn );
 	},
@@ -85702,9 +84729,15 @@ jQuery.fn.extend( {
 
 
 var
-	rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:-]+)[^>]*)\/>/gi,
 
-	// Support: IE 10-11, Edge 10240+
+	/* eslint-disable max-len */
+
+	// See https://github.com/eslint/eslint/issues/3229
+	rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^\/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi,
+
+	/* eslint-enable */
+
+	// Support: IE <=10 - 11, Edge 12 - 13
 	// In IE/Edge using regex groups here causes severe slowdowns.
 	// See https://connect.microsoft.com/IE/feedback/details/1736512/
 	rnoInnerhtml = /<script|<style|<link/i,
@@ -85714,14 +84747,14 @@ var
 	rscriptTypeMasked = /^true\/(.*)/,
 	rcleanScript = /^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g;
 
-// Manipulating tables requires a tbody
 function manipulationTarget( elem, content ) {
-	return jQuery.nodeName( elem, "table" ) &&
-		jQuery.nodeName( content.nodeType !== 11 ? content : content.firstChild, "tr" ) ?
+	if ( jQuery.nodeName( elem, "table" ) &&
+		jQuery.nodeName( content.nodeType !== 11 ? content : content.firstChild, "tr" ) ) {
 
-		elem.getElementsByTagName( "tbody" )[ 0 ] ||
-			elem.appendChild( elem.ownerDocument.createElement( "tbody" ) ) :
-		elem;
+		return elem.getElementsByTagName( "tbody" )[ 0 ] || elem;
+	}
+
+	return elem;
 }
 
 // Replace/restore the type attribute of script elements for safe DOM manipulation
@@ -85839,7 +84872,7 @@ function domManip( collection, args, callback, ignored ) {
 					// Keep references to cloned scripts for later restoration
 					if ( hasScripts ) {
 
-						// Support: Android<4.1, PhantomJS<2
+						// Support: Android <=4.0 only, PhantomJS 1 only
 						// push.apply(_, arraylike) throws on ancient WebKit
 						jQuery.merge( scripts, getAll( node, "script" ) );
 					}
@@ -85868,7 +84901,7 @@ function domManip( collection, args, callback, ignored ) {
 								jQuery._evalUrl( node.src );
 							}
 						} else {
-							jQuery.globalEval( node.textContent.replace( rcleanScript, "" ) );
+							DOMEval( node.textContent.replace( rcleanScript, "" ), doc );
 						}
 					}
 				}
@@ -85914,7 +84947,7 @@ jQuery.extend( {
 		if ( !support.noCloneChecked && ( elem.nodeType === 1 || elem.nodeType === 11 ) &&
 				!jQuery.isXMLDoc( elem ) ) {
 
-			// We eschew Sizzle here for performance reasons: http://jsperf.com/getall-vs-sizzle/2
+			// We eschew Sizzle here for performance reasons: https://jsperf.com/getall-vs-sizzle/2
 			destElements = getAll( clone );
 			srcElements = getAll( elem );
 
@@ -85967,13 +85000,13 @@ jQuery.extend( {
 						}
 					}
 
-					// Support: Chrome <= 35-45+
+					// Support: Chrome <=35 - 45+
 					// Assign undefined instead of using delete, see Data#remove
 					elem[ dataPriv.expando ] = undefined;
 				}
 				if ( elem[ dataUser.expando ] ) {
 
-					// Support: Chrome <= 35-45+
+					// Support: Chrome <=35 - 45+
 					// Assign undefined instead of using delete, see Data#remove
 					elem[ dataUser.expando ] = undefined;
 				}
@@ -85983,10 +85016,6 @@ jQuery.extend( {
 } );
 
 jQuery.fn.extend( {
-
-	// Keep domManip exposed until 3.0 (gh-2225)
-	domManip: domManip,
-
 	detach: function( selector ) {
 		return remove( this, selector, true );
 	},
@@ -86144,86 +85173,21 @@ jQuery.each( {
 			elems = i === last ? this : this.clone( true );
 			jQuery( insert[ i ] )[ original ]( elems );
 
-			// Support: QtWebKit
-			// .get() because push.apply(_, arraylike) throws
+			// Support: Android <=4.0 only, PhantomJS 1 only
+			// .get() because push.apply(_, arraylike) throws on ancient WebKit
 			push.apply( ret, elems.get() );
 		}
 
 		return this.pushStack( ret );
 	};
 } );
-
-
-var iframe,
-	elemdisplay = {
-
-		// Support: Firefox
-		// We have to pre-define these values for FF (#10227)
-		HTML: "block",
-		BODY: "block"
-	};
-
-/**
- * Retrieve the actual display of a element
- * @param {String} name nodeName of the element
- * @param {Object} doc Document object
- */
-
-// Called only from within defaultDisplay
-function actualDisplay( name, doc ) {
-	var elem = jQuery( doc.createElement( name ) ).appendTo( doc.body ),
-
-		display = jQuery.css( elem[ 0 ], "display" );
-
-	// We don't have any data stored on the element,
-	// so use "detach" method as fast way to get rid of the element
-	elem.detach();
-
-	return display;
-}
-
-/**
- * Try to determine the default display value of an element
- * @param {String} nodeName
- */
-function defaultDisplay( nodeName ) {
-	var doc = document,
-		display = elemdisplay[ nodeName ];
-
-	if ( !display ) {
-		display = actualDisplay( nodeName, doc );
-
-		// If the simple way fails, read from inside an iframe
-		if ( display === "none" || !display ) {
-
-			// Use the already-created iframe if possible
-			iframe = ( iframe || jQuery( "<iframe frameborder='0' width='0' height='0'/>" ) )
-				.appendTo( doc.documentElement );
-
-			// Always write a new HTML skeleton so Webkit and Firefox don't choke on reuse
-			doc = iframe[ 0 ].contentDocument;
-
-			// Support: IE
-			doc.write();
-			doc.close();
-
-			display = actualDisplay( nodeName, doc );
-			iframe.detach();
-		}
-
-		// Store the correct default display
-		elemdisplay[ nodeName ] = display;
-	}
-
-	return display;
-}
 var rmargin = ( /^margin/ );
 
 var rnumnonpx = new RegExp( "^(" + pnum + ")(?!px)[a-z%]+$", "i" );
 
 var getStyles = function( elem ) {
 
-		// Support: IE<=11+, Firefox<=30+ (#15098, #14150)
+		// Support: IE <=11 only, Firefox <=30 (#15098, #14150)
 		// IE throws on elements created in popups
 		// FF meanwhile throws on frame elements through "defaultView.getComputedStyle"
 		var view = elem.ownerDocument.defaultView;
@@ -86235,59 +85199,21 @@ var getStyles = function( elem ) {
 		return view.getComputedStyle( elem );
 	};
 
-var swap = function( elem, options, callback, args ) {
-	var ret, name,
-		old = {};
-
-	// Remember the old values, and insert the new ones
-	for ( name in options ) {
-		old[ name ] = elem.style[ name ];
-		elem.style[ name ] = options[ name ];
-	}
-
-	ret = callback.apply( elem, args || [] );
-
-	// Revert the old values
-	for ( name in options ) {
-		elem.style[ name ] = old[ name ];
-	}
-
-	return ret;
-};
-
-
-var documentElement = document.documentElement;
-
 
 
 ( function() {
-	var pixelPositionVal, boxSizingReliableVal, pixelMarginRightVal, reliableMarginLeftVal,
-		container = document.createElement( "div" ),
-		div = document.createElement( "div" );
-
-	// Finish early in limited (non-browser) environments
-	if ( !div.style ) {
-		return;
-	}
-
-	// Support: IE9-11+
-	// Style of cloned element affects source element cloned (#8908)
-	div.style.backgroundClip = "content-box";
-	div.cloneNode( true ).style.backgroundClip = "";
-	support.clearCloneStyle = div.style.backgroundClip === "content-box";
-
-	container.style.cssText = "border:0;width:8px;height:0;top:0;left:-9999px;" +
-		"padding:0;margin-top:1px;position:absolute";
-	container.appendChild( div );
 
 	// Executing both pixelPosition & boxSizingReliable tests require only one layout
 	// so they're executed at the same time to save the second computation.
 	function computeStyleTests() {
-		div.style.cssText =
 
-			// Support: Firefox<29, Android 2.3
-			// Vendor-prefix box-sizing
-			"-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;" +
+		// This is a singleton, we need to execute it only once
+		if ( !div ) {
+			return;
+		}
+
+		div.style.cssText =
+			"box-sizing:border-box;" +
 			"position:relative;display:block;" +
 			"margin:auto;border:1px;padding:1px;" +
 			"top:1%;width:50%";
@@ -86296,6 +85222,8 @@ var documentElement = document.documentElement;
 
 		var divStyle = window.getComputedStyle( div );
 		pixelPositionVal = divStyle.top !== "1%";
+
+		// Support: Android 4.0 - 4.3 only, Firefox <=3 - 44
 		reliableMarginLeftVal = divStyle.marginLeft === "2px";
 		boxSizingReliableVal = divStyle.width === "4px";
 
@@ -86305,68 +85233,47 @@ var documentElement = document.documentElement;
 		pixelMarginRightVal = divStyle.marginRight === "4px";
 
 		documentElement.removeChild( container );
+
+		// Nullify the div so it wouldn't be stored in the memory and
+		// it will also be a sign that checks already performed
+		div = null;
 	}
+
+	var pixelPositionVal, boxSizingReliableVal, pixelMarginRightVal, reliableMarginLeftVal,
+		container = document.createElement( "div" ),
+		div = document.createElement( "div" );
+
+	// Finish early in limited (non-browser) environments
+	if ( !div.style ) {
+		return;
+	}
+
+	// Support: IE <=9 - 11 only
+	// Style of cloned element affects source element cloned (#8908)
+	div.style.backgroundClip = "content-box";
+	div.cloneNode( true ).style.backgroundClip = "";
+	support.clearCloneStyle = div.style.backgroundClip === "content-box";
+
+	container.style.cssText = "border:0;width:8px;height:0;top:0;left:-9999px;" +
+		"padding:0;margin-top:1px;position:absolute";
+	container.appendChild( div );
 
 	jQuery.extend( support, {
 		pixelPosition: function() {
-
-			// This test is executed only once but we still do memoizing
-			// since we can use the boxSizingReliable pre-computing.
-			// No need to check if the test was already performed, though.
 			computeStyleTests();
 			return pixelPositionVal;
 		},
 		boxSizingReliable: function() {
-			if ( boxSizingReliableVal == null ) {
-				computeStyleTests();
-			}
+			computeStyleTests();
 			return boxSizingReliableVal;
 		},
 		pixelMarginRight: function() {
-
-			// Support: Android 4.0-4.3
-			// We're checking for boxSizingReliableVal here instead of pixelMarginRightVal
-			// since that compresses better and they're computed together anyway.
-			if ( boxSizingReliableVal == null ) {
-				computeStyleTests();
-			}
+			computeStyleTests();
 			return pixelMarginRightVal;
 		},
 		reliableMarginLeft: function() {
-
-			// Support: IE <=8 only, Android 4.0 - 4.3 only, Firefox <=3 - 37
-			if ( boxSizingReliableVal == null ) {
-				computeStyleTests();
-			}
+			computeStyleTests();
 			return reliableMarginLeftVal;
-		},
-		reliableMarginRight: function() {
-
-			// Support: Android 2.3
-			// Check if div with explicit width and no margin-right incorrectly
-			// gets computed margin-right based on width of container. (#3333)
-			// WebKit Bug 13343 - getComputedStyle returns wrong value for margin-right
-			// This support function is only executed once so no memoizing is needed.
-			var ret,
-				marginDiv = div.appendChild( document.createElement( "div" ) );
-
-			// Reset CSS: box-sizing; display; margin; border; padding
-			marginDiv.style.cssText = div.style.cssText =
-
-				// Support: Android 2.3
-				// Vendor-prefix box-sizing
-				"-webkit-box-sizing:content-box;box-sizing:content-box;" +
-				"display:block;margin:0;border:0;padding:0";
-			marginDiv.style.marginRight = marginDiv.style.width = "0";
-			div.style.width = "1px";
-			documentElement.appendChild( container );
-
-			ret = !parseFloat( window.getComputedStyle( marginDiv ).marginRight );
-
-			documentElement.removeChild( container );
-			div.removeChild( marginDiv );
-
-			return ret;
 		}
 	} );
 } )();
@@ -86377,24 +85284,21 @@ function curCSS( elem, name, computed ) {
 		style = elem.style;
 
 	computed = computed || getStyles( elem );
-	ret = computed ? computed.getPropertyValue( name ) || computed[ name ] : undefined;
 
-	// Support: Opera 12.1x only
-	// Fall back to style even without computed
-	// computed is undefined for elems on document fragments
-	if ( ( ret === "" || ret === undefined ) && !jQuery.contains( elem.ownerDocument, elem ) ) {
-		ret = jQuery.style( elem, name );
-	}
-
-	// Support: IE9
+	// Support: IE <=9 only
 	// getPropertyValue is only needed for .css('filter') (#12537)
 	if ( computed ) {
+		ret = computed.getPropertyValue( name ) || computed[ name ];
+
+		if ( ret === "" && !jQuery.contains( elem.ownerDocument, elem ) ) {
+			ret = jQuery.style( elem, name );
+		}
 
 		// A tribute to the "awesome hack by Dean Edwards"
 		// Android Browser returns percentage for some values,
 		// but width seems to be reliably pixels.
 		// This is against the CSSOM draft spec:
-		// http://dev.w3.org/csswg/cssom/#resolved-values
+		// https://drafts.csswg.org/cssom/#resolved-values
 		if ( !support.pixelMarginRight() && rnumnonpx.test( ret ) && rmargin.test( name ) ) {
 
 			// Remember the original values
@@ -86415,7 +85319,7 @@ function curCSS( elem, name, computed ) {
 
 	return ret !== undefined ?
 
-		// Support: IE9-11+
+		// Support: IE <=9 - 11 only
 		// IE returns zIndex value as an integer.
 		ret + "" :
 		ret;
@@ -86448,14 +85352,13 @@ var
 	// except "table", "table-cell", or "table-caption"
 	// See here for display values: https://developer.mozilla.org/en-US/docs/CSS/display
 	rdisplayswap = /^(none|table(?!-c[ea]).+)/,
-
 	cssShow = { position: "absolute", visibility: "hidden", display: "block" },
 	cssNormalTransform = {
 		letterSpacing: "0",
 		fontWeight: "400"
 	},
 
-	cssPrefixes = [ "Webkit", "O", "Moz", "ms" ],
+	cssPrefixes = [ "Webkit", "Moz", "ms" ],
 	emptyStyle = document.createElement( "div" ).style;
 
 // Return a css property mapped to a potentially vendor prefixed property
@@ -86491,15 +85394,17 @@ function setPositiveNumber( elem, value, subtract ) {
 }
 
 function augmentWidthOrHeight( elem, name, extra, isBorderBox, styles ) {
-	var i = extra === ( isBorderBox ? "border" : "content" ) ?
-
-		// If we already have the right measurement, avoid augmentation
-		4 :
-
-		// Otherwise initialize for horizontal or vertical properties
-		name === "width" ? 1 : 0,
-
+	var i,
 		val = 0;
+
+	// If we already have the right measurement, avoid augmentation
+	if ( extra === ( isBorderBox ? "border" : "content" ) ) {
+		i = 4;
+
+	// Otherwise initialize for horizontal or vertical properties
+	} else {
+		i = name === "width" ? 1 : 0;
+	}
 
 	for ( ; i < 4; i += 2 ) {
 
@@ -86537,10 +85442,17 @@ function augmentWidthOrHeight( elem, name, extra, isBorderBox, styles ) {
 function getWidthOrHeight( elem, name, extra ) {
 
 	// Start with offset property, which is equivalent to the border-box value
-	var valueIsBorderBox = true,
-		val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
+	var val,
+		valueIsBorderBox = true,
 		styles = getStyles( elem ),
 		isBorderBox = jQuery.css( elem, "boxSizing", false, styles ) === "border-box";
+
+	// Support: IE <=11 only
+	// Running getBoundingClientRect on a disconnected node
+	// in IE throws an error.
+	if ( elem.getClientRects().length ) {
+		val = elem.getBoundingClientRect()[ name ];
+	}
 
 	// Some non-html elements return undefined for offsetWidth, so check for null/undefined
 	// svg - https://bugzilla.mozilla.org/show_bug.cgi?id=649285
@@ -86577,66 +85489,6 @@ function getWidthOrHeight( elem, name, extra ) {
 			styles
 		)
 	) + "px";
-}
-
-function showHide( elements, show ) {
-	var display, elem, hidden,
-		values = [],
-		index = 0,
-		length = elements.length;
-
-	for ( ; index < length; index++ ) {
-		elem = elements[ index ];
-		if ( !elem.style ) {
-			continue;
-		}
-
-		values[ index ] = dataPriv.get( elem, "olddisplay" );
-		display = elem.style.display;
-		if ( show ) {
-
-			// Reset the inline display of this element to learn if it is
-			// being hidden by cascaded rules or not
-			if ( !values[ index ] && display === "none" ) {
-				elem.style.display = "";
-			}
-
-			// Set elements which have been overridden with display: none
-			// in a stylesheet to whatever the default browser style is
-			// for such an element
-			if ( elem.style.display === "" && isHidden( elem ) ) {
-				values[ index ] = dataPriv.access(
-					elem,
-					"olddisplay",
-					defaultDisplay( elem.nodeName )
-				);
-			}
-		} else {
-			hidden = isHidden( elem );
-
-			if ( display !== "none" || !hidden ) {
-				dataPriv.set(
-					elem,
-					"olddisplay",
-					hidden ? display : jQuery.css( elem, "display" )
-				);
-			}
-		}
-	}
-
-	// Set the display of most of the elements in a second loop
-	// to avoid the constant reflow
-	for ( index = 0; index < length; index++ ) {
-		elem = elements[ index ];
-		if ( !elem.style ) {
-			continue;
-		}
-		if ( !show || elem.style.display === "none" || elem.style.display === "" ) {
-			elem.style.display = show ? values[ index ] || "" : "none";
-		}
-	}
-
-	return elements;
 }
 
 jQuery.extend( {
@@ -86720,7 +85572,6 @@ jQuery.extend( {
 				value += ret && ret[ 3 ] || ( jQuery.cssNumber[ origName ] ? "" : "px" );
 			}
 
-			// Support: IE9-11+
 			// background-* props affect original clone's values
 			if ( !support.clearCloneStyle && value === "" && name.indexOf( "background" ) === 0 ) {
 				style[ name ] = "inherit";
@@ -86790,7 +85641,14 @@ jQuery.each( [ "height", "width" ], function( i, name ) {
 				// Certain elements can have dimension info if we invisibly show them
 				// but it must have a current display style that would benefit
 				return rdisplayswap.test( jQuery.css( elem, "display" ) ) &&
-					elem.offsetWidth === 0 ?
+
+					// Support: Safari 8+
+					// Table columns in Safari have non-zero offsetWidth & zero
+					// getBoundingClientRect().width unless display is changed.
+					// Support: IE <=11 only
+					// Running getBoundingClientRect on a disconnected node
+					// in IE throws an error.
+					( !elem.getClientRects().length || !elem.getBoundingClientRect().width ) ?
 						swap( elem, cssShow, function() {
 							return getWidthOrHeight( elem, name, extra );
 						} ) :
@@ -86831,16 +85689,6 @@ jQuery.cssHooks.marginLeft = addGetHookIf( support.reliableMarginLeft,
 						return elem.getBoundingClientRect().left;
 					} )
 				) + "px";
-		}
-	}
-);
-
-// Support: Android 2.3
-jQuery.cssHooks.marginRight = addGetHookIf( support.reliableMarginRight,
-	function( elem, computed ) {
-		if ( computed ) {
-			return swap( elem, { "display": "inline-block" },
-				curCSS, [ elem, "marginRight" ] );
 		}
 	}
 );
@@ -86895,25 +85743,6 @@ jQuery.fn.extend( {
 				jQuery.style( elem, name, value ) :
 				jQuery.css( elem, name );
 		}, name, value, arguments.length > 1 );
-	},
-	show: function() {
-		return showHide( this, true );
-	},
-	hide: function() {
-		return showHide( this );
-	},
-	toggle: function( state ) {
-		if ( typeof state === "boolean" ) {
-			return state ? this.show() : this.hide();
-		}
-
-		return this.each( function() {
-			if ( isHidden( this ) ) {
-				jQuery( this ).show();
-			} else {
-				jQuery( this ).hide();
-			}
-		} );
 	}
 } );
 
@@ -87008,7 +85837,7 @@ Tween.propHooks = {
 	}
 };
 
-// Support: IE9
+// Support: IE <=9 only
 // Panic based approach to setting things on disconnected nodes
 Tween.propHooks.scrollTop = Tween.propHooks.scrollLeft = {
 	set: function( tween ) {
@@ -87030,7 +85859,7 @@ jQuery.easing = {
 
 jQuery.fx = Tween.prototype.init;
 
-// Back Compat <1.8 extension point
+// Back compat <1.8 extension point
 jQuery.fx.step = {};
 
 
@@ -87040,6 +85869,13 @@ var
 	fxNow, timerId,
 	rfxtypes = /^(?:toggle|show|hide)$/,
 	rrun = /queueHooks$/;
+
+function raf() {
+	if ( timerId ) {
+		window.requestAnimationFrame( raf );
+		jQuery.fx.tick();
+	}
+}
 
 // Animations created synchronously will run synchronously
 function createFxNow() {
@@ -87058,7 +85894,7 @@ function genFx( type, includeWidth ) {
 	// If we include width, step value is 1 to do all cssExpand values,
 	// otherwise step value is 2 to skip over Left and Right
 	includeWidth = includeWidth ? 1 : 0;
-	for ( ; i < 4 ; i += 2 - includeWidth ) {
+	for ( ; i < 4; i += 2 - includeWidth ) {
 		which = cssExpand[ i ];
 		attrs[ "margin" + which ] = attrs[ "padding" + which ] = type;
 	}
@@ -87085,15 +85921,15 @@ function createTween( value, prop, animation ) {
 }
 
 function defaultPrefilter( elem, props, opts ) {
-	/* jshint validthis: true */
-	var prop, value, toggle, tween, hooks, oldfire, display, checkDisplay,
+	var prop, value, toggle, hooks, oldfire, propTween, restoreDisplay, display,
+		isBox = "width" in props || "height" in props,
 		anim = this,
 		orig = {},
 		style = elem.style,
-		hidden = elem.nodeType && isHidden( elem ),
+		hidden = elem.nodeType && isHiddenWithinTree( elem ),
 		dataShow = dataPriv.get( elem, "fxshow" );
 
-	// Handle queue: false promises
+	// Queue-skipping animations hijack the fx hooks
 	if ( !opts.queue ) {
 		hooks = jQuery._queueHooks( elem, "fx" );
 		if ( hooks.unqueued == null ) {
@@ -87119,25 +85955,77 @@ function defaultPrefilter( elem, props, opts ) {
 		} );
 	}
 
-	// Height/width overflow pass
-	if ( elem.nodeType === 1 && ( "height" in props || "width" in props ) ) {
+	// Detect show/hide animations
+	for ( prop in props ) {
+		value = props[ prop ];
+		if ( rfxtypes.test( value ) ) {
+			delete props[ prop ];
+			toggle = toggle || value === "toggle";
+			if ( value === ( hidden ? "hide" : "show" ) ) {
 
-		// Make sure that nothing sneaks out
-		// Record all 3 overflow attributes because IE9-10 do not
-		// change the overflow attribute when overflowX and
-		// overflowY are set to the same value
+				// Pretend to be hidden if this is a "show" and
+				// there is still data from a stopped show/hide
+				if ( value === "show" && dataShow && dataShow[ prop ] !== undefined ) {
+					hidden = true;
+
+				// Ignore all other no-op show/hide data
+				} else {
+					continue;
+				}
+			}
+			orig[ prop ] = dataShow && dataShow[ prop ] || jQuery.style( elem, prop );
+		}
+	}
+
+	// Bail out if this is a no-op like .hide().hide()
+	propTween = !jQuery.isEmptyObject( props );
+	if ( !propTween && jQuery.isEmptyObject( orig ) ) {
+		return;
+	}
+
+	// Restrict "overflow" and "display" styles during box animations
+	if ( isBox && elem.nodeType === 1 ) {
+
+		// Support: IE <=9 - 11, Edge 12 - 13
+		// Record all 3 overflow attributes because IE does not infer the shorthand
+		// from identically-valued overflowX and overflowY
 		opts.overflow = [ style.overflow, style.overflowX, style.overflowY ];
 
-		// Set display property to inline-block for height/width
-		// animations on inline elements that are having width/height animated
+		// Identify a display type, preferring old show/hide data over the CSS cascade
+		restoreDisplay = dataShow && dataShow.display;
+		if ( restoreDisplay == null ) {
+			restoreDisplay = dataPriv.get( elem, "display" );
+		}
 		display = jQuery.css( elem, "display" );
+		if ( display === "none" ) {
+			if ( restoreDisplay ) {
+				display = restoreDisplay;
+			} else {
 
-		// Test default display if display is currently "none"
-		checkDisplay = display === "none" ?
-			dataPriv.get( elem, "olddisplay" ) || defaultDisplay( elem.nodeName ) : display;
+				// Get nonempty value(s) by temporarily forcing visibility
+				showHide( [ elem ], true );
+				restoreDisplay = elem.style.display || restoreDisplay;
+				display = jQuery.css( elem, "display" );
+				showHide( [ elem ] );
+			}
+		}
 
-		if ( checkDisplay === "inline" && jQuery.css( elem, "float" ) === "none" ) {
-			style.display = "inline-block";
+		// Animate inline elements as inline-block
+		if ( display === "inline" || display === "inline-block" && restoreDisplay != null ) {
+			if ( jQuery.css( elem, "float" ) === "none" ) {
+
+				// Restore the original display value at the end of pure show/hide animations
+				if ( !propTween ) {
+					anim.done( function() {
+						style.display = restoreDisplay;
+					} );
+					if ( restoreDisplay == null ) {
+						display = style.display;
+						restoreDisplay = display === "none" ? "" : display;
+					}
+				}
+				style.display = "inline-block";
+			}
 		}
 	}
 
@@ -87150,73 +86038,56 @@ function defaultPrefilter( elem, props, opts ) {
 		} );
 	}
 
-	// show/hide pass
-	for ( prop in props ) {
-		value = props[ prop ];
-		if ( rfxtypes.exec( value ) ) {
-			delete props[ prop ];
-			toggle = toggle || value === "toggle";
-			if ( value === ( hidden ? "hide" : "show" ) ) {
+	// Implement show/hide animations
+	propTween = false;
+	for ( prop in orig ) {
 
-				// If there is dataShow left over from a stopped hide or show
-				// and we are going to proceed with show, we should pretend to be hidden
-				if ( value === "show" && dataShow && dataShow[ prop ] !== undefined ) {
-					hidden = true;
-				} else {
-					continue;
+		// General show/hide setup for this element animation
+		if ( !propTween ) {
+			if ( dataShow ) {
+				if ( "hidden" in dataShow ) {
+					hidden = dataShow.hidden;
 				}
+			} else {
+				dataShow = dataPriv.access( elem, "fxshow", { display: restoreDisplay } );
 			}
-			orig[ prop ] = dataShow && dataShow[ prop ] || jQuery.style( elem, prop );
 
-		// Any non-fx value stops us from restoring the original display value
-		} else {
-			display = undefined;
-		}
-	}
-
-	if ( !jQuery.isEmptyObject( orig ) ) {
-		if ( dataShow ) {
-			if ( "hidden" in dataShow ) {
-				hidden = dataShow.hidden;
+			// Store hidden/visible for toggle so `.stop().toggle()` "reverses"
+			if ( toggle ) {
+				dataShow.hidden = !hidden;
 			}
-		} else {
-			dataShow = dataPriv.access( elem, "fxshow", {} );
-		}
 
-		// Store state if its toggle - enables .stop().toggle() to "reverse"
-		if ( toggle ) {
-			dataShow.hidden = !hidden;
-		}
-		if ( hidden ) {
-			jQuery( elem ).show();
-		} else {
+			// Show elements before animating them
+			if ( hidden ) {
+				showHide( [ elem ], true );
+			}
+
+			/* eslint-disable no-loop-func */
+
 			anim.done( function() {
-				jQuery( elem ).hide();
+
+			/* eslint-enable no-loop-func */
+
+				// The final step of a "hide" animation is actually hiding the element
+				if ( !hidden ) {
+					showHide( [ elem ] );
+				}
+				dataPriv.remove( elem, "fxshow" );
+				for ( prop in orig ) {
+					jQuery.style( elem, prop, orig[ prop ] );
+				}
 			} );
 		}
-		anim.done( function() {
-			var prop;
 
-			dataPriv.remove( elem, "fxshow" );
-			for ( prop in orig ) {
-				jQuery.style( elem, prop, orig[ prop ] );
-			}
-		} );
-		for ( prop in orig ) {
-			tween = createTween( hidden ? dataShow[ prop ] : 0, prop, anim );
-
-			if ( !( prop in dataShow ) ) {
-				dataShow[ prop ] = tween.start;
-				if ( hidden ) {
-					tween.end = tween.start;
-					tween.start = prop === "width" || prop === "height" ? 1 : 0;
-				}
+		// Per-property setup
+		propTween = createTween( hidden ? dataShow[ prop ] : 0, prop, anim );
+		if ( !( prop in dataShow ) ) {
+			dataShow[ prop ] = propTween.start;
+			if ( hidden ) {
+				propTween.end = propTween.start;
+				propTween.start = 0;
 			}
 		}
-
-	// If this is a noop like .hide().hide(), restore an overwritten display value
-	} else if ( ( display === "none" ? defaultDisplay( elem.nodeName ) : display ) === "inline" ) {
-		style.display = display;
 	}
 }
 
@@ -87274,14 +86145,14 @@ function Animation( elem, properties, options ) {
 			var currentTime = fxNow || createFxNow(),
 				remaining = Math.max( 0, animation.startTime + animation.duration - currentTime ),
 
-				// Support: Android 2.3
+				// Support: Android 2.3 only
 				// Archaic crash bug won't allow us to use `1 - ( 0.5 || 0 )` (#12497)
 				temp = remaining / animation.duration || 0,
 				percent = 1 - temp,
 				index = 0,
 				length = animation.tweens.length;
 
-			for ( ; index < length ; index++ ) {
+			for ( ; index < length; index++ ) {
 				animation.tweens[ index ].run( percent );
 			}
 
@@ -87322,7 +86193,7 @@ function Animation( elem, properties, options ) {
 					return this;
 				}
 				stopped = true;
-				for ( ; index < length ; index++ ) {
+				for ( ; index < length; index++ ) {
 					animation.tweens[ index ].run( 1 );
 				}
 
@@ -87340,7 +86211,7 @@ function Animation( elem, properties, options ) {
 
 	propFilter( props, animation.opts.specialEasing );
 
-	for ( ; index < length ; index++ ) {
+	for ( ; index < length; index++ ) {
 		result = Animation.prefilters[ index ].call( animation, elem, props, animation.opts );
 		if ( result ) {
 			if ( jQuery.isFunction( result.stop ) ) {
@@ -87373,6 +86244,7 @@ function Animation( elem, properties, options ) {
 }
 
 jQuery.Animation = jQuery.extend( Animation, {
+
 	tweeners: {
 		"*": [ function( prop, value ) {
 			var tween = this.createTween( prop, value );
@@ -87386,14 +86258,14 @@ jQuery.Animation = jQuery.extend( Animation, {
 			callback = props;
 			props = [ "*" ];
 		} else {
-			props = props.match( rnotwhite );
+			props = props.match( rnothtmlwhite );
 		}
 
 		var prop,
 			index = 0,
 			length = props.length;
 
-		for ( ; index < length ; index++ ) {
+		for ( ; index < length; index++ ) {
 			prop = props[ index ];
 			Animation.tweeners[ prop ] = Animation.tweeners[ prop ] || [];
 			Animation.tweeners[ prop ].unshift( callback );
@@ -87419,9 +86291,20 @@ jQuery.speed = function( speed, easing, fn ) {
 		easing: fn && easing || easing && !jQuery.isFunction( easing ) && easing
 	};
 
-	opt.duration = jQuery.fx.off ? 0 : typeof opt.duration === "number" ?
-		opt.duration : opt.duration in jQuery.fx.speeds ?
-			jQuery.fx.speeds[ opt.duration ] : jQuery.fx.speeds._default;
+	// Go to the end state if fx are off or if document is hidden
+	if ( jQuery.fx.off || document.hidden ) {
+		opt.duration = 0;
+
+	} else {
+		if ( typeof opt.duration !== "number" ) {
+			if ( opt.duration in jQuery.fx.speeds ) {
+				opt.duration = jQuery.fx.speeds[ opt.duration ];
+
+			} else {
+				opt.duration = jQuery.fx.speeds._default;
+			}
+		}
+	}
 
 	// Normalize opt.queue - true/undefined/null -> "fx"
 	if ( opt.queue == null || opt.queue === true ) {
@@ -87448,7 +86331,7 @@ jQuery.fn.extend( {
 	fadeTo: function( speed, to, easing, callback ) {
 
 		// Show any hidden elements after setting opacity to 0
-		return this.filter( isHidden ).css( "opacity", 0 ).show()
+		return this.filter( isHiddenWithinTree ).css( "opacity", 0 ).show()
 
 			// Animate to the value specified
 			.end().animate( { opacity: to }, speed, easing, callback );
@@ -87625,12 +86508,18 @@ jQuery.fx.timer = function( timer ) {
 jQuery.fx.interval = 13;
 jQuery.fx.start = function() {
 	if ( !timerId ) {
-		timerId = window.setInterval( jQuery.fx.tick, jQuery.fx.interval );
+		timerId = window.requestAnimationFrame ?
+			window.requestAnimationFrame( raf ) :
+			window.setInterval( jQuery.fx.tick, jQuery.fx.interval );
 	}
 };
 
 jQuery.fx.stop = function() {
-	window.clearInterval( timerId );
+	if ( window.cancelAnimationFrame ) {
+		window.cancelAnimationFrame( timerId );
+	} else {
+		window.clearInterval( timerId );
+	}
 
 	timerId = null;
 };
@@ -87645,7 +86534,7 @@ jQuery.fx.speeds = {
 
 
 // Based off of the plugin by Clint Helfers, with permission.
-// http://web.archive.org/web/20100324014747/http://blindsignals.com/index.php/2009/07/jquery-delay/
+// https://web.archive.org/web/20100324014747/http://blindsignals.com/index.php/2009/07/jquery-delay/
 jQuery.fn.delay = function( time, type ) {
 	time = jQuery.fx ? jQuery.fx.speeds[ time ] || time : time;
 	type = type || "fx";
@@ -87666,20 +86555,15 @@ jQuery.fn.delay = function( time, type ) {
 
 	input.type = "checkbox";
 
-	// Support: iOS<=5.1, Android<=4.2+
+	// Support: Android <=4.3 only
 	// Default value for a checkbox should be "on"
 	support.checkOn = input.value !== "";
 
-	// Support: IE<=11+
+	// Support: IE <=11 only
 	// Must access selectedIndex to make default options select
 	support.optSelected = opt.selected;
 
-	// Support: Android<=2.3
-	// Options inside disabled selects are incorrectly marked as disabled
-	select.disabled = true;
-	support.optDisabled = !opt.disabled;
-
-	// Support: IE<=11+
+	// Support: IE <=11 only
 	// An input loses its value after becoming a radio
 	input = document.createElement( "input" );
 	input.value = "t";
@@ -87718,11 +86602,10 @@ jQuery.extend( {
 			return jQuery.prop( elem, name, value );
 		}
 
-		// All attributes are lowercase
+		// Attribute hooks are determined by the lowercase version
 		// Grab necessary hook if one is defined
 		if ( nType !== 1 || !jQuery.isXMLDoc( elem ) ) {
-			name = name.toLowerCase();
-			hooks = jQuery.attrHooks[ name ] ||
+			hooks = jQuery.attrHooks[ name.toLowerCase() ] ||
 				( jQuery.expr.match.bool.test( name ) ? boolHook : undefined );
 		}
 
@@ -87768,21 +86651,15 @@ jQuery.extend( {
 	},
 
 	removeAttr: function( elem, value ) {
-		var name, propName,
+		var name,
 			i = 0,
-			attrNames = value && value.match( rnotwhite );
+
+			// Attribute names can contain non-HTML whitespace characters
+			// https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
+			attrNames = value && value.match( rnothtmlwhite );
 
 		if ( attrNames && elem.nodeType === 1 ) {
 			while ( ( name = attrNames[ i++ ] ) ) {
-				propName = jQuery.propFix[ name ] || name;
-
-				// Boolean attributes get special treatment (#10870)
-				if ( jQuery.expr.match.bool.test( name ) ) {
-
-					// Set corresponding property to false
-					elem[ propName ] = false;
-				}
-
 				elem.removeAttribute( name );
 			}
 		}
@@ -87802,20 +86679,23 @@ boolHook = {
 		return name;
 	}
 };
+
 jQuery.each( jQuery.expr.match.bool.source.match( /\w+/g ), function( i, name ) {
 	var getter = attrHandle[ name ] || jQuery.find.attr;
 
 	attrHandle[ name ] = function( elem, name, isXML ) {
-		var ret, handle;
+		var ret, handle,
+			lowercaseName = name.toLowerCase();
+
 		if ( !isXML ) {
 
 			// Avoid an infinite loop by temporarily removing this function from the getter
-			handle = attrHandle[ name ];
-			attrHandle[ name ] = ret;
+			handle = attrHandle[ lowercaseName ];
+			attrHandle[ lowercaseName ] = ret;
 			ret = getter( elem, name, isXML ) != null ?
-				name.toLowerCase() :
+				lowercaseName :
 				null;
-			attrHandle[ name ] = handle;
+			attrHandle[ lowercaseName ] = handle;
 		}
 		return ret;
 	};
@@ -87876,18 +86756,26 @@ jQuery.extend( {
 		tabIndex: {
 			get: function( elem ) {
 
+				// Support: IE <=9 - 11 only
 				// elem.tabIndex doesn't always return the
 				// correct value when it hasn't been explicitly set
-				// http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
 				// Use proper attribute retrieval(#12072)
 				var tabindex = jQuery.find.attr( elem, "tabindex" );
 
-				return tabindex ?
-					parseInt( tabindex, 10 ) :
+				if ( tabindex ) {
+					return parseInt( tabindex, 10 );
+				}
+
+				if (
 					rfocusable.test( elem.nodeName ) ||
-						rclickable.test( elem.nodeName ) && elem.href ?
-							0 :
-							-1;
+					rclickable.test( elem.nodeName ) &&
+					elem.href
+				) {
+					return 0;
+				}
+
+				return -1;
 			}
 		}
 	},
@@ -87904,9 +86792,14 @@ jQuery.extend( {
 // on the option
 // The getter ensures a default option is selected
 // when in an optgroup
+// eslint rule "no-unused-expressions" is disabled for this code
+// since it considers such accessions noop
 if ( !support.optSelected ) {
 	jQuery.propHooks.selected = {
 		get: function( elem ) {
+
+			/* eslint no-unused-expressions: "off" */
+
 			var parent = elem.parentNode;
 			if ( parent && parent.parentNode ) {
 				parent.parentNode.selectedIndex;
@@ -87914,6 +86807,9 @@ if ( !support.optSelected ) {
 			return null;
 		},
 		set: function( elem ) {
+
+			/* eslint no-unused-expressions: "off" */
+
 			var parent = elem.parentNode;
 			if ( parent ) {
 				parent.selectedIndex;
@@ -87944,7 +86840,13 @@ jQuery.each( [
 
 
 
-var rclass = /[\t\r\n\f]/g;
+	// Strip and collapse whitespace according to HTML spec
+	// https://html.spec.whatwg.org/multipage/infrastructure.html#strip-and-collapse-whitespace
+	function stripAndCollapse( value ) {
+		var tokens = value.match( rnothtmlwhite ) || [];
+		return tokens.join( " " );
+	}
+
 
 function getClass( elem ) {
 	return elem.getAttribute && elem.getAttribute( "class" ) || "";
@@ -87962,12 +86864,11 @@ jQuery.fn.extend( {
 		}
 
 		if ( typeof value === "string" && value ) {
-			classes = value.match( rnotwhite ) || [];
+			classes = value.match( rnothtmlwhite ) || [];
 
 			while ( ( elem = this[ i++ ] ) ) {
 				curValue = getClass( elem );
-				cur = elem.nodeType === 1 &&
-					( " " + curValue + " " ).replace( rclass, " " );
+				cur = elem.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
 
 				if ( cur ) {
 					j = 0;
@@ -87978,7 +86879,7 @@ jQuery.fn.extend( {
 					}
 
 					// Only assign if different to avoid unneeded rendering.
-					finalValue = jQuery.trim( cur );
+					finalValue = stripAndCollapse( cur );
 					if ( curValue !== finalValue ) {
 						elem.setAttribute( "class", finalValue );
 					}
@@ -88004,14 +86905,13 @@ jQuery.fn.extend( {
 		}
 
 		if ( typeof value === "string" && value ) {
-			classes = value.match( rnotwhite ) || [];
+			classes = value.match( rnothtmlwhite ) || [];
 
 			while ( ( elem = this[ i++ ] ) ) {
 				curValue = getClass( elem );
 
 				// This expression is here for better compressibility (see addClass)
-				cur = elem.nodeType === 1 &&
-					( " " + curValue + " " ).replace( rclass, " " );
+				cur = elem.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
 
 				if ( cur ) {
 					j = 0;
@@ -88024,7 +86924,7 @@ jQuery.fn.extend( {
 					}
 
 					// Only assign if different to avoid unneeded rendering.
-					finalValue = jQuery.trim( cur );
+					finalValue = stripAndCollapse( cur );
 					if ( curValue !== finalValue ) {
 						elem.setAttribute( "class", finalValue );
 					}
@@ -88059,7 +86959,7 @@ jQuery.fn.extend( {
 				// Toggle individual class names
 				i = 0;
 				self = jQuery( this );
-				classNames = value.match( rnotwhite ) || [];
+				classNames = value.match( rnothtmlwhite ) || [];
 
 				while ( ( className = classNames[ i++ ] ) ) {
 
@@ -88102,10 +87002,8 @@ jQuery.fn.extend( {
 		className = " " + selector + " ";
 		while ( ( elem = this[ i++ ] ) ) {
 			if ( elem.nodeType === 1 &&
-				( " " + getClass( elem ) + " " ).replace( rclass, " " )
-					.indexOf( className ) > -1
-			) {
-				return true;
+				( " " + stripAndCollapse( getClass( elem ) ) + " " ).indexOf( className ) > -1 ) {
+					return true;
 			}
 		}
 
@@ -88116,8 +87014,7 @@ jQuery.fn.extend( {
 
 
 
-var rreturn = /\r/g,
-	rspaces = /[\x20\t\r\n\f]+/g;
+var rreturn = /\r/g;
 
 jQuery.fn.extend( {
 	val: function( value ) {
@@ -88138,13 +87035,13 @@ jQuery.fn.extend( {
 
 				ret = elem.value;
 
-				return typeof ret === "string" ?
+				// Handle most common string cases
+				if ( typeof ret === "string" ) {
+					return ret.replace( rreturn, "" );
+				}
 
-					// Handle most common string cases
-					ret.replace( rreturn, "" ) :
-
-					// Handle cases where value is null/undef or number
-					ret == null ? "" : ret;
+				// Handle cases where value is null/undef or number
+				return ret == null ? "" : ret;
 			}
 
 			return;
@@ -88197,35 +87094,39 @@ jQuery.extend( {
 				return val != null ?
 					val :
 
-					// Support: IE10-11+
+					// Support: IE <=10 - 11 only
 					// option.text throws exceptions (#14686, #14858)
 					// Strip and collapse whitespace
 					// https://html.spec.whatwg.org/#strip-and-collapse-whitespace
-					jQuery.trim( jQuery.text( elem ) ).replace( rspaces, " " );
+					stripAndCollapse( jQuery.text( elem ) );
 			}
 		},
 		select: {
 			get: function( elem ) {
-				var value, option,
+				var value, option, i,
 					options = elem.options,
 					index = elem.selectedIndex,
-					one = elem.type === "select-one" || index < 0,
+					one = elem.type === "select-one",
 					values = one ? null : [],
-					max = one ? index + 1 : options.length,
-					i = index < 0 ?
-						max :
-						one ? index : 0;
+					max = one ? index + 1 : options.length;
+
+				if ( index < 0 ) {
+					i = max;
+
+				} else {
+					i = one ? index : 0;
+				}
 
 				// Loop through all the selected options
 				for ( ; i < max; i++ ) {
 					option = options[ i ];
 
+					// Support: IE <=9 only
 					// IE8-9 doesn't update selected after form reset (#2551)
 					if ( ( option.selected || i === index ) &&
 
 							// Don't return options that are disabled or in a disabled optgroup
-							( support.optDisabled ?
-								!option.disabled : option.getAttribute( "disabled" ) === null ) &&
+							!option.disabled &&
 							( !option.parentNode.disabled ||
 								!jQuery.nodeName( option.parentNode, "optgroup" ) ) ) {
 
@@ -88253,11 +87154,16 @@ jQuery.extend( {
 
 				while ( i-- ) {
 					option = options[ i ];
+
+					/* eslint-disable no-cond-assign */
+
 					if ( option.selected =
 						jQuery.inArray( jQuery.valHooks.option.get( option ), values ) > -1
 					) {
 						optionSet = true;
 					}
+
+					/* eslint-enable no-cond-assign */
 				}
 
 				// Force browsers to behave consistently when non-matching value is set
@@ -88405,7 +87311,7 @@ jQuery.extend( jQuery.event, {
 				special._default.apply( eventPath.pop(), data ) === false ) &&
 				acceptData( elem ) ) {
 
-				// Call a native DOM method on the target with the same name name as the event.
+				// Call a native DOM method on the target with the same name as the event.
 				// Don't do default actions on window, that's where global variables be (#6170)
 				if ( ontype && jQuery.isFunction( elem[ type ] ) && !jQuery.isWindow( elem ) ) {
 
@@ -88464,9 +87370,9 @@ jQuery.fn.extend( {
 } );
 
 
-jQuery.each( ( "blur focus focusin focusout load resize scroll unload click dblclick " +
+jQuery.each( ( "blur focus focusin focusout resize scroll click dblclick " +
 	"mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
-	"change select submit keydown keypress keyup error contextmenu" ).split( " " ),
+	"change select submit keydown keypress keyup contextmenu" ).split( " " ),
 	function( i, name ) {
 
 	// Handle event binding
@@ -88489,14 +87395,14 @@ jQuery.fn.extend( {
 support.focusin = "onfocusin" in window;
 
 
-// Support: Firefox
+// Support: Firefox <=44
 // Firefox doesn't have focus(in | out) events
 // Related ticket - https://bugzilla.mozilla.org/show_bug.cgi?id=687787
 //
-// Support: Chrome, Safari
+// Support: Chrome <=48 - 49, Safari <=9.0 - 9.1
 // focus(in | out) events fire after focus & blur events,
 // which is spec violation - http://www.w3.org/TR/DOM-Level-3-Events/#events-focusevent-event-order
-// Related ticket - https://code.google.com/p/chromium/issues/detail?id=449857
+// Related ticket - https://bugs.chromium.org/p/chromium/issues/detail?id=449857
 if ( !support.focusin ) {
 	jQuery.each( { focus: "focusin", blur: "focusout" }, function( orig, fix ) {
 
@@ -88538,13 +87444,6 @@ var rquery = ( /\?/ );
 
 
 
-// Support: Android 2.3
-// Workaround failure to string-cast null input
-jQuery.parseJSON = function( data ) {
-	return JSON.parse( data + "" );
-};
-
-
 // Cross-browser xml parsing
 jQuery.parseXML = function( data ) {
 	var xml;
@@ -88552,7 +87451,8 @@ jQuery.parseXML = function( data ) {
 		return null;
 	}
 
-	// Support: IE9
+	// Support: IE 9 - 11 only
+	// IE throws on parseFromString with invalid input.
 	try {
 		xml = ( new window.DOMParser() ).parseFromString( data, "text/xml" );
 	} catch ( e ) {
@@ -88567,8 +87467,128 @@ jQuery.parseXML = function( data ) {
 
 
 var
+	rbracket = /\[\]$/,
+	rCRLF = /\r?\n/g,
+	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
+	rsubmittable = /^(?:input|select|textarea|keygen)/i;
+
+function buildParams( prefix, obj, traditional, add ) {
+	var name;
+
+	if ( jQuery.isArray( obj ) ) {
+
+		// Serialize array item.
+		jQuery.each( obj, function( i, v ) {
+			if ( traditional || rbracket.test( prefix ) ) {
+
+				// Treat each array item as a scalar.
+				add( prefix, v );
+
+			} else {
+
+				// Item is non-scalar (array or object), encode its numeric index.
+				buildParams(
+					prefix + "[" + ( typeof v === "object" && v != null ? i : "" ) + "]",
+					v,
+					traditional,
+					add
+				);
+			}
+		} );
+
+	} else if ( !traditional && jQuery.type( obj ) === "object" ) {
+
+		// Serialize object item.
+		for ( name in obj ) {
+			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
+		}
+
+	} else {
+
+		// Serialize scalar item.
+		add( prefix, obj );
+	}
+}
+
+// Serialize an array of form elements or a set of
+// key/values into a query string
+jQuery.param = function( a, traditional ) {
+	var prefix,
+		s = [],
+		add = function( key, valueOrFunction ) {
+
+			// If value is a function, invoke it and use its return value
+			var value = jQuery.isFunction( valueOrFunction ) ?
+				valueOrFunction() :
+				valueOrFunction;
+
+			s[ s.length ] = encodeURIComponent( key ) + "=" +
+				encodeURIComponent( value == null ? "" : value );
+		};
+
+	// If an array was passed in, assume that it is an array of form elements.
+	if ( jQuery.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
+
+		// Serialize the form elements
+		jQuery.each( a, function() {
+			add( this.name, this.value );
+		} );
+
+	} else {
+
+		// If traditional, encode the "old" way (the way 1.3.2 or older
+		// did it), otherwise encode params recursively.
+		for ( prefix in a ) {
+			buildParams( prefix, a[ prefix ], traditional, add );
+		}
+	}
+
+	// Return the resulting serialization
+	return s.join( "&" );
+};
+
+jQuery.fn.extend( {
+	serialize: function() {
+		return jQuery.param( this.serializeArray() );
+	},
+	serializeArray: function() {
+		return this.map( function() {
+
+			// Can add propHook for "elements" to filter or add form elements
+			var elements = jQuery.prop( this, "elements" );
+			return elements ? jQuery.makeArray( elements ) : this;
+		} )
+		.filter( function() {
+			var type = this.type;
+
+			// Use .is( ":disabled" ) so that fieldset[disabled] works
+			return this.name && !jQuery( this ).is( ":disabled" ) &&
+				rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type ) &&
+				( this.checked || !rcheckableType.test( type ) );
+		} )
+		.map( function( i, elem ) {
+			var val = jQuery( this ).val();
+
+			if ( val == null ) {
+				return null;
+			}
+
+			if ( jQuery.isArray( val ) ) {
+				return jQuery.map( val, function( val ) {
+					return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+				} );
+			}
+
+			return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
+		} ).get();
+	}
+} );
+
+
+var
+	r20 = /%20/g,
 	rhash = /#.*$/,
-	rts = /([?&])_=[^&]*/,
+	rantiCache = /([?&])_=[^&]*/,
 	rheaders = /^(.*?):[ \t]*([^\r\n]*)$/mg,
 
 	// #7653, #8125, #8152: local protocol detection
@@ -88614,7 +87634,7 @@ function addToPrefiltersOrTransports( structure ) {
 
 		var dataType,
 			i = 0,
-			dataTypes = dataTypeExpression.toLowerCase().match( rnotwhite ) || [];
+			dataTypes = dataTypeExpression.toLowerCase().match( rnothtmlwhite ) || [];
 
 		if ( jQuery.isFunction( func ) ) {
 
@@ -88776,7 +87796,7 @@ function ajaxConvert( s, response, jqXHR, isSuccess ) {
 
 		if ( current ) {
 
-		// There's only work to do if current dataType is non-auto
+			// There's only work to do if current dataType is non-auto
 			if ( current === "*" ) {
 
 				current = prev;
@@ -88856,6 +87876,7 @@ jQuery.extend( {
 		processData: true,
 		async: true,
 		contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+
 		/*
 		timeout: 0,
 		data: null,
@@ -88899,7 +87920,7 @@ jQuery.extend( {
 			"text html": true,
 
 			// Evaluate text as a json expression
-			"text json": jQuery.parseJSON,
+			"text json": JSON.parse,
 
 			// Parse text as xml
 			"text xml": jQuery.parseXML
@@ -88958,11 +87979,17 @@ jQuery.extend( {
 			// Url cleanup var
 			urlAnchor,
 
+			// Request state (becomes false upon send and true upon completion)
+			completed,
+
 			// To know if global events are to be dispatched
 			fireGlobals,
 
 			// Loop variable
 			i,
+
+			// uncached part of the url
+			uncached,
 
 			// Create the final options object
 			s = jQuery.ajaxSetup( {}, options ),
@@ -88987,9 +88014,6 @@ jQuery.extend( {
 			requestHeaders = {},
 			requestHeadersNames = {},
 
-			// The jqXHR state
-			state = 0,
-
 			// Default abort message
 			strAbort = "canceled",
 
@@ -89000,7 +88024,7 @@ jQuery.extend( {
 				// Builds headers hashtable if needed
 				getResponseHeader: function( key ) {
 					var match;
-					if ( state === 2 ) {
+					if ( completed ) {
 						if ( !responseHeaders ) {
 							responseHeaders = {};
 							while ( ( match = rheaders.exec( responseHeadersString ) ) ) {
@@ -89014,14 +88038,14 @@ jQuery.extend( {
 
 				// Raw string
 				getAllResponseHeaders: function() {
-					return state === 2 ? responseHeadersString : null;
+					return completed ? responseHeadersString : null;
 				},
 
 				// Caches the header
 				setRequestHeader: function( name, value ) {
-					var lname = name.toLowerCase();
-					if ( !state ) {
-						name = requestHeadersNames[ lname ] = requestHeadersNames[ lname ] || name;
+					if ( completed == null ) {
+						name = requestHeadersNames[ name.toLowerCase() ] =
+							requestHeadersNames[ name.toLowerCase() ] || name;
 						requestHeaders[ name ] = value;
 					}
 					return this;
@@ -89029,7 +88053,7 @@ jQuery.extend( {
 
 				// Overrides response content-type header
 				overrideMimeType: function( type ) {
-					if ( !state ) {
+					if ( completed == null ) {
 						s.mimeType = type;
 					}
 					return this;
@@ -89039,16 +88063,16 @@ jQuery.extend( {
 				statusCode: function( map ) {
 					var code;
 					if ( map ) {
-						if ( state < 2 ) {
-							for ( code in map ) {
-
-								// Lazy-add the new callback in a way that preserves old ones
-								statusCode[ code ] = [ statusCode[ code ], map[ code ] ];
-							}
-						} else {
+						if ( completed ) {
 
 							// Execute the appropriate callbacks
 							jqXHR.always( map[ jqXHR.status ] );
+						} else {
+
+							// Lazy-add the new callbacks in a way that preserves old ones
+							for ( code in map ) {
+								statusCode[ code ] = [ statusCode[ code ], map[ code ] ];
+							}
 						}
 					}
 					return this;
@@ -89066,33 +88090,31 @@ jQuery.extend( {
 			};
 
 		// Attach deferreds
-		deferred.promise( jqXHR ).complete = completeDeferred.add;
-		jqXHR.success = jqXHR.done;
-		jqXHR.error = jqXHR.fail;
+		deferred.promise( jqXHR );
 
-		// Remove hash character (#7531: and string promotion)
 		// Add protocol if not provided (prefilters might expect it)
 		// Handle falsy url in the settings object (#10093: consistency with old signature)
 		// We also use the url parameter if available
-		s.url = ( ( url || s.url || location.href ) + "" ).replace( rhash, "" )
+		s.url = ( ( url || s.url || location.href ) + "" )
 			.replace( rprotocol, location.protocol + "//" );
 
 		// Alias method option to type as per ticket #12004
 		s.type = options.method || options.type || s.method || s.type;
 
 		// Extract dataTypes list
-		s.dataTypes = jQuery.trim( s.dataType || "*" ).toLowerCase().match( rnotwhite ) || [ "" ];
+		s.dataTypes = ( s.dataType || "*" ).toLowerCase().match( rnothtmlwhite ) || [ "" ];
 
 		// A cross-domain request is in order when the origin doesn't match the current origin.
 		if ( s.crossDomain == null ) {
 			urlAnchor = document.createElement( "a" );
 
-			// Support: IE8-11+
-			// IE throws exception if url is malformed, e.g. http://example.com:80x/
+			// Support: IE <=8 - 11, Edge 12 - 13
+			// IE throws exception on accessing the href property if url is malformed,
+			// e.g. http://example.com:80x/
 			try {
 				urlAnchor.href = s.url;
 
-				// Support: IE8-11+
+				// Support: IE <=8 - 11 only
 				// Anchor's host property isn't correctly set when s.url is relative
 				urlAnchor.href = urlAnchor.href;
 				s.crossDomain = originAnchor.protocol + "//" + originAnchor.host !==
@@ -89114,7 +88136,7 @@ jQuery.extend( {
 		inspectPrefiltersOrTransports( prefilters, s, options, jqXHR );
 
 		// If request was aborted inside a prefilter, stop there
-		if ( state === 2 ) {
+		if ( completed ) {
 			return jqXHR;
 		}
 
@@ -89135,29 +88157,36 @@ jQuery.extend( {
 
 		// Save the URL in case we're toying with the If-Modified-Since
 		// and/or If-None-Match header later on
-		cacheURL = s.url;
+		// Remove hash to simplify url manipulation
+		cacheURL = s.url.replace( rhash, "" );
 
 		// More options handling for requests with no content
 		if ( !s.hasContent ) {
 
+			// Remember the hash so we can put it back
+			uncached = s.url.slice( cacheURL.length );
+
 			// If data is available, append data to url
 			if ( s.data ) {
-				cacheURL = ( s.url += ( rquery.test( cacheURL ) ? "&" : "?" ) + s.data );
+				cacheURL += ( rquery.test( cacheURL ) ? "&" : "?" ) + s.data;
 
 				// #9682: remove data so that it's not used in an eventual retry
 				delete s.data;
 			}
 
-			// Add anti-cache in url if needed
+			// Add or update anti-cache param if needed
 			if ( s.cache === false ) {
-				s.url = rts.test( cacheURL ) ?
-
-					// If there is already a '_' parameter, set its value
-					cacheURL.replace( rts, "$1_=" + nonce++ ) :
-
-					// Otherwise add one to the end
-					cacheURL + ( rquery.test( cacheURL ) ? "&" : "?" ) + "_=" + nonce++;
+				cacheURL = cacheURL.replace( rantiCache, "$1" );
+				uncached = ( rquery.test( cacheURL ) ? "&" : "?" ) + "_=" + ( nonce++ ) + uncached;
 			}
+
+			// Put hash and anti-cache on the URL that will be requested (gh-1732)
+			s.url = cacheURL + uncached;
+
+		// Change '%20' to '+' if this is encoded form body content (gh-2658)
+		} else if ( s.data && s.processData &&
+			( s.contentType || "" ).indexOf( "application/x-www-form-urlencoded" ) === 0 ) {
+			s.data = s.data.replace( r20, "+" );
 		}
 
 		// Set the If-Modified-Since and/or If-None-Match header, if in ifModified mode.
@@ -89191,7 +88220,7 @@ jQuery.extend( {
 
 		// Allow custom headers/mimetypes and early abort
 		if ( s.beforeSend &&
-			( s.beforeSend.call( callbackContext, jqXHR, s ) === false || state === 2 ) ) {
+			( s.beforeSend.call( callbackContext, jqXHR, s ) === false || completed ) ) {
 
 			// Abort if not done already and return
 			return jqXHR.abort();
@@ -89201,9 +88230,9 @@ jQuery.extend( {
 		strAbort = "abort";
 
 		// Install callbacks on deferreds
-		for ( i in { success: 1, error: 1, complete: 1 } ) {
-			jqXHR[ i ]( s[ i ] );
-		}
+		completeDeferred.add( s.complete );
+		jqXHR.done( s.success );
+		jqXHR.fail( s.error );
 
 		// Get transport
 		transport = inspectPrefiltersOrTransports( transports, s, options, jqXHR );
@@ -89220,7 +88249,7 @@ jQuery.extend( {
 			}
 
 			// If request was aborted inside ajaxSend, stop there
-			if ( state === 2 ) {
+			if ( completed ) {
 				return jqXHR;
 			}
 
@@ -89232,18 +88261,17 @@ jQuery.extend( {
 			}
 
 			try {
-				state = 1;
+				completed = false;
 				transport.send( requestHeaders, done );
 			} catch ( e ) {
 
-				// Propagate exception as error if not done
-				if ( state < 2 ) {
-					done( -1, e );
-
-				// Simply rethrow otherwise
-				} else {
+				// Rethrow post-completion exceptions
+				if ( completed ) {
 					throw e;
 				}
+
+				// Propagate others as results
+				done( -1, e );
 			}
 		}
 
@@ -89252,13 +88280,12 @@ jQuery.extend( {
 			var isSuccess, success, error, response, modified,
 				statusText = nativeStatusText;
 
-			// Called once
-			if ( state === 2 ) {
+			// Ignore repeat invocations
+			if ( completed ) {
 				return;
 			}
 
-			// State is "done" now
-			state = 2;
+			completed = true;
 
 			// Clear timeout if it exists
 			if ( timeoutTimer ) {
@@ -89402,6 +88429,7 @@ jQuery._evalUrl = function( url ) {
 		// Make this explicit, since user can override this through ajaxSetup (#11264)
 		type: "GET",
 		dataType: "script",
+		cache: true,
 		async: false,
 		global: false,
 		"throws": true
@@ -89413,13 +88441,10 @@ jQuery.fn.extend( {
 	wrapAll: function( html ) {
 		var wrap;
 
-		if ( jQuery.isFunction( html ) ) {
-			return this.each( function( i ) {
-				jQuery( this ).wrapAll( html.call( this, i ) );
-			} );
-		}
-
 		if ( this[ 0 ] ) {
+			if ( jQuery.isFunction( html ) ) {
+				html = html.call( this[ 0 ] );
+			}
 
 			// The elements to wrap the target around
 			wrap = jQuery( html, this[ 0 ].ownerDocument ).eq( 0 ).clone( true );
@@ -89470,145 +88495,23 @@ jQuery.fn.extend( {
 		} );
 	},
 
-	unwrap: function() {
-		return this.parent().each( function() {
-			if ( !jQuery.nodeName( this, "body" ) ) {
-				jQuery( this ).replaceWith( this.childNodes );
-			}
-		} ).end();
+	unwrap: function( selector ) {
+		this.parent( selector ).not( "body" ).each( function() {
+			jQuery( this ).replaceWith( this.childNodes );
+		} );
+		return this;
 	}
 } );
 
 
-jQuery.expr.filters.hidden = function( elem ) {
-	return !jQuery.expr.filters.visible( elem );
+jQuery.expr.pseudos.hidden = function( elem ) {
+	return !jQuery.expr.pseudos.visible( elem );
 };
-jQuery.expr.filters.visible = function( elem ) {
-
-	// Support: Opera <= 12.12
-	// Opera reports offsetWidths and offsetHeights less than zero on some elements
-	// Use OR instead of AND as the element is not visible if either is true
-	// See tickets #10406 and #13132
-	return elem.offsetWidth > 0 || elem.offsetHeight > 0 || elem.getClientRects().length > 0;
+jQuery.expr.pseudos.visible = function( elem ) {
+	return !!( elem.offsetWidth || elem.offsetHeight || elem.getClientRects().length );
 };
 
 
-
-
-var r20 = /%20/g,
-	rbracket = /\[\]$/,
-	rCRLF = /\r?\n/g,
-	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
-	rsubmittable = /^(?:input|select|textarea|keygen)/i;
-
-function buildParams( prefix, obj, traditional, add ) {
-	var name;
-
-	if ( jQuery.isArray( obj ) ) {
-
-		// Serialize array item.
-		jQuery.each( obj, function( i, v ) {
-			if ( traditional || rbracket.test( prefix ) ) {
-
-				// Treat each array item as a scalar.
-				add( prefix, v );
-
-			} else {
-
-				// Item is non-scalar (array or object), encode its numeric index.
-				buildParams(
-					prefix + "[" + ( typeof v === "object" && v != null ? i : "" ) + "]",
-					v,
-					traditional,
-					add
-				);
-			}
-		} );
-
-	} else if ( !traditional && jQuery.type( obj ) === "object" ) {
-
-		// Serialize object item.
-		for ( name in obj ) {
-			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
-		}
-
-	} else {
-
-		// Serialize scalar item.
-		add( prefix, obj );
-	}
-}
-
-// Serialize an array of form elements or a set of
-// key/values into a query string
-jQuery.param = function( a, traditional ) {
-	var prefix,
-		s = [],
-		add = function( key, value ) {
-
-			// If value is a function, invoke it and return its value
-			value = jQuery.isFunction( value ) ? value() : ( value == null ? "" : value );
-			s[ s.length ] = encodeURIComponent( key ) + "=" + encodeURIComponent( value );
-		};
-
-	// Set traditional to true for jQuery <= 1.3.2 behavior.
-	if ( traditional === undefined ) {
-		traditional = jQuery.ajaxSettings && jQuery.ajaxSettings.traditional;
-	}
-
-	// If an array was passed in, assume that it is an array of form elements.
-	if ( jQuery.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
-
-		// Serialize the form elements
-		jQuery.each( a, function() {
-			add( this.name, this.value );
-		} );
-
-	} else {
-
-		// If traditional, encode the "old" way (the way 1.3.2 or older
-		// did it), otherwise encode params recursively.
-		for ( prefix in a ) {
-			buildParams( prefix, a[ prefix ], traditional, add );
-		}
-	}
-
-	// Return the resulting serialization
-	return s.join( "&" ).replace( r20, "+" );
-};
-
-jQuery.fn.extend( {
-	serialize: function() {
-		return jQuery.param( this.serializeArray() );
-	},
-	serializeArray: function() {
-		return this.map( function() {
-
-			// Can add propHook for "elements" to filter or add form elements
-			var elements = jQuery.prop( this, "elements" );
-			return elements ? jQuery.makeArray( elements ) : this;
-		} )
-		.filter( function() {
-			var type = this.type;
-
-			// Use .is( ":disabled" ) so that fieldset[disabled] works
-			return this.name && !jQuery( this ).is( ":disabled" ) &&
-				rsubmittable.test( this.nodeName ) && !rsubmitterTypes.test( type ) &&
-				( this.checked || !rcheckableType.test( type ) );
-		} )
-		.map( function( i, elem ) {
-			var val = jQuery( this ).val();
-
-			return val == null ?
-				null :
-				jQuery.isArray( val ) ?
-					jQuery.map( val, function( val ) {
-						return { name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
-					} ) :
-					{ name: elem.name, value: val.replace( rCRLF, "\r\n" ) };
-		} ).get();
-	}
-} );
 
 
 jQuery.ajaxSettings.xhr = function() {
@@ -89622,7 +88525,7 @@ var xhrSuccessStatus = {
 		// File protocol always yields status code 0, assume 200
 		0: 200,
 
-		// Support: IE9
+		// Support: IE <=9 only
 		// #1450: sometimes IE returns 1223 when it should be 204
 		1223: 204
 	},
@@ -89686,7 +88589,7 @@ jQuery.ajaxTransport( function( options ) {
 								xhr.abort();
 							} else if ( type === "error" ) {
 
-								// Support: IE9
+								// Support: IE <=9 only
 								// On a manual native abort, IE9 throws
 								// errors on any property access that is not readyState
 								if ( typeof xhr.status !== "number" ) {
@@ -89704,7 +88607,7 @@ jQuery.ajaxTransport( function( options ) {
 									xhrSuccessStatus[ xhr.status ] || xhr.status,
 									xhr.statusText,
 
-									// Support: IE9 only
+									// Support: IE <=9 only
 									// IE9 has no XHR2 but throws on binary (trac-11426)
 									// For XHR2 non-text, let the caller handle it (gh-2498)
 									( xhr.responseType || "text" ) !== "text"  ||
@@ -89722,7 +88625,7 @@ jQuery.ajaxTransport( function( options ) {
 				xhr.onload = callback();
 				errorCallback = xhr.onerror = callback( "error" );
 
-				// Support: IE9
+				// Support: IE 9 only
 				// Use onreadystatechange to replace onabort
 				// to handle uncaught aborts
 				if ( xhr.onabort !== undefined ) {
@@ -89773,6 +88676,13 @@ jQuery.ajaxTransport( function( options ) {
 
 
 
+
+// Prevent auto-execution of scripts when no explicit dataType was provided (See gh-2432)
+jQuery.ajaxPrefilter( function( s ) {
+	if ( s.crossDomain ) {
+		s.contents.script = false;
+	}
+} );
 
 // Install script dataType
 jQuery.ajaxSetup( {
@@ -89933,22 +88843,53 @@ jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
 
 
 
+// Support: Safari 8 only
+// In Safari 8 documents created via document.implementation.createHTMLDocument
+// collapse sibling forms: the second one becomes a child of the first one.
+// Because of that, this security measure has to be disabled in Safari 8.
+// https://bugs.webkit.org/show_bug.cgi?id=137337
+support.createHTMLDocument = ( function() {
+	var body = document.implementation.createHTMLDocument( "" ).body;
+	body.innerHTML = "<form></form><form></form>";
+	return body.childNodes.length === 2;
+} )();
+
+
 // Argument "data" should be string of html
 // context (optional): If specified, the fragment will be created in this context,
 // defaults to document
 // keepScripts (optional): If true, will include scripts passed in the html string
 jQuery.parseHTML = function( data, context, keepScripts ) {
-	if ( !data || typeof data !== "string" ) {
-		return null;
+	if ( typeof data !== "string" ) {
+		return [];
 	}
 	if ( typeof context === "boolean" ) {
 		keepScripts = context;
 		context = false;
 	}
-	context = context || document;
 
-	var parsed = rsingleTag.exec( data ),
-		scripts = !keepScripts && [];
+	var base, parsed, scripts;
+
+	if ( !context ) {
+
+		// Stop scripts or inline event handlers from being executed immediately
+		// by using document.implementation
+		if ( support.createHTMLDocument ) {
+			context = document.implementation.createHTMLDocument( "" );
+
+			// Set the base href for the created document
+			// so any parsed elements with URLs
+			// are based on the document's URL (gh-2965)
+			base = context.createElement( "base" );
+			base.href = document.location.href;
+			context.head.appendChild( base );
+		} else {
+			context = document;
+		}
+	}
+
+	parsed = rsingleTag.exec( data );
+	scripts = !keepScripts && [];
 
 	// Single tag
 	if ( parsed ) {
@@ -89965,23 +88906,16 @@ jQuery.parseHTML = function( data, context, keepScripts ) {
 };
 
 
-// Keep a copy of the old load method
-var _load = jQuery.fn.load;
-
 /**
  * Load a url into a page
  */
 jQuery.fn.load = function( url, params, callback ) {
-	if ( typeof url !== "string" && _load ) {
-		return _load.apply( this, arguments );
-	}
-
 	var selector, type, response,
 		self = this,
 		off = url.indexOf( " " );
 
 	if ( off > -1 ) {
-		selector = jQuery.trim( url.slice( off ) );
+		selector = stripAndCollapse( url.slice( off ) );
 		url = url.slice( 0, off );
 	}
 
@@ -90055,7 +88989,7 @@ jQuery.each( [
 
 
 
-jQuery.expr.filters.animated = function( elem ) {
+jQuery.expr.pseudos.animated = function( elem ) {
 	return jQuery.grep( jQuery.timers, function( fn ) {
 		return elem === fn.elem;
 	} ).length;
@@ -90125,6 +89059,8 @@ jQuery.offset = {
 
 jQuery.fn.extend( {
 	offset: function( options ) {
+
+		// Preserve chaining for setter
 		if ( arguments.length ) {
 			return options === undefined ?
 				this :
@@ -90133,28 +89069,36 @@ jQuery.fn.extend( {
 				} );
 		}
 
-		var docElem, win,
-			elem = this[ 0 ],
-			box = { top: 0, left: 0 },
-			doc = elem && elem.ownerDocument;
+		var docElem, win, rect, doc,
+			elem = this[ 0 ];
 
-		if ( !doc ) {
+		if ( !elem ) {
 			return;
 		}
 
-		docElem = doc.documentElement;
-
-		// Make sure it's not a disconnected DOM node
-		if ( !jQuery.contains( docElem, elem ) ) {
-			return box;
+		// Support: IE <=11 only
+		// Running getBoundingClientRect on a
+		// disconnected node in IE throws an error
+		if ( !elem.getClientRects().length ) {
+			return { top: 0, left: 0 };
 		}
 
-		box = elem.getBoundingClientRect();
-		win = getWindow( doc );
-		return {
-			top: box.top + win.pageYOffset - docElem.clientTop,
-			left: box.left + win.pageXOffset - docElem.clientLeft
-		};
+		rect = elem.getBoundingClientRect();
+
+		// Make sure element is not hidden (display: none)
+		if ( rect.width || rect.height ) {
+			doc = elem.ownerDocument;
+			win = getWindow( doc );
+			docElem = doc.documentElement;
+
+			return {
+				top: rect.top + win.pageYOffset - docElem.clientTop,
+				left: rect.left + win.pageXOffset - docElem.clientLeft
+			};
+		}
+
+		// Return zeros for disconnected and hidden elements (gh-2310)
+		return rect;
 	},
 
 	position: function() {
@@ -90185,8 +89129,10 @@ jQuery.fn.extend( {
 			}
 
 			// Add offsetParent borders
-			parentOffset.top += jQuery.css( offsetParent[ 0 ], "borderTopWidth", true );
-			parentOffset.left += jQuery.css( offsetParent[ 0 ], "borderLeftWidth", true );
+			parentOffset = {
+				top: parentOffset.top + jQuery.css( offsetParent[ 0 ], "borderTopWidth", true ),
+				left: parentOffset.left + jQuery.css( offsetParent[ 0 ], "borderLeftWidth", true )
+			};
 		}
 
 		// Subtract parent offsets and element margins
@@ -90244,10 +89190,10 @@ jQuery.each( { scrollLeft: "pageXOffset", scrollTop: "pageYOffset" }, function( 
 	};
 } );
 
-// Support: Safari<7-8+, Chrome<37-44+
+// Support: Safari <=7 - 9.1, Chrome <=37 - 49
 // Add the top/left cssHooks using jQuery.fn.position
 // Webkit bug: https://bugs.webkit.org/show_bug.cgi?id=29084
-// Blink bug: https://code.google.com/p/chromium/issues/detail?id=229280
+// Blink bug: https://bugs.chromium.org/p/chromium/issues/detail?id=589347
 // getComputedStyle returns percent when specified for top/left/bottom/right;
 // rather than make the css module depend on the offset module, just check for it here
 jQuery.each( [ "top", "left" ], function( i, prop ) {
@@ -90281,10 +89227,10 @@ jQuery.each( { Height: "height", Width: "width" }, function( name, type ) {
 
 				if ( jQuery.isWindow( elem ) ) {
 
-					// As of 5/8/2012 this will yield incorrect results for Mobile Safari, but there
-					// isn't a whole lot we can do. See pull request at this URL for discussion:
-					// https://github.com/jquery/jquery/pull/764
-					return elem.document.documentElement[ "client" + name ];
+					// $( window ).outerWidth/Height return w/h including scrollbars (gh-1729)
+					return funcName.indexOf( "outer" ) === 0 ?
+						elem[ "inner" + name ] :
+						elem.document.documentElement[ "client" + name ];
 				}
 
 				// Get document width or height
@@ -90307,7 +89253,7 @@ jQuery.each( { Height: "height", Width: "width" }, function( name, type ) {
 
 					// Set width or height on the element
 					jQuery.style( elem, type, value, extra );
-			}, type, chainable ? margin : undefined, chainable, null );
+			}, type, chainable ? margin : undefined, chainable );
 		};
 	} );
 } );
@@ -90331,13 +89277,10 @@ jQuery.fn.extend( {
 		return arguments.length === 1 ?
 			this.off( selector, "**" ) :
 			this.off( types, selector || "**", fn );
-	},
-	size: function() {
-		return this.length;
 	}
 } );
 
-jQuery.fn.andSelf = jQuery.fn.addBack;
+jQuery.parseJSON = JSON.parse;
 
 
 
@@ -90360,6 +89303,7 @@ if ( typeof define === "function" && define.amd ) {
 		return jQuery;
 	} );
 }
+
 
 
 
@@ -90390,14 +89334,18 @@ if ( !noGlobal ) {
 	window.jQuery = window.$ = jQuery;
 }
 
+
+
+
+
 return jQuery;
-}));
+} );
 
 /**!
  * AngularJS file upload directives and services. Supoorts: file upload/drop/paste, resume, cancel/abort,
  * progress, resize, thumbnail, preview, validation and CORS
  * @author  Danial  <danial.farid@gmail.com>
- * @version 12.0.4
+ * @version 12.2.12
  */
 
 if (window.XMLHttpRequest && !(window.FileAPI && FileAPI.shouldLoad)) {
@@ -90418,7 +89366,7 @@ if (window.XMLHttpRequest && !(window.FileAPI && FileAPI.shouldLoad)) {
 
 var ngFileUpload = angular.module('ngFileUpload', []);
 
-ngFileUpload.version = '12.0.4';
+ngFileUpload.version = '12.2.12';
 
 ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
   var upload = this;
@@ -90485,10 +89433,12 @@ ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, 
     function uploadWithAngular() {
       $http(config).then(function (r) {
           if (resumeSupported && config._chunkSize && !config._finished && config._file) {
+            var fileSize = config._file && config._file.size || 0;
             notifyProgress({
-                loaded: config._end,
-                total: config._file && config._file.size,
-                config: config, type: 'progress'
+                loaded: Math.min(config._end, fileSize),
+                total: fileSize,
+                config: config,
+                type: 'progress'
               }
             );
             upload.upload(config, true);
@@ -90527,6 +89477,9 @@ ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, 
     } else if (config.resumeSize) {
       config.resumeSize().then(function (size) {
         config._start = size;
+        if (config._chunkSize) {
+          config._end = config._start + config._chunkSize;
+        }
         uploadWithAngular();
       }, function (e) {
         throw e;
@@ -90580,9 +89533,11 @@ ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, 
     };
 
     upload.promisesCount++;
-    promise['finally'](function () {
-      upload.promisesCount--;
-    });
+    if (promise['finally'] && promise['finally'] instanceof Function) {
+      promise['finally'](function () {
+        upload.promisesCount--;
+      });
+    }
     return promise;
   }
 
@@ -90766,9 +89721,11 @@ ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, 
       var arrayBufferView = new Uint8Array(resp.data);
       var type = resp.headers('content-type') || 'image/WebP';
       var blob = new window.Blob([arrayBufferView], {type: type});
+      var matches = url.match(/.*\/(.+?)(\?.*)?$/);
+      if (matches.length > 1) {
+        blob.name = matches[1];
+      }
       defer.resolve(blob);
-      //var split = type.split('[/;]');
-      //blob.name = url.substring(0, 150).replace(/\W+/g, '') + '.' + (split.length > 1 ? split[1] : 'jpg');
     }, function (e) {
       defer.reject(e);
     });
@@ -90816,7 +89773,7 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
   };
 
   upload.shouldUpdateOn = function (type, attr, scope) {
-    var modelOptions = upload.attrGetter('ngModelOptions', attr, scope);
+    var modelOptions = upload.attrGetter('ngfModelOptions', attr, scope);
     if (modelOptions && modelOptions.updateOn) {
       return modelOptions.updateOn.split(' ').indexOf(type) > -1;
     }
@@ -90866,13 +89823,13 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
     return $q.all(promises);
   }
 
-  function resize(files, attr, scope) {
+  function resizeFile(files, attr, scope, ngModel) {
     var resizeVal = upload.attrGetter('ngfResize', attr, scope);
     if (!resizeVal || !upload.isResizeSupported() || !files.length) return upload.emptyPromise();
     if (resizeVal instanceof Function) {
       var defer = $q.defer();
-      resizeVal(files).then(function (p) {
-        resizeWithParams(p, files, attr, scope).then(function (r) {
+      return resizeVal(files).then(function (p) {
+        resizeWithParams(p, files, attr, scope, ngModel).then(function (r) {
           defer.resolve(r);
         }, function (e) {
           defer.reject(e);
@@ -90881,27 +89838,30 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
         defer.reject(e);
       });
     } else {
-      return resizeWithParams(resizeVal, files, attr, scope);
+      return resizeWithParams(resizeVal, files, attr, scope, ngModel);
     }
   }
 
-  function resizeWithParams(param, files, attr, scope) {
+  function resizeWithParams(params, files, attr, scope, ngModel) {
     var promises = [upload.emptyPromise()];
 
     function handleFile(f, i) {
       if (f.type.indexOf('image') === 0) {
-        if (param.pattern && !upload.validatePattern(f, param.pattern)) return;
-        var promise = upload.resize(f, param.width, param.height, param.quality,
-          param.type, param.ratio, param.centerCrop, function (width, height) {
-            return upload.attrGetter('ngfResizeIf', attr, scope,
-              {$width: width, $height: height, $file: f});
-          }, param.restoreExif !== false);
+        if (params.pattern && !upload.validatePattern(f, params.pattern)) return;
+        params.resizeIf = function (width, height) {
+          return upload.attrGetter('ngfResizeIf', attr, scope,
+            {$width: width, $height: height, $file: f});
+        };
+        var promise = upload.resize(f, params);
         promises.push(promise);
         promise.then(function (resizedFile) {
           files.splice(i, 1, resizedFile);
         }, function (e) {
           f.$error = 'resize';
+          (f.$errorMessages = (f.$errorMessages || {})).resize = true;
           f.$errorParam = (e ? (e.message ? e.message : e) + ': ' : '') + (f && f.name);
+          ngModel.$ngfValidations.push({name: 'resize', valid: false});
+          upload.applyModelValidation(ngModel, files);
         });
       }
     }
@@ -90988,18 +89948,6 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
       return angular.isArray(v) ? v : [v];
     }
 
-    function separateInvalids() {
-      valids = [];
-      invalids = [];
-      angular.forEach(allNewFiles, function (file) {
-        if (file.$error) {
-          invalids.push(file);
-        } else {
-          valids.push(file);
-        }
-      });
-    }
-
     function resizeAndUpdate() {
       function updateModel() {
         $timeout(function () {
@@ -91009,17 +89957,30 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
         }, options && options.debounce ? options.debounce.change || options.debounce : 0);
       }
 
-      resize(validateAfterResize ? allNewFiles : valids, attr, scope).then(function () {
+      var resizingFiles = validateAfterResize ? allNewFiles : valids;
+      resizeFile(resizingFiles, attr, scope, ngModel).then(function () {
         if (validateAfterResize) {
-          upload.validate(allNewFiles, prevValidFiles.length, ngModel, attr, scope).then(function () {
-            separateInvalids();
-            updateModel();
-          });
+          upload.validate(allNewFiles, keep ? prevValidFiles.length : 0, ngModel, attr, scope)
+            .then(function (validationResult) {
+              valids = validationResult.validsFiles;
+              invalids = validationResult.invalidsFiles;
+              updateModel();
+            });
         } else {
           updateModel();
         }
-      }, function (e) {
-        throw 'Could not resize files ' + e;
+      }, function () {
+        for (var i = 0; i < resizingFiles.length; i++) {
+          var f = resizingFiles[i];
+          if (f.$error === 'resize') {
+            var index = valids.indexOf(f);
+            if (index > -1) {
+              valids.splice(index, 1);
+              invalids.push(f);
+            }
+            updateModel();
+          }
+        }
       });
     }
 
@@ -91049,13 +90010,15 @@ ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', '$q', 'UploadE
 
     var validateAfterResize = upload.attrGetter('ngfValidateAfterResize', attr, scope);
 
-    var options = upload.attrGetter('ngModelOptions', attr, scope);
-    upload.validate(allNewFiles, prevValidFiles.length, ngModel, attr, scope).then(function () {
+    var options = upload.attrGetter('ngfModelOptions', attr, scope);
+    upload.validate(allNewFiles, keep ? prevValidFiles.length : 0, ngModel, attr, scope)
+      .then(function (validationResult) {
       if (noDelay) {
         update(allNewFiles, [], files, dupFiles, isSingleModel);
       } else {
         if ((!options || !options.allowInvalid) && !validateAfterResize) {
-          separateInvalids();
+          valids = validationResult.validFiles;
+          invalids = validationResult.invalidFiles;
         } else {
           valids = allNewFiles;
         }
@@ -91092,7 +90055,7 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     /** @namespace attr.ngfSelect */
     /** @namespace attr.ngfChange */
     /** @namespace attr.ngModel */
-    /** @namespace attr.ngModelOptions */
+    /** @namespace attr.ngfModelOptions */
     /** @namespace attr.ngfMultiple */
     /** @namespace attr.ngfCapture */
     /** @namespace attr.ngfValidate */
@@ -91112,6 +90075,8 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     function changeFn(evt) {
       if (upload.shouldUpdateOn('change', attr, scope)) {
         var fileList = evt.__files_ || (evt.target && evt.target.files), files = [];
+        /* Handle duplicate call in  IE11 */
+        if (!fileList) return;
         for (var i = 0; i < fileList.length; i++) {
           files.push(fileList[i]);
         }
@@ -91123,31 +90088,39 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     upload.registerModelChangeValidator(ngModel, attr, scope);
 
     var unwatches = [];
-    unwatches.push(scope.$watch(attrGetter('ngfMultiple'), function () {
-      fileElem.attr('multiple', attrGetter('ngfMultiple', scope));
-    }));
-    unwatches.push(scope.$watch(attrGetter('ngfCapture'), function () {
-      fileElem.attr('capture', attrGetter('ngfCapture', scope));
-    }));
-    unwatches.push(scope.$watch(attrGetter('ngfAccept'), function () {
-      fileElem.attr('accept', attrGetter('ngfAccept', scope));
-    }));
-    attr.$observe('accept', function () {
+    if (attrGetter('ngfMultiple')) {
+      unwatches.push(scope.$watch(attrGetter('ngfMultiple'), function () {
+        fileElem.attr('multiple', attrGetter('ngfMultiple', scope));
+      }));
+    }
+    if (attrGetter('ngfCapture')) {
+      unwatches.push(scope.$watch(attrGetter('ngfCapture'), function () {
+        fileElem.attr('capture', attrGetter('ngfCapture', scope));
+      }));
+    }
+    if (attrGetter('ngfAccept')) {
+      unwatches.push(scope.$watch(attrGetter('ngfAccept'), function () {
+        fileElem.attr('accept', attrGetter('ngfAccept', scope));
+      }));
+    }
+    unwatches.push(attr.$observe('accept', function () {
       fileElem.attr('accept', attrGetter('accept'));
-    });
-    unwatches.push(function () {
-      if (attr.$$observers) delete attr.$$observers.accept;
-    });
-    function bindAttrToFileInput(fileElem) {
-      if (elem !== fileElem) {
-        for (var i = 0; i < elem[0].attributes.length; i++) {
-          var attribute = elem[0].attributes[i];
-          if (attribute.name !== 'type' && attribute.name !== 'class' && attribute.name !== 'style') {
-            if (attribute.value == null || attribute.value === '') {
-              if (attribute.name === 'required') attribute.value = 'required';
-              if (attribute.name === 'multiple') attribute.value = 'multiple';
-            }
-            fileElem.attr(attribute.name, attribute.name === 'id' ? 'ngf-' + attribute.value : attribute.value);
+    }));
+    function bindAttrToFileInput(fileElem, label) {
+      function updateId(val) {
+        fileElem.attr('id', 'ngf-' + val);
+        label.attr('id', 'ngf-label-' + val);
+      }
+
+      for (var i = 0; i < elem[0].attributes.length; i++) {
+        var attribute = elem[0].attributes[i];
+        if (attribute.name !== 'type' && attribute.name !== 'class' && attribute.name !== 'style') {
+          if (attribute.name === 'id') {
+            updateId(attribute.value);
+            unwatches.push(attr.$observe('id', updateId));
+          } else {
+            fileElem.attr(attribute.name, (!attribute.value && (attribute.name === 'required' ||
+            attribute.name === 'multiple')) ? attribute.name : attribute.value);
           }
         }
       }
@@ -91160,12 +90133,12 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
 
       var fileElem = angular.element('<input type="file">');
 
-      bindAttrToFileInput(fileElem);
-
       var label = angular.element('<label>upload</label>');
       label.css('visibility', 'hidden').css('position', 'absolute').css('overflow', 'hidden')
         .css('width', '0px').css('height', '0px').css('border', 'none')
         .css('margin', '0px').css('padding', '0px').attr('tabindex', '-1');
+      bindAttrToFileInput(fileElem, label);
+
       generatedElems.push({el: elem, ref: label});
 
       document.body.appendChild(label.append(fileElem)[0]);
@@ -91173,13 +90146,12 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
       return fileElem;
     }
 
-    var initialTouchStartY = 0;
-
     function clickHandler(evt) {
       if (elem.attr('disabled')) return false;
       if (attrGetter('ngfSelectDisabled', scope)) return;
 
-      var r = handleTouch(evt);
+      var r = detectSwipe(evt);
+      // prevent the click if it is a swipe
       if (r != null) return r;
 
       resetModel(evt);
@@ -91191,7 +90163,8 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
           document.body.appendChild(fileElem.parent()[0]);
           fileElem.bind('change', changeFn);
         }
-      } catch(e){/*ignore*/}
+      } catch (e) {/*ignore*/
+      }
 
       if (isDelayedClickSupported(navigator.userAgent)) {
         setTimeout(function () {
@@ -91204,19 +90177,30 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
       return false;
     }
 
-    function handleTouch(evt) {
-      var touches = evt.changedTouches || (evt.originalEvent && evt.originalEvent.changedTouches);
-      if (evt.type === 'touchstart') {
-        initialTouchStartY = touches ? touches[0].clientY : 0;
-        return true; // don't block event default
-      } else {
-        evt.stopPropagation();
-        evt.preventDefault();
 
-        // prevent scroll from triggering event
-        if (evt.type === 'touchend') {
-          var currentLocation = touches ? touches[0].clientY : 0;
-          if (Math.abs(currentLocation - initialTouchStartY) > 20) return false;
+    var initialTouchStartY = 0;
+    var initialTouchStartX = 0;
+
+    function detectSwipe(evt) {
+      var touches = evt.changedTouches || (evt.originalEvent && evt.originalEvent.changedTouches);
+      if (touches) {
+        if (evt.type === 'touchstart') {
+          initialTouchStartX = touches[0].clientX;
+          initialTouchStartY = touches[0].clientY;
+          return true; // don't block event default
+        } else {
+          // prevent scroll from triggering event
+          if (evt.type === 'touchend') {
+            var currentX = touches[0].clientX;
+            var currentY = touches[0].clientY;
+            if ((Math.abs(currentX - initialTouchStartX) > 20) ||
+              (Math.abs(currentY - initialTouchStartY) > 20)) {
+              evt.stopPropagation();
+              evt.preventDefault();
+              return false;
+            }
+          }
+          return true;
         }
       }
     }
@@ -91447,7 +90431,8 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
         var size = resizeParams;
         if (directiveName === 'ngfThumbnail') {
           if (!size) {
-            size = {width: elem[0].clientWidth, height: elem[0].clientHeight};
+            size = {width: elem[0].naturalWidth || elem[0].clientWidth,
+              height: elem[0].naturalHeight || elem[0].clientHeight};
           }
           if (size.width === 0 && window.getComputedStyle) {
             var style = getComputedStyle(elem[0]);
@@ -91469,7 +90454,11 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
         if (file && file.type && file.type.search(getTagType(elem[0])) === 0 &&
           (!isBackground || file.type.indexOf('image') === 0)) {
           if (size && Upload.isResizeSupported()) {
-            Upload.resize(file, size.width, size.height, size.quality).then(
+            size.resizeIf = function (width, height) {
+              return Upload.attrGetter('ngfResizeIf', attr, scope,
+                {$width: width, $height: height, $file: file});
+            };
+            Upload.resize(file, size).then(
               function (f) {
                 constructDataUrl(f);
               }, function (e) {
@@ -91531,8 +90520,8 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
   }]);
 
   ngFileUpload.config(['$compileProvider', function ($compileProvider) {
-    if ($compileProvider.imgSrcSanitizationWhitelist) $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|local|file|data|blob):/);
-    if ($compileProvider.aHrefSanitizationWhitelist) $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|local|file|data|blob):/);
+    if ($compileProvider.imgSrcSanitizationWhitelist) $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|webcal|local|file|data|blob):/);
+    if ($compileProvider.aHrefSanitizationWhitelist) $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|webcal|local|file|data|blob):/);
   }]);
 
   ngFileUpload.filter('ngfDataUrl', ['UploadDataUrl', '$sce', function (UploadDataUrl, $sce) {
@@ -91624,13 +90613,15 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
     if (ngModel) {
       ngModel.$formatters.push(function (files) {
         if (ngModel.$dirty) {
+          var filesArray = files;
           if (files && !angular.isArray(files)) {
-            files = [files];
+            filesArray = [files];
           }
-          upload.validate(files, 0, ngModel, attr, scope).then(function () {
-            upload.applyModelValidation(ngModel, files);
+          upload.validate(filesArray, 0, ngModel, attr, scope).then(function () {
+            upload.applyModelValidation(ngModel, filesArray);
           });
         }
+        return files;
       });
     }
   };
@@ -91680,11 +90671,15 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
       return upload.attrGetter(name, attr, scope, params);
     };
 
+    var ignoredErrors = (upload.attrGetter('ngfIgnoreInvalid', attr, scope) || '').split(' ');
+    var runAllValidation = upload.attrGetter('ngfRunAllValidations', attr, scope);
+
     if (files == null || files.length === 0) {
-      return upload.emptyPromise(ngModel);
+      return upload.emptyPromise({'validFiles': files, 'invalidFiles': []});
     }
 
     files = files.length === undefined ? [files] : files.slice(0);
+    var invalidFiles = [];
 
     function validateSync(name, validationName, fn) {
       if (files) {
@@ -91695,11 +90690,20 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
             var val = upload.getValidationAttr(attr, scope, name, validationName, file);
             if (val != null) {
               if (!fn(file, val, i)) {
-                file.$error = name;
-                (file.$errorMessages = (file.$errorMessages || {}))[name] = true;
-                file.$errorParam = val;
-                files.splice(i, 1);
-                valid = false;
+                if (ignoredErrors.indexOf(name) === -1) {
+                  file.$error = name;
+                  (file.$errorMessages = (file.$errorMessages || {}))[name] = true;
+                  file.$errorParam = val;
+                  if (invalidFiles.indexOf(file) === -1) {
+                    invalidFiles.push(file);
+                  }
+                  if (!runAllValidation) {
+                    files.splice(i, 1);
+                  }
+                  valid = false;
+                } else {
+                  files.splice(i, 1);
+                }
               }
             }
           }
@@ -91710,9 +90714,6 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
       }
     }
 
-    validateSync('maxFiles', null, function (file, val, i) {
-      return prevLength + i < val;
-    });
     validateSync('pattern', null, upload.validatePattern);
     validateSync('minSize', 'size.min', function (file, val) {
       return file.size + 0.1 >= upload.translateScalars(val);
@@ -91735,44 +90736,58 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
     });
 
     if (!files.length) {
-      return upload.emptyPromise(ngModel, ngModel.$ngfValidations);
+      return upload.emptyPromise({'validFiles': [], 'invalidFiles': invalidFiles});
     }
 
     function validateAsync(name, validationName, type, asyncFn, fn) {
       function resolveResult(defer, file, val) {
+        function resolveInternal(fn) {
+          if (fn()) {
+            if (ignoredErrors.indexOf(name) === -1) {
+              file.$error = name;
+              (file.$errorMessages = (file.$errorMessages || {}))[name] = true;
+              file.$errorParam = val;
+              if (invalidFiles.indexOf(file) === -1) {
+                invalidFiles.push(file);
+              }
+              if (!runAllValidation) {
+                var i = files.indexOf(file);
+                if (i > -1) files.splice(i, 1);
+              }
+              defer.resolve(false);
+            } else {
+              var j = files.indexOf(file);
+              if (j > -1) files.splice(j, 1);
+              defer.resolve(true);
+            }
+          } else {
+            defer.resolve(true);
+          }
+        }
+
         if (val != null) {
           asyncFn(file, val).then(function (d) {
-            if (!fn(d, val)) {
-              file.$error = name;
-              (file.$errorMessages = (file.$errorMessages || {}))[name] = true;
-              file.$errorParam = val;
-              defer.reject();
-            } else {
-              defer.resolve();
-            }
+            resolveInternal(function () {
+              return !fn(d, val);
+            });
           }, function () {
-            if (attrGetter('ngfValidateForce', {$file: file})) {
-              file.$error = name;
-              (file.$errorMessages = (file.$errorMessages || {}))[name] = true;
-              file.$errorParam = val;
-              defer.reject();
-            } else {
-              defer.resolve();
-            }
+            resolveInternal(function () {
+              return attrGetter('ngfValidateForce', {$file: file});
+            });
           });
         } else {
-          defer.resolve();
+          defer.resolve(true);
         }
       }
 
-      var promises = [upload.emptyPromise()];
+      var promises = [upload.emptyPromise(true)];
       if (files) {
         files = files.length === undefined ? [files] : files;
         angular.forEach(files, function (file) {
           var defer = $q.defer();
           promises.push(defer.promise);
           if (type && (file.type == null || file.type.search(type) !== 0)) {
-            defer.resolve();
+            defer.resolve(true);
             return;
           }
           if (name === 'dimensions' && upload.attrGetter('ngfDimensions', attr) != null) {
@@ -91780,96 +90795,120 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
               resolveResult(defer, file,
                 attrGetter('ngfDimensions', {$file: file, $width: d.width, $height: d.height}));
             }, function () {
-              defer.reject();
+              defer.resolve(false);
             });
           } else if (name === 'duration' && upload.attrGetter('ngfDuration', attr) != null) {
             upload.mediaDuration(file).then(function (d) {
               resolveResult(defer, file,
                 attrGetter('ngfDuration', {$file: file, $duration: d}));
             }, function () {
-              defer.reject();
+              defer.resolve(false);
             });
           } else {
             resolveResult(defer, file,
               upload.getValidationAttr(attr, scope, name, validationName, file));
           }
         });
-        return $q.all(promises).then(function () {
-          ngModel.$ngfValidations.push({name: name, valid: true});
-        }, function () {
-          ngModel.$ngfValidations.push({name: name, valid: false});
-        });
       }
+      var deffer = $q.defer();
+      $q.all(promises).then(function (values) {
+        var isValid = true;
+        for (var i = 0; i < values.length; i++) {
+          if (!values[i]) {
+            isValid = false;
+            break;
+          }
+        }
+        ngModel.$ngfValidations.push({name: name, valid: isValid});
+        deffer.resolve(isValid);
+      });
+      return deffer.promise;
     }
 
     var deffer = $q.defer();
     var promises = [];
 
-    promises.push(upload.happyPromise(validateAsync('maxHeight', 'height.max', /image/,
+    promises.push(validateAsync('maxHeight', 'height.max', /image/,
       this.imageDimensions, function (d, val) {
         return d.height <= val;
-      })));
-    promises.push(upload.happyPromise(validateAsync('minHeight', 'height.min', /image/,
+      }));
+    promises.push(validateAsync('minHeight', 'height.min', /image/,
       this.imageDimensions, function (d, val) {
         return d.height >= val;
-      })));
-    promises.push(upload.happyPromise(validateAsync('maxWidth', 'width.max', /image/,
+      }));
+    promises.push(validateAsync('maxWidth', 'width.max', /image/,
       this.imageDimensions, function (d, val) {
         return d.width <= val;
-      })));
-    promises.push(upload.happyPromise(validateAsync('minWidth', 'width.min', /image/,
+      }));
+    promises.push(validateAsync('minWidth', 'width.min', /image/,
       this.imageDimensions, function (d, val) {
         return d.width >= val;
-      })));
-    promises.push(upload.happyPromise(validateAsync('dimensions', null, /image/,
+      }));
+    promises.push(validateAsync('dimensions', null, /image/,
       function (file, val) {
         return upload.emptyPromise(val);
       }, function (r) {
         return r;
-      })));
-    promises.push(upload.happyPromise(validateAsync('ratio', null, /image/,
+      }));
+    promises.push(validateAsync('ratio', null, /image/,
       this.imageDimensions, function (d, val) {
         var split = val.toString().split(','), valid = false;
         for (var i = 0; i < split.length; i++) {
-          if (Math.abs((d.width / d.height) - upload.ratioToFloat(split[i])) < 0.0001) {
+          if (Math.abs((d.width / d.height) - upload.ratioToFloat(split[i])) < 0.01) {
             valid = true;
           }
         }
         return valid;
-      })));
-    promises.push(upload.happyPromise(validateAsync('maxRatio', 'ratio.max', /image/,
+      }));
+    promises.push(validateAsync('maxRatio', 'ratio.max', /image/,
       this.imageDimensions, function (d, val) {
         return (d.width / d.height) - upload.ratioToFloat(val) < 0.0001;
-      })));
-    promises.push(upload.happyPromise(validateAsync('minRatio', 'ratio.min', /image/,
+      }));
+    promises.push(validateAsync('minRatio', 'ratio.min', /image/,
       this.imageDimensions, function (d, val) {
         return (d.width / d.height) - upload.ratioToFloat(val) > -0.0001;
-      })));
-    promises.push(upload.happyPromise(validateAsync('maxDuration', 'duration.max', /audio|video/,
+      }));
+    promises.push(validateAsync('maxDuration', 'duration.max', /audio|video/,
       this.mediaDuration, function (d, val) {
         return d <= upload.translateScalars(val);
-      })));
-    promises.push(upload.happyPromise(validateAsync('minDuration', 'duration.min', /audio|video/,
+      }));
+    promises.push(validateAsync('minDuration', 'duration.min', /audio|video/,
       this.mediaDuration, function (d, val) {
         return d >= upload.translateScalars(val);
-      })));
-    promises.push(upload.happyPromise(validateAsync('duration', null, /audio|video/,
+      }));
+    promises.push(validateAsync('duration', null, /audio|video/,
       function (file, val) {
         return upload.emptyPromise(val);
       }, function (r) {
         return r;
-      })));
+      }));
 
-    promises.push(upload.happyPromise(validateAsync('validateAsyncFn', null, null,
+    promises.push(validateAsync('validateAsyncFn', null, null,
       function (file, val) {
         return val;
       }, function (r) {
         return r === true || r === null || r === '';
-      })));
+      }));
 
-    return $q.all(promises).then(function () {
-      deffer.resolve(ngModel, ngModel.$ngfValidations);
+    $q.all(promises).then(function () {
+
+      if (runAllValidation) {
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          if (file.$error) {
+            files.splice(i--, 1);
+          }
+        }
+      }
+
+      runAllValidation = false;
+      validateSync('maxFiles', null, function (file, val, i) {
+        return prevLength + i < val;
+      });
+
+      deffer.resolve({'validFiles': files, 'invalidFiles': invalidFiles});
     });
+    return deffer.promise;
   };
 
   upload.imageDimensions = function (file) {
@@ -91894,8 +90933,8 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
           .css('max-width', 'none !important').css('max-height', 'none !important');
 
         function success() {
-          var width = img[0].clientWidth;
-          var height = img[0].clientHeight;
+          var width = img[0].naturalWidth || img[0].clientWidth;
+          var height = img[0].naturalHeight || img[0].clientHeight;
           img.remove();
           file.$ngfWidth = width;
           file.$ngfHeight = height;
@@ -91909,23 +90948,23 @@ ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', funct
 
         img.on('load', success);
         img.on('error', error);
-        var count = 0;
 
-        function checkLoadError() {
+        var secondsCounter = 0;
+        function checkLoadErrorInCaseOfNoCallback() {
           $timeout(function () {
             if (img[0].parentNode) {
               if (img[0].clientWidth) {
                 success();
-              } else if (count > 10) {
+              } else if (secondsCounter++ > 10) {
                 error();
               } else {
-                checkLoadError();
+                checkLoadErrorInCaseOfNoCallback();
               }
             }
           }, 1000);
         }
 
-        checkLoadError();
+        checkLoadErrorInCaseOfNoCallback();
 
         angular.element(document.getElementsByTagName('body')[0]).append(img);
       }, function () {
@@ -92036,31 +91075,35 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
     var deferred = $q.defer();
     var canvasElement = document.createElement('canvas');
     var imageElement = document.createElement('img');
+    imageElement.setAttribute('style', 'visibility:hidden;position:fixed;z-index:-100000');
+    document.body.appendChild(imageElement);
 
     imageElement.onload = function () {
-      if (resizeIf != null && resizeIf(imageElement.width, imageElement.height) === false) {
+      var imgWidth = imageElement.width, imgHeight = imageElement.height;
+      imageElement.parentNode.removeChild(imageElement);
+      if (resizeIf != null && resizeIf(imgWidth, imgHeight) === false) {
         deferred.reject('resizeIf');
         return;
       }
       try {
         if (ratio) {
           var ratioFloat = upload.ratioToFloat(ratio);
-          var imgRatio = imageElement.width / imageElement.height;
+          var imgRatio = imgWidth / imgHeight;
           if (imgRatio < ratioFloat) {
-            width = imageElement.width;
+            width = imgWidth;
             height = width / ratioFloat;
           } else {
-            height = imageElement.height;
+            height = imgHeight;
             width = height * ratioFloat;
           }
         }
         if (!width) {
-          width = imageElement.width;
+          width = imgWidth;
         }
         if (!height) {
-          height = imageElement.height;
+          height = imgHeight;
         }
-        var dimensions = calculateAspectRatioFit(imageElement.width, imageElement.height, width, height, centerCrop);
+        var dimensions = calculateAspectRatioFit(imgWidth, imgHeight, width, height, centerCrop);
         canvasElement.width = Math.min(dimensions.width, width);
         canvasElement.height = Math.min(dimensions.height, height);
         var context = canvasElement.getContext('2d');
@@ -92073,6 +91116,7 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
       }
     };
     imageElement.onerror = function () {
+      imageElement.parentNode.removeChild(imageElement);
       deferred.reject();
     };
     imageElement.src = imagen;
@@ -92109,14 +91153,15 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
     });
   }
 
-  upload.resize = function (file, width, height, quality, type, ratio, centerCrop, resizeIf, restoreExif) {
+  upload.resize = function (file, options) {
     if (file.type.indexOf('image') !== 0) return upload.emptyPromise(file);
 
     var deferred = $q.defer();
     upload.dataUrl(file, true).then(function (url) {
-      resize(url, width, height, quality, type || file.type, ratio, centerCrop, resizeIf)
+      resize(url, options.width, options.height, options.quality, options.type || file.type,
+        options.ratio, options.centerCrop, options.resizeIf)
         .then(function (dataUrl) {
-          if (file.type === 'image/jpeg' && restoreExif) {
+          if (file.type === 'image/jpeg' && options.restoreExif !== false) {
             try {
               dataUrl = upload.restoreExif(url, dataUrl);
             } catch (e) {
@@ -92145,13 +91190,13 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
 }]);
 
 (function () {
-  ngFileUpload.directive('ngfDrop', ['$parse', '$timeout', '$location', 'Upload', '$http', '$q',
-    function ($parse, $timeout, $location, Upload, $http, $q) {
+  ngFileUpload.directive('ngfDrop', ['$parse', '$timeout', '$window', 'Upload', '$http', '$q',
+    function ($parse, $timeout, $window, Upload, $http, $q) {
       return {
         restrict: 'AEC',
         require: '?ngModel',
         link: function (scope, elem, attr, ngModel) {
-          linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $location, Upload, $http, $q);
+          linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $window, Upload, $http, $q);
         }
       };
     }]);
@@ -92176,7 +91221,7 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
     };
   }]);
 
-  function linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $location, upload, $http, $q) {
+  function linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $window, upload, $http, $q) {
     var available = dropAvailable();
 
     var attrGetter = function (name, scope, params) {
@@ -92309,7 +91354,7 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
     }
 
     function extractFilesFromHtml(updateOn, html) {
-      if (!upload.shouldUpdateOn(updateOn, attr, scope) || !html) return upload.rejectPromise([]);
+      if (!upload.shouldUpdateOn(updateOn, attr, scope) || typeof html !== 'string') return upload.rejectPromise([]);
       var urls = [];
       html.replace(/<(img src|img [^>]* src) *=\"([^\"]*)\"/gi, function (m, n, src) {
         urls.push(src);
@@ -92360,8 +91405,14 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
     }
 
     function extractFiles(items, fileList, allowDir, multiple) {
-      var maxFiles = upload.getValidationAttr(attr, scope, 'maxFiles') || Number.MAX_VALUE;
-      var maxTotalSize = upload.getValidationAttr(attr, scope, 'maxTotalSize') || Number.MAX_VALUE;
+      var maxFiles = upload.getValidationAttr(attr, scope, 'maxFiles');
+      if (maxFiles == null) {
+        maxFiles = Number.MAX_VALUE;
+      }
+      var maxTotalSize = upload.getValidationAttr(attr, scope, 'maxTotalSize');
+      if (maxTotalSize == null) {
+        maxTotalSize = Number.MAX_VALUE;
+      }
       var includeDir = attrGetter('ngfIncludeDir', scope);
       var files = [], totalSize = 0;
 
@@ -92372,7 +91423,7 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
             var promises = [upload.emptyPromise()];
             if (includeDir) {
               var file = {type: 'directory'};
-              file.name = file.path = (path || '') + entry.name + entry.name;
+              file.name = file.path = (path || '') + entry.name;
               files.push(file);
             }
             var dirReader = entry.createReader();
@@ -92426,7 +91477,7 @@ ngFileUpload.service('UploadResize', ['UploadValidate', '$q', function (UploadVa
 
       var promises = [upload.emptyPromise()];
 
-      if (items && items.length > 0 && $location.protocol() !== 'file') {
+      if (items && items.length > 0 && $window.location.protocol !== 'file:') {
         for (var i = 0; i < items.length; i++) {
           if (items[i].webkitGetAsEntry && items[i].webkitGetAsEntry() && items[i].webkitGetAsEntry().isDirectory) {
             var entry = items[i].webkitGetAsEntry();
@@ -92772,3 +91823,1918 @@ ngFileUpload.service('UploadExif', ['UploadResize', '$q', function (UploadResize
   return upload;
 }]);
 
+
+/**
+ * @license MIT
+ */
+(function(window, document, undefined) {'use strict';
+  // ie10+
+  var ie10plus = window.navigator.msPointerEnabled;
+  /**
+   * Flow.js is a library providing multiple simultaneous, stable and
+   * resumable uploads via the HTML5 File API.
+   * @param [opts]
+   * @param {number} [opts.chunkSize]
+   * @param {bool} [opts.forceChunkSize]
+   * @param {number} [opts.simultaneousUploads]
+   * @param {bool} [opts.singleFile]
+   * @param {string} [opts.fileParameterName]
+   * @param {number} [opts.progressCallbacksInterval]
+   * @param {number} [opts.speedSmoothingFactor]
+   * @param {Object|Function} [opts.query]
+   * @param {Object|Function} [opts.headers]
+   * @param {bool} [opts.withCredentials]
+   * @param {Function} [opts.preprocess]
+   * @param {string} [opts.method]
+   * @param {string|Function} [opts.testMethod]
+   * @param {string|Function} [opts.uploadMethod]
+   * @param {bool} [opts.prioritizeFirstAndLastChunk]
+   * @param {bool} [opts.allowDuplicateUploads]
+   * @param {string|Function} [opts.target]
+   * @param {number} [opts.maxChunkRetries]
+   * @param {number} [opts.chunkRetryInterval]
+   * @param {Array.<number>} [opts.permanentErrors]
+   * @param {Array.<number>} [opts.successStatuses]
+   * @param {Function} [opts.initFileFn]
+   * @param {Function} [opts.readFileFn]
+   * @param {Function} [opts.generateUniqueIdentifier]
+   * @constructor
+   */
+  function Flow(opts) {
+    /**
+     * Supported by browser?
+     * @type {boolean}
+     */
+    this.support = (
+        typeof File !== 'undefined' &&
+        typeof Blob !== 'undefined' &&
+        typeof FileList !== 'undefined' &&
+        (
+          !!Blob.prototype.slice || !!Blob.prototype.webkitSlice || !!Blob.prototype.mozSlice ||
+          false
+        ) // slicing files support
+    );
+
+    if (!this.support) {
+      return ;
+    }
+
+    /**
+     * Check if directory upload is supported
+     * @type {boolean}
+     */
+    this.supportDirectory = /Chrome/.test(window.navigator.userAgent);
+
+    /**
+     * List of FlowFile objects
+     * @type {Array.<FlowFile>}
+     */
+    this.files = [];
+
+    /**
+     * Default options for flow.js
+     * @type {Object}
+     */
+    this.defaults = {
+      chunkSize: 1024 * 1024,
+      forceChunkSize: false,
+      simultaneousUploads: 3,
+      singleFile: false,
+      fileParameterName: 'file',
+      progressCallbacksInterval: 500,
+      speedSmoothingFactor: 0.1,
+      query: {},
+      headers: {},
+      withCredentials: false,
+      preprocess: null,
+      method: 'multipart',
+      testMethod: 'GET',
+      uploadMethod: 'POST',
+      prioritizeFirstAndLastChunk: false,
+      allowDuplicateUploads: false,
+      target: '/',
+      testChunks: true,
+      generateUniqueIdentifier: null,
+      maxChunkRetries: 0,
+      chunkRetryInterval: null,
+      permanentErrors: [404, 413, 415, 500, 501],
+      successStatuses: [200, 201, 202],
+      onDropStopPropagation: false,
+      initFileFn: null,
+      readFileFn: webAPIFileRead
+    };
+    
+    /**
+     * Current options
+     * @type {Object}
+     */
+    this.opts = {};
+
+    /**
+     * List of events:
+     *  key stands for event name
+     *  value array list of callbacks
+     * @type {}
+     */
+    this.events = {};
+
+    var $ = this;
+
+    /**
+     * On drop event
+     * @function
+     * @param {MouseEvent} event
+     */
+    this.onDrop = function (event) {
+      if ($.opts.onDropStopPropagation) {
+        event.stopPropagation();
+      }
+      event.preventDefault();
+      var dataTransfer = event.dataTransfer;
+      if (dataTransfer.items && dataTransfer.items[0] &&
+        dataTransfer.items[0].webkitGetAsEntry) {
+        $.webkitReadDataTransfer(event);
+      } else {
+        $.addFiles(dataTransfer.files, event);
+      }
+    };
+
+    /**
+     * Prevent default
+     * @function
+     * @param {MouseEvent} event
+     */
+    this.preventEvent = function (event) {
+      event.preventDefault();
+    };
+
+
+    /**
+     * Current options
+     * @type {Object}
+     */
+    this.opts = Flow.extend({}, this.defaults, opts || {});
+
+  }
+
+  Flow.prototype = {
+    /**
+     * Set a callback for an event, possible events:
+     * fileSuccess(file), fileProgress(file), fileAdded(file, event),
+     * fileRemoved(file), fileRetry(file), fileError(file, message), 
+     * complete(), progress(), error(message, file), pause()
+     * @function
+     * @param {string} event
+     * @param {Function} callback
+     */
+    on: function (event, callback) {
+      event = event.toLowerCase();
+      if (!this.events.hasOwnProperty(event)) {
+        this.events[event] = [];
+      }
+      this.events[event].push(callback);
+    },
+
+    /**
+     * Remove event callback
+     * @function
+     * @param {string} [event] removes all events if not specified
+     * @param {Function} [fn] removes all callbacks of event if not specified
+     */
+    off: function (event, fn) {
+      if (event !== undefined) {
+        event = event.toLowerCase();
+        if (fn !== undefined) {
+          if (this.events.hasOwnProperty(event)) {
+            arrayRemove(this.events[event], fn);
+          }
+        } else {
+          delete this.events[event];
+        }
+      } else {
+        this.events = {};
+      }
+    },
+
+    /**
+     * Fire an event
+     * @function
+     * @param {string} event event name
+     * @param {...} args arguments of a callback
+     * @return {bool} value is false if at least one of the event handlers which handled this event
+     * returned false. Otherwise it returns true.
+     */
+    fire: function (event, args) {
+      // `arguments` is an object, not array, in FF, so:
+      args = Array.prototype.slice.call(arguments);
+      event = event.toLowerCase();
+      var preventDefault = false;
+      if (this.events.hasOwnProperty(event)) {
+        each(this.events[event], function (callback) {
+          preventDefault = callback.apply(this, args.slice(1)) === false || preventDefault;
+        }, this);
+      }
+      if (event != 'catchall') {
+        args.unshift('catchAll');
+        preventDefault = this.fire.apply(this, args) === false || preventDefault;
+      }
+      return !preventDefault;
+    },
+
+    /**
+     * Read webkit dataTransfer object
+     * @param event
+     */
+    webkitReadDataTransfer: function (event) {
+      var $ = this;
+      var queue = event.dataTransfer.items.length;
+      var files = [];
+      each(event.dataTransfer.items, function (item) {
+        var entry = item.webkitGetAsEntry();
+        if (!entry) {
+          decrement();
+          return ;
+        }
+        if (entry.isFile) {
+          // due to a bug in Chrome's File System API impl - #149735
+          fileReadSuccess(item.getAsFile(), entry.fullPath);
+        } else {
+          readDirectory(entry.createReader());
+        }
+      });
+      function readDirectory(reader) {
+        reader.readEntries(function (entries) {
+          if (entries.length) {
+            queue += entries.length;
+            each(entries, function(entry) {
+              if (entry.isFile) {
+                var fullPath = entry.fullPath;
+                entry.file(function (file) {
+                  fileReadSuccess(file, fullPath);
+                }, readError);
+              } else if (entry.isDirectory) {
+                readDirectory(entry.createReader());
+              }
+            });
+            readDirectory(reader);
+          } else {
+            decrement();
+          }
+        }, readError);
+      }
+      function fileReadSuccess(file, fullPath) {
+        // relative path should not start with "/"
+        file.relativePath = fullPath.substring(1);
+        files.push(file);
+        decrement();
+      }
+      function readError(fileError) {
+        throw fileError;
+      }
+      function decrement() {
+        if (--queue == 0) {
+          $.addFiles(files, event);
+        }
+      }
+    },
+
+    /**
+     * Generate unique identifier for a file
+     * @function
+     * @param {FlowFile} file
+     * @returns {string}
+     */
+    generateUniqueIdentifier: function (file) {
+      var custom = this.opts.generateUniqueIdentifier;
+      if (typeof custom === 'function') {
+        return custom(file);
+      }
+      // Some confusion in different versions of Firefox
+      var relativePath = file.relativePath || file.webkitRelativePath || file.fileName || file.name;
+      return file.size + '-' + relativePath.replace(/[^0-9a-zA-Z_-]/img, '');
+    },
+
+    /**
+     * Upload next chunk from the queue
+     * @function
+     * @returns {boolean}
+     * @private
+     */
+    uploadNextChunk: function (preventEvents) {
+      // In some cases (such as videos) it's really handy to upload the first
+      // and last chunk of a file quickly; this let's the server check the file's
+      // metadata and determine if there's even a point in continuing.
+      var found = false;
+      if (this.opts.prioritizeFirstAndLastChunk) {
+        each(this.files, function (file) {
+          if (!file.paused && file.chunks.length &&
+            file.chunks[0].status() === 'pending') {
+            file.chunks[0].send();
+            found = true;
+            return false;
+          }
+          if (!file.paused && file.chunks.length > 1 &&
+            file.chunks[file.chunks.length - 1].status() === 'pending') {
+            file.chunks[file.chunks.length - 1].send();
+            found = true;
+            return false;
+          }
+        });
+        if (found) {
+          return found;
+        }
+      }
+
+      // Now, simply look for the next, best thing to upload
+      each(this.files, function (file) {
+        if (!file.paused) {
+          each(file.chunks, function (chunk) {
+            if (chunk.status() === 'pending') {
+              chunk.send();
+              found = true;
+              return false;
+            }
+          });
+        }
+        if (found) {
+          return false;
+        }
+      });
+      if (found) {
+        return true;
+      }
+
+      // The are no more outstanding chunks to upload, check is everything is done
+      var outstanding = false;
+      each(this.files, function (file) {
+        if (!file.isComplete()) {
+          outstanding = true;
+          return false;
+        }
+      });
+      if (!outstanding && !preventEvents) {
+        // All chunks have been uploaded, complete
+        async(function () {
+          this.fire('complete');
+        }, this);
+      }
+      return false;
+    },
+
+
+    /**
+     * Assign a browse action to one or more DOM nodes.
+     * @function
+     * @param {Element|Array.<Element>} domNodes
+     * @param {boolean} isDirectory Pass in true to allow directories to
+     * @param {boolean} singleFile prevent multi file upload
+     * @param {Object} attributes set custom attributes:
+     *  http://www.w3.org/TR/html-markup/input.file.html#input.file-attributes
+     *  eg: accept: 'image/*'
+     * be selected (Chrome only).
+     */
+    assignBrowse: function (domNodes, isDirectory, singleFile, attributes) {
+      if (domNodes instanceof Element) {
+        domNodes = [domNodes];
+      }
+
+      each(domNodes, function (domNode) {
+        var input;
+        if (domNode.tagName === 'INPUT' && domNode.type === 'file') {
+          input = domNode;
+        } else {
+          input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          // display:none - not working in opera 12
+          extend(input.style, {
+            visibility: 'hidden',
+            position: 'absolute',
+            width: '1px',
+            height: '1px'
+          });
+          // for opera 12 browser, input must be assigned to a document
+          domNode.appendChild(input);
+          // https://developer.mozilla.org/en/using_files_from_web_applications)
+          // event listener is executed two times
+          // first one - original mouse click event
+          // second - input.click(), input is inside domNode
+          domNode.addEventListener('click', function() {
+            input.click();
+          }, false);
+        }
+        if (!this.opts.singleFile && !singleFile) {
+          input.setAttribute('multiple', 'multiple');
+        }
+        if (isDirectory) {
+          input.setAttribute('webkitdirectory', 'webkitdirectory');
+        }
+        each(attributes, function (value, key) {
+          input.setAttribute(key, value);
+        });
+        // When new files are added, simply append them to the overall list
+        var $ = this;
+        input.addEventListener('change', function (e) {
+       	  if (e.target.value) {
+            $.addFiles(e.target.files, e);
+            e.target.value = '';
+       	  }
+        }, false);
+      }, this);
+    },
+
+    /**
+     * Assign one or more DOM nodes as a drop target.
+     * @function
+     * @param {Element|Array.<Element>} domNodes
+     */
+    assignDrop: function (domNodes) {
+      if (typeof domNodes.length === 'undefined') {
+        domNodes = [domNodes];
+      }
+      each(domNodes, function (domNode) {
+        domNode.addEventListener('dragover', this.preventEvent, false);
+        domNode.addEventListener('dragenter', this.preventEvent, false);
+        domNode.addEventListener('drop', this.onDrop, false);
+      }, this);
+    },
+
+    /**
+     * Un-assign drop event from DOM nodes
+     * @function
+     * @param domNodes
+     */
+    unAssignDrop: function (domNodes) {
+      if (typeof domNodes.length === 'undefined') {
+        domNodes = [domNodes];
+      }
+      each(domNodes, function (domNode) {
+        domNode.removeEventListener('dragover', this.preventEvent);
+        domNode.removeEventListener('dragenter', this.preventEvent);
+        domNode.removeEventListener('drop', this.onDrop);
+      }, this);
+    },
+
+    /**
+     * Returns a boolean indicating whether or not the instance is currently
+     * uploading anything.
+     * @function
+     * @returns {boolean}
+     */
+    isUploading: function () {
+      var uploading = false;
+      each(this.files, function (file) {
+        if (file.isUploading()) {
+          uploading = true;
+          return false;
+        }
+      });
+      return uploading;
+    },
+
+    /**
+     * should upload next chunk
+     * @function
+     * @returns {boolean|number}
+     */
+    _shouldUploadNext: function () {
+      var num = 0;
+      var should = true;
+      var simultaneousUploads = this.opts.simultaneousUploads;
+      each(this.files, function (file) {
+        each(file.chunks, function(chunk) {
+          if (chunk.status() === 'uploading') {
+            num++;
+            if (num >= simultaneousUploads) {
+              should = false;
+              return false;
+            }
+          }
+        });
+      });
+      // if should is true then return uploading chunks's length
+      return should && num;
+    },
+
+    /**
+     * Start or resume uploading.
+     * @function
+     */
+    upload: function () {
+      // Make sure we don't start too many uploads at once
+      var ret = this._shouldUploadNext();
+      if (ret === false) {
+        return;
+      }
+      // Kick off the queue
+      this.fire('uploadStart');
+      var started = false;
+      for (var num = 1; num <= this.opts.simultaneousUploads - ret; num++) {
+        started = this.uploadNextChunk(true) || started;
+      }
+      if (!started) {
+        async(function () {
+          this.fire('complete');
+        }, this);
+      }
+    },
+
+    /**
+     * Resume uploading.
+     * @function
+     */
+    resume: function () {
+      each(this.files, function (file) {
+        file.resume();
+      });
+    },
+
+    /**
+     * Pause uploading.
+     * @function
+     */
+    pause: function () {
+      each(this.files, function (file) {
+        file.pause();
+      });
+    },
+
+    /**
+     * Cancel upload of all FlowFile objects and remove them from the list.
+     * @function
+     */
+    cancel: function () {
+      for (var i = this.files.length - 1; i >= 0; i--) {
+        this.files[i].cancel();
+      }
+    },
+
+    /**
+     * Returns a number between 0 and 1 indicating the current upload progress
+     * of all files.
+     * @function
+     * @returns {number}
+     */
+    progress: function () {
+      var totalDone = 0;
+      var totalSize = 0;
+      // Resume all chunks currently being uploaded
+      each(this.files, function (file) {
+        totalDone += file.progress() * file.size;
+        totalSize += file.size;
+      });
+      return totalSize > 0 ? totalDone / totalSize : 0;
+    },
+
+    /**
+     * Add a HTML5 File object to the list of files.
+     * @function
+     * @param {File} file
+     * @param {Event} [event] event is optional
+     */
+    addFile: function (file, event) {
+      this.addFiles([file], event);
+    },
+
+    /**
+     * Add a HTML5 File object to the list of files.
+     * @function
+     * @param {FileList|Array} fileList
+     * @param {Event} [event] event is optional
+     */
+    addFiles: function (fileList, event) {
+      var files = [];
+      each(fileList, function (file) {
+        // https://github.com/flowjs/flow.js/issues/55
+        if ((!ie10plus || ie10plus && file.size > 0) && !(file.size % 4096 === 0 && (file.name === '.' || file.fileName === '.')) &&
+          (this.opts.allowDuplicateUploads || !this.getFromUniqueIdentifier(this.generateUniqueIdentifier(file)))) {
+          var f = new FlowFile(this, file);
+          if (this.fire('fileAdded', f, event)) {
+            files.push(f);
+          }
+        }
+      }, this);
+      if (this.fire('filesAdded', files, event)) {
+        each(files, function (file) {
+          if (this.opts.singleFile && this.files.length > 0) {
+            this.removeFile(this.files[0]);
+          }
+          this.files.push(file);
+        }, this);
+        this.fire('filesSubmitted', files, event);
+      }
+    },
+
+
+    /**
+     * Cancel upload of a specific FlowFile object from the list.
+     * @function
+     * @param {FlowFile} file
+     */
+    removeFile: function (file) {
+      for (var i = this.files.length - 1; i >= 0; i--) {
+        if (this.files[i] === file) {
+          this.files.splice(i, 1);
+          file.abort();
+          this.fire('fileRemoved', file);
+        }
+      }
+    },
+
+    /**
+     * Look up a FlowFile object by its unique identifier.
+     * @function
+     * @param {string} uniqueIdentifier
+     * @returns {boolean|FlowFile} false if file was not found
+     */
+    getFromUniqueIdentifier: function (uniqueIdentifier) {
+      var ret = false;
+      each(this.files, function (file) {
+        if (file.uniqueIdentifier === uniqueIdentifier) {
+          ret = file;
+        }
+      });
+      return ret;
+    },
+
+    /**
+     * Returns the total size of all files in bytes.
+     * @function
+     * @returns {number}
+     */
+    getSize: function () {
+      var totalSize = 0;
+      each(this.files, function (file) {
+        totalSize += file.size;
+      });
+      return totalSize;
+    },
+
+    /**
+     * Returns the total size uploaded of all files in bytes.
+     * @function
+     * @returns {number}
+     */
+    sizeUploaded: function () {
+      var size = 0;
+      each(this.files, function (file) {
+        size += file.sizeUploaded();
+      });
+      return size;
+    },
+
+    /**
+     * Returns remaining time to upload all files in seconds. Accuracy is based on average speed.
+     * If speed is zero, time remaining will be equal to positive infinity `Number.POSITIVE_INFINITY`
+     * @function
+     * @returns {number}
+     */
+    timeRemaining: function () {
+      var sizeDelta = 0;
+      var averageSpeed = 0;
+      each(this.files, function (file) {
+        if (!file.paused && !file.error) {
+          sizeDelta += file.size - file.sizeUploaded();
+          averageSpeed += file.averageSpeed;
+        }
+      });
+      if (sizeDelta && !averageSpeed) {
+        return Number.POSITIVE_INFINITY;
+      }
+      if (!sizeDelta && !averageSpeed) {
+        return 0;
+      }
+      return Math.floor(sizeDelta / averageSpeed);
+    }
+  };
+
+
+
+
+
+
+  /**
+   * FlowFile class
+   * @name FlowFile
+   * @param {Flow} flowObj
+   * @param {File} file
+   * @constructor
+   */
+  function FlowFile(flowObj, file) {
+
+    /**
+     * Reference to parent Flow instance
+     * @type {Flow}
+     */
+    this.flowObj = flowObj;
+    
+    /**
+     * Used to store the bytes read
+     * @type {Blob|string}
+     */
+    this.bytes = null;
+
+    /**
+     * Reference to file
+     * @type {File}
+     */
+    this.file = file;
+
+    /**
+     * File name. Some confusion in different versions of Firefox
+     * @type {string}
+     */
+    this.name = file.fileName || file.name;
+
+    /**
+     * File size
+     * @type {number}
+     */
+    this.size = file.size;
+
+    /**
+     * Relative file path
+     * @type {string}
+     */
+    this.relativePath = file.relativePath || file.webkitRelativePath || this.name;
+
+    /**
+     * File unique identifier
+     * @type {string}
+     */
+    this.uniqueIdentifier = flowObj.generateUniqueIdentifier(file);
+
+    /**
+     * List of chunks
+     * @type {Array.<FlowChunk>}
+     */
+    this.chunks = [];
+
+    /**
+     * Indicated if file is paused
+     * @type {boolean}
+     */
+    this.paused = false;
+
+    /**
+     * Indicated if file has encountered an error
+     * @type {boolean}
+     */
+    this.error = false;
+
+    /**
+     * Average upload speed
+     * @type {number}
+     */
+    this.averageSpeed = 0;
+
+    /**
+     * Current upload speed
+     * @type {number}
+     */
+    this.currentSpeed = 0;
+
+    /**
+     * Date then progress was called last time
+     * @type {number}
+     * @private
+     */
+    this._lastProgressCallback = Date.now();
+
+    /**
+     * Previously uploaded file size
+     * @type {number}
+     * @private
+     */
+    this._prevUploadedSize = 0;
+
+    /**
+     * Holds previous progress
+     * @type {number}
+     * @private
+     */
+    this._prevProgress = 0;
+
+    this.bootstrap();
+  }
+
+  FlowFile.prototype = {
+    /**
+     * Update speed parameters
+     * @link http://stackoverflow.com/questions/2779600/how-to-estimate-download-time-remaining-accurately
+     * @function
+     */
+    measureSpeed: function () {
+      var timeSpan = Date.now() - this._lastProgressCallback;
+      if (!timeSpan) {
+        return ;
+      }
+      var smoothingFactor = this.flowObj.opts.speedSmoothingFactor;
+      var uploaded = this.sizeUploaded();
+      // Prevent negative upload speed after file upload resume
+      this.currentSpeed = Math.max((uploaded - this._prevUploadedSize) / timeSpan * 1000, 0);
+      this.averageSpeed = smoothingFactor * this.currentSpeed + (1 - smoothingFactor) * this.averageSpeed;
+      this._prevUploadedSize = uploaded;
+    },
+
+    /**
+     * For internal usage only.
+     * Callback when something happens within the chunk.
+     * @function
+     * @param {FlowChunk} chunk
+     * @param {string} event can be 'progress', 'success', 'error' or 'retry'
+     * @param {string} [message]
+     */
+    chunkEvent: function (chunk, event, message) {
+      switch (event) {
+        case 'progress':
+          if (Date.now() - this._lastProgressCallback <
+            this.flowObj.opts.progressCallbacksInterval) {
+            break;
+          }
+          this.measureSpeed();
+          this.flowObj.fire('fileProgress', this, chunk);
+          this.flowObj.fire('progress');
+          this._lastProgressCallback = Date.now();
+          break;
+        case 'error':
+          this.error = true;
+          this.abort(true);
+          this.flowObj.fire('fileError', this, message, chunk);
+          this.flowObj.fire('error', message, this, chunk);
+          break;
+        case 'success':
+          if (this.error) {
+            return;
+          }
+          this.measureSpeed();
+          this.flowObj.fire('fileProgress', this, chunk);
+          this.flowObj.fire('progress');
+          this._lastProgressCallback = Date.now();
+          if (this.isComplete()) {
+            this.currentSpeed = 0;
+            this.averageSpeed = 0;
+            this.flowObj.fire('fileSuccess', this, message, chunk);
+          }
+          break;
+        case 'retry':
+          this.flowObj.fire('fileRetry', this, chunk);
+          break;
+      }
+    },
+
+    /**
+     * Pause file upload
+     * @function
+     */
+    pause: function() {
+      this.paused = true;
+      this.abort();
+    },
+
+    /**
+     * Resume file upload
+     * @function
+     */
+    resume: function() {
+      this.paused = false;
+      this.flowObj.upload();
+    },
+
+    /**
+     * Abort current upload
+     * @function
+     */
+    abort: function (reset) {
+      this.currentSpeed = 0;
+      this.averageSpeed = 0;
+      var chunks = this.chunks;
+      if (reset) {
+        this.chunks = [];
+      }
+      each(chunks, function (c) {
+        if (c.status() === 'uploading') {
+          c.abort();
+          this.flowObj.uploadNextChunk();
+        }
+      }, this);
+    },
+
+    /**
+     * Cancel current upload and remove from a list
+     * @function
+     */
+    cancel: function () {
+      this.flowObj.removeFile(this);
+    },
+
+    /**
+     * Retry aborted file upload
+     * @function
+     */
+    retry: function () {
+      this.bootstrap();
+      this.flowObj.upload();
+    },
+
+    /**
+     * Clear current chunks and slice file again
+     * @function
+     */
+    bootstrap: function () {
+      if (typeof this.flowObj.opts.initFileFn === "function") {
+        this.flowObj.opts.initFileFn(this);
+      }
+
+      this.abort(true);
+      this.error = false;
+      // Rebuild stack of chunks from file
+      this._prevProgress = 0;
+      var round = this.flowObj.opts.forceChunkSize ? Math.ceil : Math.floor;
+      var chunks = Math.max(
+        round(this.size / this.flowObj.opts.chunkSize), 1
+      );
+      for (var offset = 0; offset < chunks; offset++) {
+        this.chunks.push(
+          new FlowChunk(this.flowObj, this, offset)
+        );
+      }
+    },
+
+    /**
+     * Get current upload progress status
+     * @function
+     * @returns {number} from 0 to 1
+     */
+    progress: function () {
+      if (this.error) {
+        return 1;
+      }
+      if (this.chunks.length === 1) {
+        this._prevProgress = Math.max(this._prevProgress, this.chunks[0].progress());
+        return this._prevProgress;
+      }
+      // Sum up progress across everything
+      var bytesLoaded = 0;
+      each(this.chunks, function (c) {
+        // get chunk progress relative to entire file
+        bytesLoaded += c.progress() * (c.endByte - c.startByte);
+      });
+      var percent = bytesLoaded / this.size;
+      // We don't want to lose percentages when an upload is paused
+      this._prevProgress = Math.max(this._prevProgress, percent > 0.9999 ? 1 : percent);
+      return this._prevProgress;
+    },
+
+    /**
+     * Indicates if file is being uploaded at the moment
+     * @function
+     * @returns {boolean}
+     */
+    isUploading: function () {
+      var uploading = false;
+      each(this.chunks, function (chunk) {
+        if (chunk.status() === 'uploading') {
+          uploading = true;
+          return false;
+        }
+      });
+      return uploading;
+    },
+
+    /**
+     * Indicates if file is has finished uploading and received a response
+     * @function
+     * @returns {boolean}
+     */
+    isComplete: function () {
+      var outstanding = false;
+      each(this.chunks, function (chunk) {
+        var status = chunk.status();
+        if (status === 'pending' || status === 'uploading' || status === 'reading' || chunk.preprocessState === 1 || chunk.readState === 1) {
+          outstanding = true;
+          return false;
+        }
+      });
+      return !outstanding;
+    },
+
+    /**
+     * Count total size uploaded
+     * @function
+     * @returns {number}
+     */
+    sizeUploaded: function () {
+      var size = 0;
+      each(this.chunks, function (chunk) {
+        size += chunk.sizeUploaded();
+      });
+      return size;
+    },
+
+    /**
+     * Returns remaining time to finish upload file in seconds. Accuracy is based on average speed.
+     * If speed is zero, time remaining will be equal to positive infinity `Number.POSITIVE_INFINITY`
+     * @function
+     * @returns {number}
+     */
+    timeRemaining: function () {
+      if (this.paused || this.error) {
+        return 0;
+      }
+      var delta = this.size - this.sizeUploaded();
+      if (delta && !this.averageSpeed) {
+        return Number.POSITIVE_INFINITY;
+      }
+      if (!delta && !this.averageSpeed) {
+        return 0;
+      }
+      return Math.floor(delta / this.averageSpeed);
+    },
+
+    /**
+     * Get file type
+     * @function
+     * @returns {string}
+     */
+    getType: function () {
+      return this.file.type && this.file.type.split('/')[1];
+    },
+
+    /**
+     * Get file extension
+     * @function
+     * @returns {string}
+     */
+    getExtension: function () {
+      return this.name.substr((~-this.name.lastIndexOf(".") >>> 0) + 2).toLowerCase();
+    }
+  };
+
+  /**
+   * Default read function using the webAPI
+   *
+   * @function webAPIFileRead(fileObj, startByte, endByte, fileType, chunk)
+   *
+   */
+  function webAPIFileRead(fileObj, startByte, endByte, fileType, chunk) {
+    var function_name = 'slice';
+
+    if (fileObj.file.slice)
+      function_name =  'slice';
+    else if (fileObj.file.mozSlice)
+      function_name = 'mozSlice';
+    else if (fileObj.file.webkitSlice)
+      function_name = 'webkitSlice';
+
+    chunk.readFinished(fileObj.file[function_name](startByte, endByte, fileType));
+  }
+
+
+  /**
+   * Class for storing a single chunk
+   * @name FlowChunk
+   * @param {Flow} flowObj
+   * @param {FlowFile} fileObj
+   * @param {number} offset
+   * @constructor
+   */
+  function FlowChunk(flowObj, fileObj, offset) {
+
+    /**
+     * Reference to parent flow object
+     * @type {Flow}
+     */
+    this.flowObj = flowObj;
+
+    /**
+     * Reference to parent FlowFile object
+     * @type {FlowFile}
+     */
+    this.fileObj = fileObj;
+
+    /**
+     * File offset
+     * @type {number}
+     */
+    this.offset = offset;
+
+    /**
+     * Indicates if chunk existence was checked on the server
+     * @type {boolean}
+     */
+    this.tested = false;
+
+    /**
+     * Number of retries performed
+     * @type {number}
+     */
+    this.retries = 0;
+
+    /**
+     * Pending retry
+     * @type {boolean}
+     */
+    this.pendingRetry = false;
+
+    /**
+     * Preprocess state
+     * @type {number} 0 = unprocessed, 1 = processing, 2 = finished
+     */
+    this.preprocessState = 0;
+
+    /**
+     * Read state
+     * @type {number} 0 = not read, 1 = reading, 2 = finished
+     */
+    this.readState = 0;
+
+
+    /**
+     * Bytes transferred from total request size
+     * @type {number}
+     */
+    this.loaded = 0;
+
+    /**
+     * Total request size
+     * @type {number}
+     */
+    this.total = 0;
+
+    /**
+     * Size of a chunk
+     * @type {number}
+     */
+    this.chunkSize = this.flowObj.opts.chunkSize;
+
+    /**
+     * Chunk start byte in a file
+     * @type {number}
+     */
+    this.startByte = this.offset * this.chunkSize;
+
+    /**
+      * Compute the endbyte in a file
+      *
+      */
+    this.computeEndByte = function() {
+      var endByte = Math.min(this.fileObj.size, (this.offset + 1) * this.chunkSize);
+      if (this.fileObj.size - endByte < this.chunkSize && !this.flowObj.opts.forceChunkSize) {
+        // The last chunk will be bigger than the chunk size,
+        // but less than 2 * this.chunkSize
+        endByte = this.fileObj.size;
+      }
+      return endByte;
+    }
+
+    /**
+     * Chunk end byte in a file
+     * @type {number}
+     */
+    this.endByte = this.computeEndByte();
+
+    /**
+     * XMLHttpRequest
+     * @type {XMLHttpRequest}
+     */
+    this.xhr = null;
+
+    var $ = this;
+
+    /**
+     * Send chunk event
+     * @param event
+     * @param {...} args arguments of a callback
+     */
+    this.event = function (event, args) {
+      args = Array.prototype.slice.call(arguments);
+      args.unshift($);
+      $.fileObj.chunkEvent.apply($.fileObj, args);
+    };
+    /**
+     * Catch progress event
+     * @param {ProgressEvent} event
+     */
+    this.progressHandler = function(event) {
+      if (event.lengthComputable) {
+        $.loaded = event.loaded ;
+        $.total = event.total;
+      }
+      $.event('progress', event);
+    };
+
+    /**
+     * Catch test event
+     * @param {Event} event
+     */
+    this.testHandler = function(event) {
+      var status = $.status(true);
+      if (status === 'error') {
+        $.event(status, $.message());
+        $.flowObj.uploadNextChunk();
+      } else if (status === 'success') {
+        $.tested = true;
+        $.event(status, $.message());
+        $.flowObj.uploadNextChunk();
+      } else if (!$.fileObj.paused) {
+        // Error might be caused by file pause method
+        // Chunks does not exist on the server side
+        $.tested = true;
+        $.send();
+      }
+    };
+
+    /**
+     * Upload has stopped
+     * @param {Event} event
+     */
+    this.doneHandler = function(event) {
+      var status = $.status();
+      if (status === 'success' || status === 'error') {
+        delete this.data;
+        $.event(status, $.message());
+        $.flowObj.uploadNextChunk();
+      } else {
+        $.event('retry', $.message());
+        $.pendingRetry = true;
+        $.abort();
+        $.retries++;
+        var retryInterval = $.flowObj.opts.chunkRetryInterval;
+        if (retryInterval !== null) {
+          setTimeout(function () {
+            $.send();
+          }, retryInterval);
+        } else {
+          $.send();
+        }
+      }
+    };
+  }
+
+  FlowChunk.prototype = {
+    /**
+     * Get params for a request
+     * @function
+     */
+    getParams: function () {
+      return {
+        flowChunkNumber: this.offset + 1,
+        flowChunkSize: this.flowObj.opts.chunkSize,
+        flowCurrentChunkSize: this.endByte - this.startByte,
+        flowTotalSize: this.fileObj.size,
+        flowIdentifier: this.fileObj.uniqueIdentifier,
+        flowFilename: this.fileObj.name,
+        flowRelativePath: this.fileObj.relativePath,
+        flowTotalChunks: this.fileObj.chunks.length
+      };
+    },
+
+    /**
+     * Get target option with query params
+     * @function
+     * @param params
+     * @returns {string}
+     */
+    getTarget: function(target, params){
+      if(target.indexOf('?') < 0) {
+        target += '?';
+      } else {
+        target += '&';
+      }
+      return target + params.join('&');
+    },
+
+    /**
+     * Makes a GET request without any data to see if the chunk has already
+     * been uploaded in a previous session
+     * @function
+     */
+    test: function () {
+      // Set up request and listen for event
+      this.xhr = new XMLHttpRequest();
+      this.xhr.addEventListener("load", this.testHandler, false);
+      this.xhr.addEventListener("error", this.testHandler, false);
+      var testMethod = evalOpts(this.flowObj.opts.testMethod, this.fileObj, this);
+      var data = this.prepareXhrRequest(testMethod, true);
+      this.xhr.send(data);
+    },
+
+    /**
+     * Finish preprocess state
+     * @function
+     */
+    preprocessFinished: function () {
+      // Re-compute the endByte after the preprocess function to allow an
+      // implementer of preprocess to set the fileObj size
+      this.endByte = this.computeEndByte();
+
+      this.preprocessState = 2;
+      this.send();
+    },
+
+    /**
+     * Finish read state
+     * @function
+     */
+    readFinished: function (bytes) {
+      this.readState = 2;
+      this.bytes = bytes;
+      this.send();
+    },
+
+
+    /**
+     * Uploads the actual data in a POST call
+     * @function
+     */
+    send: function () {
+      var preprocess = this.flowObj.opts.preprocess;
+      var read = this.flowObj.opts.readFileFn;
+      if (typeof preprocess === 'function') {
+        switch (this.preprocessState) {
+          case 0:
+            this.preprocessState = 1;
+            preprocess(this);
+            return;
+          case 1:
+            return;
+        }
+      }
+      switch (this.readState) {
+        case 0:
+          this.readState = 1;
+          read(this.fileObj, this.startByte, this.endByte, this.fileObj.file.type, this);
+          return;
+        case 1:
+          return;
+      }
+      if (this.flowObj.opts.testChunks && !this.tested) {
+        this.test();
+        return;
+      }
+
+      this.loaded = 0;
+      this.total = 0;
+      this.pendingRetry = false;
+
+      // Set up request and listen for event
+      this.xhr = new XMLHttpRequest();
+      this.xhr.upload.addEventListener('progress', this.progressHandler, false);
+      this.xhr.addEventListener("load", this.doneHandler, false);
+      this.xhr.addEventListener("error", this.doneHandler, false);
+
+      var uploadMethod = evalOpts(this.flowObj.opts.uploadMethod, this.fileObj, this);
+      var data = this.prepareXhrRequest(uploadMethod, false, this.flowObj.opts.method, this.bytes);
+      this.xhr.send(data);
+    },
+
+    /**
+     * Abort current xhr request
+     * @function
+     */
+    abort: function () {
+      // Abort and reset
+      var xhr = this.xhr;
+      this.xhr = null;
+      if (xhr) {
+        xhr.abort();
+      }
+    },
+
+    /**
+     * Retrieve current chunk upload status
+     * @function
+     * @returns {string} 'pending', 'uploading', 'success', 'error'
+     */
+    status: function (isTest) {
+      if (this.readState === 1) {
+        return 'reading';
+      } else if (this.pendingRetry || this.preprocessState === 1) {
+        // if pending retry then that's effectively the same as actively uploading,
+        // there might just be a slight delay before the retry starts
+        return 'uploading';
+      } else if (!this.xhr) {
+        return 'pending';
+      } else if (this.xhr.readyState < 4) {
+        // Status is really 'OPENED', 'HEADERS_RECEIVED'
+        // or 'LOADING' - meaning that stuff is happening
+        return 'uploading';
+      } else {
+        if (this.flowObj.opts.successStatuses.indexOf(this.xhr.status) > -1) {
+          // HTTP 200, perfect
+		      // HTTP 202 Accepted - The request has been accepted for processing, but the processing has not been completed.
+          return 'success';
+        } else if (this.flowObj.opts.permanentErrors.indexOf(this.xhr.status) > -1 ||
+            !isTest && this.retries >= this.flowObj.opts.maxChunkRetries) {
+          // HTTP 413/415/500/501, permanent error
+          return 'error';
+        } else {
+          // this should never happen, but we'll reset and queue a retry
+          // a likely case for this would be 503 service unavailable
+          this.abort();
+          return 'pending';
+        }
+      }
+    },
+
+    /**
+     * Get response from xhr request
+     * @function
+     * @returns {String}
+     */
+    message: function () {
+      return this.xhr ? this.xhr.responseText : '';
+    },
+
+    /**
+     * Get upload progress
+     * @function
+     * @returns {number}
+     */
+    progress: function () {
+      if (this.pendingRetry) {
+        return 0;
+      }
+      var s = this.status();
+      if (s === 'success' || s === 'error') {
+        return 1;
+      } else if (s === 'pending') {
+        return 0;
+      } else {
+        return this.total > 0 ? this.loaded / this.total : 0;
+      }
+    },
+
+    /**
+     * Count total size uploaded
+     * @function
+     * @returns {number}
+     */
+    sizeUploaded: function () {
+      var size = this.endByte - this.startByte;
+      // can't return only chunk.loaded value, because it is bigger than chunk size
+      if (this.status() !== 'success') {
+        size = this.progress() * size;
+      }
+      return size;
+    },
+
+    /**
+     * Prepare Xhr request. Set query, headers and data
+     * @param {string} method GET or POST
+     * @param {bool} isTest is this a test request
+     * @param {string} [paramsMethod] octet or form
+     * @param {Blob} [blob] to send
+     * @returns {FormData|Blob|Null} data to send
+     */
+    prepareXhrRequest: function(method, isTest, paramsMethod, blob) {
+      // Add data from the query options
+      var query = evalOpts(this.flowObj.opts.query, this.fileObj, this, isTest);
+      query = extend(query, this.getParams());
+
+      var target = evalOpts(this.flowObj.opts.target, this.fileObj, this, isTest);
+      var data = null;
+      if (method === 'GET' || paramsMethod === 'octet') {
+        // Add data from the query options
+        var params = [];
+        each(query, function (v, k) {
+          params.push([encodeURIComponent(k), encodeURIComponent(v)].join('='));
+        });
+        target = this.getTarget(target, params);
+        data = blob || null;
+      } else {
+        // Add data from the query options
+        data = new FormData();
+        each(query, function (v, k) {
+          data.append(k, v);
+        });
+        data.append(this.flowObj.opts.fileParameterName, blob, this.fileObj.file.name);
+      }
+
+      this.xhr.open(method, target, true);
+      this.xhr.withCredentials = this.flowObj.opts.withCredentials;
+
+      // Add data from header options
+      each(evalOpts(this.flowObj.opts.headers, this.fileObj, this, isTest), function (v, k) {
+        this.xhr.setRequestHeader(k, v);
+      }, this);
+
+      return data;
+    }
+  };
+
+  /**
+   * Remove value from array
+   * @param array
+   * @param value
+   */
+  function arrayRemove(array, value) {
+    var index = array.indexOf(value);
+    if (index > -1) {
+      array.splice(index, 1);
+    }
+  }
+
+  /**
+   * If option is a function, evaluate it with given params
+   * @param {*} data
+   * @param {...} args arguments of a callback
+   * @returns {*}
+   */
+  function evalOpts(data, args) {
+    if (typeof data === "function") {
+      // `arguments` is an object, not array, in FF, so:
+      args = Array.prototype.slice.call(arguments);
+      data = data.apply(null, args.slice(1));
+    }
+    return data;
+  }
+  Flow.evalOpts = evalOpts;
+
+  /**
+   * Execute function asynchronously
+   * @param fn
+   * @param context
+   */
+  function async(fn, context) {
+    setTimeout(fn.bind(context), 0);
+  }
+
+  /**
+   * Extends the destination object `dst` by copying all of the properties from
+   * the `src` object(s) to `dst`. You can specify multiple `src` objects.
+   * @function
+   * @param {Object} dst Destination object.
+   * @param {...Object} src Source object(s).
+   * @returns {Object} Reference to `dst`.
+   */
+  function extend(dst, src) {
+    each(arguments, function(obj) {
+      if (obj !== dst) {
+        each(obj, function(value, key){
+          dst[key] = value;
+        });
+      }
+    });
+    return dst;
+  }
+  Flow.extend = extend;
+
+  /**
+   * Iterate each element of an object
+   * @function
+   * @param {Array|Object} obj object or an array to iterate
+   * @param {Function} callback first argument is a value and second is a key.
+   * @param {Object=} context Object to become context (`this`) for the iterator function.
+   */
+  function each(obj, callback, context) {
+    if (!obj) {
+      return ;
+    }
+    var key;
+    // Is Array?
+    // Array.isArray won't work, not only arrays can be iterated by index https://github.com/flowjs/ng-flow/issues/236#
+    if (typeof(obj.length) !== 'undefined') {
+      for (key = 0; key < obj.length; key++) {
+        if (callback.call(context, obj[key], key) === false) {
+          return ;
+        }
+      }
+    } else {
+      for (key in obj) {
+        if (obj.hasOwnProperty(key) && callback.call(context, obj[key], key) === false) {
+          return ;
+        }
+      }
+    }
+  }
+  Flow.each = each;
+
+  /**
+   * FlowFile constructor
+   * @type {FlowFile}
+   */
+  Flow.FlowFile = FlowFile;
+
+  /**
+   * FlowFile constructor
+   * @type {FlowChunk}
+   */
+  Flow.FlowChunk = FlowChunk;
+
+  /**
+   * Library version
+   * @type {string}
+   */
+  Flow.version = '2.11.2';
+
+  if ( typeof module === "object" && module && typeof module.exports === "object" ) {
+    // Expose Flow as module.exports in loaders that implement the Node
+    // module pattern (including browserify). Do not create the global, since
+    // the user will be storing it themselves locally, and globals are frowned
+    // upon in the Node module world.
+    module.exports = Flow;
+  } else {
+    // Otherwise expose Flow to the global object as usual
+    window.Flow = Flow;
+
+    // Register as a named AMD module, since Flow can be concatenated with other
+    // files that may use define, but not via a proper concatenation script that
+    // understands anonymous AMD modules. A named AMD is safest and most robust
+    // way to register. Lowercase flow is used because AMD module names are
+    // derived from file names, and Flow is normally delivered in a lowercase
+    // file name. Do this after creating the global so that if an AMD module wants
+    // to call noConflict to hide this version of Flow, it will work.
+    if ( typeof define === "function" && define.amd ) {
+      define( "flow", [], function () { return Flow; } );
+    }
+  }
+})(window, document);
+
+/**
+ * @description
+ * var app = angular.module('App', ['flow.provider'], function(flowFactoryProvider){
+ *    flowFactoryProvider.defaults = {target: '/'};
+ * });
+ * @name flowFactoryProvider
+ */
+angular.module('flow.provider', [])
+.provider('flowFactory', function() {
+  'use strict';
+  /**
+   * Define the default properties for flow.js
+   * @name flowFactoryProvider.defaults
+   * @type {Object}
+   */
+  this.defaults = {};
+
+  /**
+   * Flow, MaybeFlow or NotFlow
+   * @name flowFactoryProvider.factory
+   * @type {function}
+   * @return {Flow}
+   */
+  this.factory = function (options) {
+    return new Flow(options);
+  };
+
+  /**
+   * Define the default events
+   * @name flowFactoryProvider.events
+   * @type {Array}
+   * @private
+   */
+  this.events = [];
+
+  /**
+   * Add default events
+   * @name flowFactoryProvider.on
+   * @function
+   * @param {string} event
+   * @param {Function} callback
+   */
+  this.on = function (event, callback) {
+    this.events.push([event, callback]);
+  };
+
+  this.$get = function() {
+    var fn = this.factory;
+    var defaults = this.defaults;
+    var events = this.events;
+    return {
+      'create': function(opts) {
+        // combine default options with global options and options
+        var flow = fn(angular.extend({}, defaults, opts));
+        angular.forEach(events, function (event) {
+          flow.on(event[0], event[1]);
+        });
+        return flow;
+      }
+    };
+  };
+});
+angular.module('flow.init', ['flow.provider'])
+  .controller('flowCtrl', ['$scope', '$attrs', '$parse', 'flowFactory',
+  function ($scope, $attrs, $parse, flowFactory) {
+
+    var options = angular.extend({}, $scope.$eval($attrs.flowInit));
+
+    // use existing flow object or create a new one
+    var flow  = $scope.$eval($attrs.flowObject) || flowFactory.create(options);
+
+    var catchAllHandler = function(eventName){
+      var args = Array.prototype.slice.call(arguments);
+      args.shift();
+      var event = $scope.$broadcast.apply($scope, ['flow::' + eventName, flow].concat(args));
+      if ({
+        'progress':1, 'filesSubmitted':1, 'fileSuccess': 1, 'fileError': 1, 'complete': 1
+      }[eventName]) {
+        $scope.$apply();
+      }
+      if (event.defaultPrevented) {
+        return false;
+      }
+    };
+
+    flow.on('catchAll', catchAllHandler);
+    $scope.$on('$destroy', function(){
+        flow.off('catchAll', catchAllHandler);
+    });
+
+    $scope.$flow = flow;
+
+    if ($attrs.hasOwnProperty('flowName')) {
+      $parse($attrs.flowName).assign($scope, flow);
+      $scope.$on('$destroy', function () {
+        $parse($attrs.flowName).assign($scope);
+      });
+    }
+  }])
+  .directive('flowInit', [function() {
+    return {
+      scope: true,
+      controller: 'flowCtrl'
+    };
+  }]);
+angular.module('flow.btn', ['flow.init'])
+.directive('flowBtn', [function() {
+  return {
+    'restrict': 'EA',
+    'scope': false,
+    'require': '^flowInit',
+    'link': function(scope, element, attrs) {
+      var isDirectory = attrs.hasOwnProperty('flowDirectory');
+      var isSingleFile = attrs.hasOwnProperty('flowSingleFile');
+      var inputAttrs = attrs.hasOwnProperty('flowAttrs') && scope.$eval(attrs.flowAttrs);
+      scope.$flow.assignBrowse(element, isDirectory, isSingleFile, inputAttrs);
+    }
+  };
+}]);
+angular.module('flow.dragEvents', ['flow.init'])
+/**
+ * @name flowPreventDrop
+ * Prevent loading files then dropped on element
+ */
+  .directive('flowPreventDrop', function() {
+    return {
+      'scope': false,
+      'link': function(scope, element, attrs) {
+        element.bind('drop dragover', function (event) {
+          event.preventDefault();
+        });
+      }
+    };
+  })
+/**
+ * @name flowDragEnter
+ * executes `flowDragEnter` and `flowDragLeave` events
+ */
+  .directive('flowDragEnter', ['$timeout', function($timeout) {
+    return {
+      'scope': false,
+      'link': function(scope, element, attrs) {
+        var promise;
+        var enter = false;
+        element.bind('dragover', function (event) {
+          if (!isFileDrag(event)) {
+            return ;
+          }
+          if (!enter) {
+            scope.$apply(attrs.flowDragEnter);
+            enter = true;
+          }
+          $timeout.cancel(promise);
+          event.preventDefault();
+        });
+        element.bind('dragleave drop', function (event) {
+          $timeout.cancel(promise);
+          promise = $timeout(function () {
+            scope.$eval(attrs.flowDragLeave);
+            promise = null;
+            enter = false;
+          }, 100);
+        });
+        function isFileDrag(dragEvent) {
+          var fileDrag = false;
+          var dataTransfer = dragEvent.dataTransfer || dragEvent.originalEvent.dataTransfer;
+          angular.forEach(dataTransfer && dataTransfer.types, function(val) {
+            if (val === 'Files') {
+              fileDrag = true;
+            }
+          });
+          return fileDrag;
+        }
+      }
+    };
+  }]);
+
+angular.module('flow.drop', ['flow.init'])
+.directive('flowDrop', function() {
+  return {
+    'scope': false,
+    'require': '^flowInit',
+    'link': function(scope, element, attrs) {
+      if (attrs.flowDropEnabled) {
+        scope.$watch(attrs.flowDropEnabled, function (value) {
+          if (value) {
+            assignDrop();
+          } else {
+            unAssignDrop();
+          }
+        });
+      } else {
+        assignDrop();
+      }
+      function assignDrop() {
+        scope.$flow.assignDrop(element);
+      }
+      function unAssignDrop() {
+        scope.$flow.unAssignDrop(element);
+      }
+    }
+  };
+});
+
+!function (angular) {'use strict';
+  var module = angular.module('flow.events', ['flow.init']);
+  var events = {
+    fileSuccess: ['$file', '$message'],
+    fileProgress: ['$file'],
+    fileAdded: ['$file', '$event'],
+    filesAdded: ['$files', '$event'],
+    filesSubmitted: ['$files', '$event'],
+    fileRetry: ['$file'],
+    fileError: ['$file', '$message'],
+    uploadStart: [],
+    complete: [],
+    progress: [],
+    error: ['$message', '$file']
+  };
+
+  angular.forEach(events, function (eventArgs, eventName) {
+    var name = 'flow' + capitaliseFirstLetter(eventName);
+    if (name == 'flowUploadStart') {
+      name = 'flowUploadStarted';// event alias
+    }
+    module.directive(name, [function() {
+      return {
+        require: '^flowInit',
+        controller: ['$scope', '$attrs', function ($scope, $attrs) {
+          $scope.$on('flow::' + eventName, function () {
+            var funcArgs = Array.prototype.slice.call(arguments);
+            var event = funcArgs.shift();// remove angular event
+            // remove flow object and ignore event if it is from parent directive
+            if ($scope.$flow !== funcArgs.shift()) {
+              return ;
+            }
+            var args = {};
+            angular.forEach(eventArgs, function(value, key) {
+              args[value] = funcArgs[key];
+            });
+            if ($scope.$eval($attrs[name], args) === false) {
+              event.preventDefault();
+            }
+          });
+        }]
+      };
+    }]);
+  });
+
+  function capitaliseFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+}(angular);
+angular.module('flow.img', ['flow.init'])
+.directive('flowImg', [function() {
+  return {
+    'scope': false,
+    'require': '^flowInit',
+    'link': function(scope, element, attrs) {
+      var file = attrs.flowImg;
+      scope.$watch(file, function (file) {
+        if (!file) {
+          return ;
+        }
+        var fileReader = new FileReader();
+        fileReader.readAsDataURL(file.file);
+        fileReader.onload = function (event) {
+          scope.$apply(function () {
+            attrs.$set('src', event.target.result);
+          });
+        };
+      });
+    }
+  };
+}]);
+angular.module('flow.transfers', ['flow.init'])
+.directive('flowTransfers', [function() {
+  return {
+    'scope': true,
+    'require': '^flowInit',
+    'link': function(scope) {
+      scope.transfers = scope.$flow.files;
+    }
+  };
+}]);
+angular.module('flow', ['flow.provider', 'flow.init', 'flow.events', 'flow.btn',
+  'flow.drop', 'flow.transfers', 'flow.img', 'flow.dragEvents']);

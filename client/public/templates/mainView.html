@@ -4,15 +4,10 @@
     <div class='col-sm-8 col-sm-offset-2'>
       <!--MainContent-->
       <div class="panel panel-primary">
-        <div class="panel-heading row">
-          <div class="col-sm-6">
-            <h3>Training am {{currTraining.date| date:'dd.MM.yy'}}
-            </h3>
-          </div>
-          <div class="col-sm-6">
-            <img class="pull-right" ng-src="img/drink-{{currTraining.drink.supplied}}.png" width="10%" height="10%" alt="Trinken"></img>
-            <img class="pull-right" ng-src="img/food-{{currTraining.food.supplied}}.png" width="10%" height="10%" alt="Essen"></img>
-          </div>
+        <div class="panel-heading clearfix">
+            <h3 class="pull-left">Training am {{currTraining.date| date:'dd.MM.yy'}}</h3>
+            <img class="pull-right" ng-src="img/drink-{{currTraining.drink.supplied}}.png" width="5%" height="5%" alt="Trinken">
+            <img class="pull-right" ng-src="img/food-{{currTraining.food.supplied}}.png" width="5%" height="5%" alt="Essen">
         </div>
         <div class="panel-body">
           <div class="well row">

@@ -6,6 +6,9 @@ var bodyParser = require('body-parser');
 var expressSession = require('express-session');
 var mongoose = require('mongoose');
 var hash = require('bcrypt-nodejs');
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
+var flow = require('./flow-node.js')('../client/public/img/competitions');
 var path = require('path');
 var passport = require('passport');
 var localStrategy = require('passport-local' ).Strategy;
@@ -51,6 +54,34 @@ app.use('/user/', userRoutes);
 app.use('/training/', trainingRoutes);
 app.use('/competition/', competitionRoutes);
 
+// Handle uploads through Flow.js
+app.post('/upload', multipartMiddleware, function(req, res) {
+    flow.post(req, function(status, filename, original_filename, identifier) {
+        if (status == 'done') {
+                fs.rename(UPLOAD_DIR + filename, UPLOAD_DIR + hash + extension, function(err) {
+                    if ( err ) console.log('ERROR: ' + err);
+                });
+        }
+        console.log('POST', status, original_filename, identifier);
+        res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
+    });
+});
+
+
+// Handle status checks on chunks through Flow.js
+app.get('/upload', function(req, res) {
+    flow.get(req, function(status, filename, original_filename, identifier) {
+        console.log('GET', status);
+
+        if (status == 'found') {
+            status = 200;
+        } else {
+            status = 204;
+        }
+
+        res.status(status).send();
+    });
+});
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '../client/public/', 'index.html'));
@@ -59,7 +90,7 @@ app.get('/', function(req, res) {
 // error hndlers
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
-  console.log(req)
+  console.log(req);
   err.status = 404;
   next(err);
 });
