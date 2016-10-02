@@ -13,7 +13,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
   $scope.registerData = {
     food: false,
     drink: false
-  }
+  };
 
   $scope.getNextTraining = function(setDate) {
     var date = $scope.currTraining.date || Date.today().add(2).hours();

@@ -7,6 +7,7 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
     $scope.datepicker = {opened:false};
     $scope.currentCompetition = {};
     $scope.editComp = false;
+    $scope.reportMode = false;
 
     //FUNCTIONS
     $scope.getAllCompetitions = function() {
@@ -93,13 +94,34 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
             });
     };
 
-
+    $scope.alreadyIn = function () {
+      if($scope.username){
+          if($scope.currentCompetition.members.indexOf($scope.username)>-1){
+              return true;
+          }else {
+              return false;
+          }
+      }
+    };
 
     $scope.writeReport = function() {
+        $scope.reportMode = true;
 
     };
 
+
+
     //START
     //initially fetch all competitions
+    AuthService.getCurrentUser().then(function(username) {
+            $scope.username = username;
+            console.log("Fetched Username: "+$scope.username);
+        },
+        function(err) {
+            console.log("Something went wrong!");
+            console.log(err)
+        }
+    );
+
     $scope.getAllCompetitions();
 }]);
