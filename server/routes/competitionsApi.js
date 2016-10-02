@@ -74,14 +74,16 @@ router.post('/newOrUpdate', function(req, res) {
 
         if(doc){
             //just update
-            for(var key in doc){
-                if(doc.hasOwnProperty(key) && data.hasOwnProperty(key)){
-                    doc[key] = data.key;
-                    console.log("Updated "+key);
-                }else {
-                    console.log("Error with Key "+key);
-                }
-            }
+            console.log(doc);
+            console.log(data);
+            doc.name = data.name;
+            doc.date = data.date;
+            doc.place = data.place;
+            doc.description = data.description;
+            doc.done = data.done;
+            doc.members = data.members;
+
+            console.log(doc);
             doc.save();
             res.json({
                 data: doc,

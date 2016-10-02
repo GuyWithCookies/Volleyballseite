@@ -1,1 +1,13 @@
-#Bei Turnier View die einzelne Turniere anzeigen
+#turniere
+    date anzeigen
+    Teilnehmer liste hübscher
+    button teilnehmen oder nicht nur einen anzeigen
+
+#mainview
+    messaging ansicht verschönern
+
+#user ansicht
+    Profilbilder hochladen
+
+#Public view
+    Turniere generisch laden

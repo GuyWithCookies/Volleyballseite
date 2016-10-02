@@ -1,12 +1,5 @@
 app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService', function($scope, AuthService, TrainingService) {
-  AuthService.getCurrentUser().then(function(username) {
-      $scope.username = username;
-      console.log($scope.username)
-    },
-    function(err) {
-      console.log("Something went wrong!")
-      console.log(err)
-    });
+
 
   $scope.currTraining = {
     food: {

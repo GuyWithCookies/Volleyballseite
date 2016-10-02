@@ -54,15 +54,46 @@ app.controller('competitionsViewController', ['$scope', 'AuthService', 'competit
 
     $scope.saveCompetition = function () {
         competitionsService.createOrUpdate($scope.currentCompetition).then(function (status) {
-            if(status === "OK"){
-                console.log("Updated successfull");
-            }
+            console.log("Updated successfull");
+            $scope.editComp = false;
         })
     };
 
     $scope.editCompetition = function() {
         $scope.editComp = true;
     };
+
+    $scope.addMember = function () {
+        AuthService.getCurrentUser().then(function(username) {
+                $scope.username = username;
+                console.log($scope.username);
+                if(!$scope.currentCompetition.hasOwnProperty("members")){
+                    $scope.currentCompetition.members = [];
+                }
+                $scope.currentCompetition.members.push($scope.username);
+                $scope.saveCompetition();
+            },
+            function(err) {
+                console.log("Something went wrong!");
+                console.log(err)
+            });
+    };
+
+    $scope.removeMember = function () {
+        AuthService.getCurrentUser().then(function(username) {
+                $scope.username = username;
+                console.log($scope.username);
+                $scope.currentCompetition.members.splice($scope.currentCompetition.members.indexOf($scope.username));
+                console.log($scope.currentCompetition);
+                $scope.saveCompetition();
+            },
+            function(err) {
+                console.log("Something went wrong!");
+                console.log(err)
+            });
+    };
+
+
 
     $scope.writeReport = function() {
 

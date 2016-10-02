@@ -8,7 +8,7 @@ app.factory('competitionsService',  ['$q', '$timeout', '$http',  function ($q, $
     function get(id) {
       // create a new instance of deferred
       var deferred = $q.defer();
-      var compID = id ? id : 'all'
+      var compID = id ? id : 'all';
       // send a post request to the server
       $http.post('/competition/get', {id: compID})
         // handle success

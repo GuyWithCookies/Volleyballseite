@@ -117,6 +117,21 @@
                         <p class="input-group col-sm-4">
                             <textarea ng-model="currentCompetition.description" class="form-control col-sm-3" ng-disabled="!editComp"></textarea>
                         </p>
+                        <hr class="col-sm-6 col-sm-offset-3">
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 col-sm-offset-3 row">
+                            <b>Teilnehmer</b>
+                        </div>
+                        <div class="alert-warning col-sm-3 row " ng-show="currentCompetition.members.length===0">
+                            Es hat sich noch niemand eingetragen!
+                        </div>
+                        <ul class="list-group col-sm-3 row">
+                            <li class="list-group-item" ng-repeat="member in currentCompetition.members track by $index">
+                                <a href="#/profile?user={{member}}">{{member}}</a>
+                            </li>
+                        </ul>
+                        <hr class="col-sm-6 col-sm-offset-3">
                     </div>
                     <br><br>
                     <div class="pull-right">
@@ -127,6 +142,7 @@
                         <button class="btn btn-primary" type="button" ng-show="!editComp" ng-click="editCompetition()">Bearbeiten</button>
                         <button class="btn btn-warning" type="button" ng-show="editComp" ng-click="saveCompetition()">Speichern</button>
                         <button  class="btn btn-success" type="button" ng-click="addMember()">Teilnehmen</button>
+                        <button  class="btn btn-success" type="button" ng-click="removeMember()">Nicht <Teilnehmen></Teilnehmen></button>
                     </div>
                 </div>
             </div>
