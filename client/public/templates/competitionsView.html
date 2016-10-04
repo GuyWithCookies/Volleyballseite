@@ -174,7 +174,8 @@
         <div class="form-group">
             <input ng-model="$ctrl.report.heading" class="form-control" placeholder="Überschrift">
             <textarea class="form-control" rows="8" id="comment"
-                      placeholder="Bericht - Hinweis: Datum etc. werden später eingefügt" ng-model="$ctrl.report.content"></textarea>
+                      placeholder="Bericht - Hinweis: Falls dir nichts einfällt, benutze doch einfach die Vorlage rechts oben"
+                      ng-model="$ctrl.report.content"></textarea>
         </div>
         <div flow-init="{target: '/upload'}"
              flow-file-added="$file.uniqueIdentifier = '{{$ctrl.competition.name}}'"

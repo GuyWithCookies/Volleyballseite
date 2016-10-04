@@ -1,11 +1,22 @@
 #Comps
     nach neuer Turniererstellung weiter leiten/feedback
+    mehr templates/bearbeiten der Templates
 
 #mainview
     messaging ansicht verschönern
+    BUG wenn Montag --> zeigt nächsten Montag an
 
 #user ansicht
-    Profilbilder hochladen
+    BUG Profilbilder hochladen-->Fehler wenn Bild schon da
 
 #Public view
-    Turniere generisch laden
+    navbar fixen
+    competition picture bug in delete --> user ansicht
+    picture problem
+
+#Registrierung
+    Passwort bestätigen NEED TO CHECK
+
+NEW
+    GALLERY
+    EMAIL Systemk

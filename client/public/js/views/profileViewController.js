@@ -5,22 +5,20 @@ app.controller('profileViewController', ['$scope', '$location', 'AuthService', '
   $scope.toggleEditing = function() {
     $scope.editing = !$scope.editing;
     console.log($scope.editing);
-  }
+  };
 
   $scope.save = function() {
-    console.log($scope.userdata);
     AuthService.saveUserData($scope.userdata).then(function(status) {
-        console.log(status)
         $scope.editing = false;
-        console.log($scope.editing)
+        console.log($scope.editing);
         $scope.getUserData($scope.user);
       },
       function(err) {
-        console.log("Something went wrong!")
+        console.log("Something went wrong!");
         console.log(err)
       }
     );
-  }
+  };
 
 
   $scope.getUserData = function(user) {
