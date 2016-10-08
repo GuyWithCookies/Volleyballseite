@@ -3,7 +3,7 @@ var fs = require('fs'),
     util = require('util'),
     Stream = require('stream').Stream;
 
-module.exports = flow = function(temporaryFolder) {
+module.exports = myflow = function(temporaryFolder) {
     var $ = this;
     $.temporaryFolder = temporaryFolder;
     $.maxFileSize = null;

@@ -1,9 +1,10 @@
 #Comps
-    nach neuer Turniererstellung weiter leiten/feedback
     mehr templates/bearbeiten der Templates
-
+    datepicker deutsch
+    turnier sortierung funktioniert nicht
+    bearbeiten löschen buttons
+    eigenes Turnier Tooltip+Todo list
 #mainview
-    messaging ansicht verschönern
     BUG wenn Montag --> zeigt nächsten Montag an
 
 #user ansicht
@@ -12,11 +13,16 @@
 #Public view
     navbar fixen
     competition picture bug in delete --> user ansicht
-    picture problem
-
-#Registrierung
-    Passwort bestätigen NEED TO CHECK
+    Problem wenn kein Mannschaftsbild --> bekommt man mit ng-src raus ob das Bild existiert ?
+    Ansonsten get Request + ng-show
 
 NEW
     GALLERY
-    EMAIL Systemk
+    EMAIL System
+
+navbar
+    hallo
+
+
+algemein
+    image uploadpath stimmt nicht

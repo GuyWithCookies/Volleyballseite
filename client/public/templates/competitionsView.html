@@ -11,7 +11,7 @@
                 </div>
                 <div class="panel panel-body">
                     <div class="col-sm-12 list-group">
-                        <a href="" ng-click="showCompetition(comp.id)" ng-repeat="comp in comps | orderBy : date:true"
+                        <a href="" ng-click="showCompetition(comp.id)" ng-repeat="comp in comps | orderBy : comp.date"
                            class="list-group-item list-group-item-default text-center">
                             <span class="glyphicon glyphicon-exclamation-sign" ng-show="!comp.done"></span>
                             <span class="glyphicon glyphicon-ok-sign" ng-show="comp.done"></span>
@@ -177,7 +177,7 @@
                       placeholder="Bericht - Hinweis: Falls dir nichts einfällt, benutze doch einfach die Vorlage rechts oben"
                       ng-model="$ctrl.report.content"></textarea>
         </div>
-        <div flow-init="{target: '/upload'}"
+        <div flow-init="{target: 'competition/upload'}"
              flow-file-added="$file.uniqueIdentifier = '{{$ctrl.competition.name}}'"
              flow-files-submitted="$flow.upload()"
              flow-file-success="$file.msg = $message">

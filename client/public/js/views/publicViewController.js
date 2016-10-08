@@ -1,6 +1,3 @@
-/**
- * Created by cookieguy on 02.10.16.
- */
 app.controller('publicViewController', ['$scope', '$http', function($scope, $http) {
         $scope.reports = [];
 

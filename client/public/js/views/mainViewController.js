@@ -24,7 +24,12 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         }
         var timestamp = new Date(date).getTime();
         TrainingService.get(timestamp.toString()).then(function(res) {
+            console.log(res);
             $scope.currTraining = res;
+            for(var com=0; com<$scope.currTraining.comments.length; com++){
+                $scope.currTraining.comments[com].userPic = $scope.getUserPic($scope.currTraining.comments[com].username);
+                console.log($scope.currTraining.comments);
+            }
             console.log($scope.currTraining.date);
 
         });
@@ -84,8 +89,6 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
             trainingDate: $scope.currTraining.date
         };
 
-        console.log(newCommentData);
-
         TrainingService.newComment($scope.username, newCommentData).then(function(res) {
             //refresh Training when success
             console.log(res);
@@ -112,14 +115,19 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
     };
 
     $scope.getUserPic = function (username) {
-        if($scope.userpics.hasOwnProperty(username)){
-            return $scope.userpics[username];
-        }else {
-            AuthService.getUserData(username).then(function (data) {
-                $scope.userpics[username] = data.picture;
-                return data.picture;
-            })
-        }
+        AuthService.getUserData(username).then(function (data) {
+            console.log(data);
+            if(!data.picture || data.picture === ""){
+                tmp = "defaultUser.svg";
+                console.log("Set default userpic");
+            }else {
+                tmp = data.picture;
+            }
+            $scope.userpics[username] = tmp;
+            console.log(tmp);
+            return tmp;
+        })
+
     };
 
     //fetch username

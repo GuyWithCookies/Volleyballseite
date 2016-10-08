@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
+var flow = require('../flow-node-comp.js')('../client/public/img/competitions');
 
 var Competition = require('../models/competition.js');
 
@@ -57,8 +60,6 @@ router.post('/get', function(req, res) {
 });
 
 router.get('/getReports', function(req, res) {
-    console.log("blub");
-    //date should be unix timestamp
     Competition.find({
         'done': true
     }, function(err, docs) {
@@ -88,6 +89,32 @@ router.get('/getReports', function(req, res) {
             });
         }
     })
+});
+
+
+// Handle picture uploads through Flow.js
+router.post('/upload', multipartMiddleware, function(req, res) {
+    flow.post(req, function(status, filename, original_filename, identifier) {
+
+    //when we want a specific Competitions
+        res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
+    });
+});
+
+
+// Handle status checks on chunks through Flow.js
+router.get('/upload', function(req, res) {
+    flow.get(req, function(status, filename, original_filename, identifier) {
+        console.log('GET', status);
+
+        if (status == 'found') {
+            status = 200;
+        } else {
+            status = 204;
+        }
+
+        res.status(status).send();
+    });
 });
 
 router.post('/newOrUpdate', function(req, res) {

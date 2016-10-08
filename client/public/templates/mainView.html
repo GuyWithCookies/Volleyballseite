@@ -63,9 +63,10 @@
                     <div class="row">
                         <div class="media col-sm-offset-3 col-sm-8" ng-repeat="comment in currTraining.comments">
                             <div class="media-left">
-                                <img ng-src="img/profiles/{{getUserPic(comment.username)}}" class="media-object img-circle" style="width:60px;height: 60px">
+                                <img ng-src="img/profiles/{{comment.userPic}}" class="media-object img-circle" style="width:60px;height: 60px">
                             </div>
                             <div class="media-body">
+                                {{userpics[comment.username]}}
                                 <h4 class="media-heading">{{comment.username}}</h4>
                                 <p>{{comment.message}}</p>
                             </div>
@@ -73,7 +74,7 @@
                     </div>
                     <!--Training Comments-->
                     <div class="row">
-                        <div class="col-sm-8 col-sm-offset-3">
+                        <div class="col-sm-8 col-sm-offset-3" style="margin-top:2em">
                             <textarea class="col-sm-8" ng-model="message"></textarea>
                             <button type="button" style="height:100%;" class="col-sm-1 btn btn-success btn-lg" ng-click="newComment()">
               <span class="pull-right glyphicon glyphicon-triangle-right" ng-click="getNextTraining()"><a></a>

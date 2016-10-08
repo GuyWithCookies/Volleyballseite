@@ -16,9 +16,11 @@ app.controller('competitionsViewController', ['$scope', '$filter', 'AuthService'
         $scope.getAllCompetitions = function() {
             competitionsService.get().then(function(comps) {
                     $scope.comps = comps || [];
+                    console.log($scope.comps.length);
                     if ($scope.comps.length === 0) {
                         $scope.createNewCompetition = true;
                     }else{
+                        $scope.createNewCompetition = false;
                         $scope.currentCompetition = $scope.comps[$scope.comps.length-1];
                         $scope.currentCompetition.date = new Date($scope.currentCompetition.date);
                     }
@@ -59,6 +61,7 @@ app.controller('competitionsViewController', ['$scope', '$filter', 'AuthService'
             competitionsService.createOrUpdate($scope.newCompetition).then(function() {
                 console.log("Done");
                 $scope.getAllCompetitions();
+
             })
         };
 

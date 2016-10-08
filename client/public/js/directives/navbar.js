@@ -24,11 +24,11 @@ app.directive("navbar", ["$location", "AuthService", function($location, AuthSer
             },
             {
               'link': "#/competitions",
-              'text': "Turniere",
+              'text': "Turniere"
             }];
           },
           function(err) {
-            console.log("Something went wrong!")
+            console.log("Something went wrong!");
             console.log(err)
           });
 

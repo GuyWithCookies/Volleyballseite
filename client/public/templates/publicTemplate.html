@@ -48,7 +48,7 @@
             <ul class="nav navbar-nav navbar-right">
                 <li><a ng-href="#home" class="page-scroll">Startseite</a></li>
                 <li><a ng-href="#about-section" class="page-scroll">Über uns</a></li>
-                <li><a ng-href="#tuniere-section" class="page-scroll">Tuniere</a></li>
+                <li><a ng-href="#turniere-section" class="page-scroll">Tuniere</a></li>
                 <li><a ng-href="#/login" class="page-scroll">Interner Bereich</a></li>
 
             </ul>
@@ -92,8 +92,8 @@
 </div>
 <div class="space"></div>
 
-<!-- tuniere Section -->
-<div id="tuniere-section">
+<!-- turniere Section -->
+<div id="turniere-section" ng-show="reports.length>0">
     <div class="container">
         <div class="section-title">
             <h2>Turniere</h2>
@@ -101,8 +101,6 @@
         </div>
         <div class="row">
             <div ng-repeat="comp in reports track by $index">
-
-
                 <!-- Media middle -->
                 <div class="media">
                     <div class="media-body">
@@ -110,7 +108,8 @@
                         <p>{{comp[1]}}</p>
                     </div>
                     <div class="media-left media-middle">
-                        <img ng-src="img/competitions/flow-{{comp[2].split(' ').join('')}}.1" class="media-object" width="400em" height="300em">
+                        <img ng-show="comp[2]" ng-src="img/competitions/flow-{{comp[2].split(' ').join('')}}.1"
+                              class="media-object" width="400em" height="300em">
                     </div>
                 </div>
                 <div class="space"></div>
