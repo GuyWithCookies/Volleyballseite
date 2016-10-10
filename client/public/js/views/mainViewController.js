@@ -18,7 +18,10 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
     $scope.getNextTraining = function(setDate) {
         var date = $scope.currTraining.date || Date.today().add(2).hours();
         date = Date.parse(date);
-        date = date.next().monday();
+        if(!date.is().monday()){
+            console.log("Today is not monday")
+            date = date.next().monday();
+        }
         if (setDate) {
             date = setDate;
         }
@@ -31,7 +34,6 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
                 console.log($scope.currTraining.comments);
             }
             console.log($scope.currTraining.date);
-
         });
     };
 

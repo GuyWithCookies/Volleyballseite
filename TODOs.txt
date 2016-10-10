@@ -4,8 +4,6 @@
     turnier sortierung funktioniert nicht
     bearbeiten löschen buttons
     eigenes Turnier Tooltip+Todo list
-#mainview
-    BUG wenn Montag --> zeigt nächsten Montag an
 
 #user ansicht
     BUG Profilbilder hochladen-->Fehler wenn Bild schon da
