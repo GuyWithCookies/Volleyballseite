@@ -29,6 +29,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         TrainingService.get(timestamp.toString()).then(function(res) {
             console.log(res);
             $scope.currTraining = res;
+            //initally fetch userpics
             for(var com=0; com<$scope.currTraining.comments.length; com++){
                 $scope.currTraining.comments[com].userPic = $scope.getUserPic($scope.currTraining.comments[com].username);
                 console.log($scope.currTraining.comments);
@@ -105,17 +106,6 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         })
     };
 
-    $scope.getMessageClass = function(username) {
-        if (username === $scope.username) {
-            return "right";
-        }else if ($scope.username === undefined) {
-            return "";
-        }
-        else {
-            return "left";
-        }
-    };
-
     $scope.getUserPic = function (username) {
         AuthService.getUserData(username).then(function (data) {
             console.log(data);
@@ -129,7 +119,6 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
             console.log(tmp);
             return tmp;
         })
-
     };
 
     //fetch username
