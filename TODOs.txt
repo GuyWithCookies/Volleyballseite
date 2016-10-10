@@ -18,9 +18,5 @@ NEW
     GALLERY
     EMAIL System
 
-navbar
-    hallo
-
-
 algemein
     image uploadpath stimmt nicht
