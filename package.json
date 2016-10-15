@@ -1,9 +1,13 @@
 {
   "name": "Volleyballseite",
   "scripts": {
-    "start": "node server/server.js",
-    "postinstall": "bower install && grunt"
+    "start": "node server/server.js"
   },
+  "description": "Website for Volleyballteam",
+  "repository": "https://github.com/GuyWithCookies/Volleyballseite",
+  "author": "Benjamin Schimke",
+  "main": "server/server.js",
+  "license": "MIT",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.15.0",
@@ -16,6 +20,7 @@
     "grunt-angular-templates": "^1.0.3",
     "grunt-bower": "^0.21.0",
     "grunt-bower-concat": "^1.0.0",
+    "grunt-cli": "^1.2.0",
     "grunt-contrib-concat": "^1.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "mongoose": "^4.4.5",
@@ -23,5 +28,8 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^4.0.0"
+  },
+  "engines": {
+    "node": "4.1.1"
   }
 }
