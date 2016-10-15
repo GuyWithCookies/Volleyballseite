@@ -9,6 +9,9 @@ var hash = require('bcrypt-nodejs');
 var path = require('path');
 var passport = require('passport');
 var localStrategy = require('passport-local' ).Strategy;
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
+var flow = require('./flow-node.js')('../client/public/img/uploads');
 
 // mongoose
 mongoose.connect('mongodb://localhost/volleyball');
@@ -41,6 +44,7 @@ app.use(require('express-session')({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
 // configure passport
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
@@ -56,7 +60,14 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '../client/public/', 'index.html'));
 });
 
-// error hndlers
+// Handle uploads through Flow.js
+app.post('/uploadImg', multipartMiddleware, function(req, res) {
+    flow.post(req, function(status, filename, original_filename, identifier) {
+        res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
+    });
+});
+
+// error handlers
 app.use(function(req, res, next) {
     var err = new Error('Not Found');
     console.log(req.path);

@@ -61,23 +61,28 @@
                     <hr>
                     <br>
                     <div class="row">
+                        <!--Training Comments-->
                         <div class="media col-sm-offset-3 col-sm-8" ng-repeat="comment in currTraining.comments">
                             <div class="media-left">
-                                <img ng-src="img/profiles/{{userpics[comment.username]}}" class="media-object img-circle" style="width:60px;height: 60px">
+                                <a ngHref="#/profile?user={{comment.username}}">
+                                    <img ng-src="img/uploads/{{userpics[comment.username]}}" class="media-object img-circle" style="width:60px;height: 60px">
+                                </a>
                             </div>
                             <div class="media-body">
-                                {{userpics[comment.username]}}
-                                <h4 class="media-heading">{{comment.username}}</h4>
+                                <h4 class="media-heading ">
+                                    <a ngHref="#/profile?user={{comment.username}}">
+                                       <b>{{comment.username}}</b>
+                                    </a>
+                                </h4>
                                 <p>{{comment.message}}</p>
                             </div>
                         </div>
                     </div>
-                    <!--Training Comments-->
                     <div class="row">
                         <div class="col-sm-8 col-sm-offset-3" style="margin-top:2em">
-                            <textarea class="col-sm-8" ng-model="message"></textarea>
+                            <textarea class="col-sm-8" ng-model="text.message"></textarea>
                             <button type="button" style="height:100%;" class="col-sm-1 btn btn-success btn-lg" ng-click="newComment()">
-              <span class="pull-right glyphicon glyphicon-triangle-right" ng-click="getNextTraining()"><a></a>
+              <span class="pull-right glyphicon glyphicon-triangle-right"><a></a>
               </span>
                             </button>
                         </div>

@@ -42,10 +42,10 @@ app.factory('TrainingService',  ['$q', '$timeout', '$http',  function ($q, $time
         {username: username, date:data.date, status: data.status, food:data.food, drink:data.drink})
         // handle success
         .success(function (data, status) {
-          console.log(data)
-          console.log(status)
+          console.log(data);
+          console.log(status);
           if(status === 200 && data.status === "OK"){
-            console.log("got success back")
+            console.log("got success back");
             deferred.resolve(data);
           } else {
             deferred.reject(data.message);
@@ -71,10 +71,10 @@ app.factory('TrainingService',  ['$q', '$timeout', '$http',  function ($q, $time
         {username: username, "message": data.message, trainingDate: data.trainingDate, "createDate":data.createDate})
         // handle success
         .success(function (data, status) {
-          console.log(data)
-          console.log(status)
+          console.log(data);
+          console.log(status);
           if(status === 200 && data.status === "OK"){
-            console.log("got success back")
+            console.log("got success back");
             deferred.resolve(data);
           } else {
             deferred.reject(data.message);
@@ -82,7 +82,7 @@ app.factory('TrainingService',  ['$q', '$timeout', '$http',  function ($q, $time
         })
         // handle error
         .error(function (data) {
-          console.log(data)
+          console.log(data);
           deferred.reject(data);
         });
 

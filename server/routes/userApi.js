@@ -1,9 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
-var flowUser = require('../flow-node.js')('../client/public/img/profiles');
 var fs = require("fs");
 var User = require('../models/user.js');
 
@@ -125,29 +122,6 @@ router.get("/getUserData/:name", function(req, res) {
         }
     })
 });
-
-
-router.post('/uploadImg', function (req, res) {
-    console.log(req);
-    console.log(req.res.user);
-    console.log(req.user.picture);
-
-    try{
-        fs.unlinkSync("img/profiles/"+req.user.picture);
-    }catch(e){
-        console.log(e);
-    }
-
-    req.next();
-});
-
-// Handle uploads through Flow.js
-router.post('/uploadImg', multipartMiddleware, function(req, res) {
-    flowUser.post(req, function(status, filename, original_filename, identifier) {
-        res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
-    });
-});
-
 
 // Handle status checks on chunks through Flow.js
 router.get('/uploadImg', function(req, res) {

@@ -82,7 +82,7 @@
                 </div>
             </div>
 
-            <!--competitions-->
+            <!--view single competition-->
             <div class="panel panel-primary" ng-if="!createNewCompetition && currentCompetition!=={}">
                 <div class="panel-heading clearfix">
                     <h4 class="pull-left">{{currentCompetition.name}}</h4>
@@ -157,6 +157,35 @@
                         <button  class="btn btn-success" type="button" ng-if="!alreadyIn()" ng-click="addMember()">Teilnehmen</button>
                         <button  class="btn btn-warning" type="button" ng-if="alreadyIn()" ng-click="removeMember()">Doch nicht</button>
                     </div>
+
+                    <div class="row">
+                        <!--Competition Comments-->
+                        <hr style="margin-top:4em">
+                        <div class="media col-sm-offset-3 col-sm-8" ng-repeat="comment in currentCompetition.comments">
+                            <div class="media-left">
+                                <a href="#/profile?user="+{{comment.username}}>
+                                    <img ng-src="img/uploads/{{userpics[comment.username]}}" class="media-object img-circle" style="width:60px;height: 60px">
+                                </a>
+                            </div>
+                            <div class="media-body text-left">
+                                <h4 class="media-heading">
+                                    <a href="#/profile?user="+{{comment.username}}>
+                                        <b>{{comment.username}}</b>
+                                    </a>
+                                </h4>
+                                <p>{{comment.message}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8 col-sm-offset-3" style="margin-top:2em">
+                                <textarea class="col-sm-8" ng-model="model.message"></textarea>
+                                <button type="button" style="height:100%;" class="col-sm-1 btn btn-success btn-lg" ng-click="newComment()">
+              <span class="pull-right glyphicon glyphicon-triangle-right"><a></a>
+              </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,8 +206,8 @@
                       placeholder="Bericht - Hinweis: Falls dir nichts einfällt, benutze doch einfach die Vorlage rechts oben"
                       ng-model="$ctrl.report.content"></textarea>
         </div>
-        <div flow-init="{target: 'competition/upload'}"
-             flow-file-added="$file.uniqueIdentifier = '{{$ctrl.competition.name}}'"
+        <div flow-init="{target: '/upload'}"
+             flow-file-added="$file.uniqueIdentifier = 'comp-{{$ctrl.competition.name}}'"
              flow-files-submitted="$flow.upload()"
              flow-file-success="$file.msg = $message">
 

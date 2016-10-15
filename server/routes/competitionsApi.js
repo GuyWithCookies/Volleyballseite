@@ -1,10 +1,6 @@
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
-var flow = require('../flow-node-comp.js')('../client/public/img/competitions');
-
 var Competition = require('../models/competition.js');
 
 
@@ -91,32 +87,6 @@ router.get('/getReports', function(req, res) {
     })
 });
 
-
-// Handle picture uploads through Flow.js
-router.post('/upload', multipartMiddleware, function(req, res) {
-    flow.post(req, function(status, filename, original_filename, identifier) {
-
-    //when we want a specific Competitions
-        res.status(/^(partly_done|done)$/.test(status) ? 200 : 500).send();
-    });
-});
-
-
-// Handle status checks on chunks through Flow.js
-router.get('/upload', function(req, res) {
-    flow.get(req, function(status, filename, original_filename, identifier) {
-        console.log('GET', status);
-
-        if (status == 'found') {
-            status = 200;
-        } else {
-            status = 204;
-        }
-
-        res.status(status).send();
-    });
-});
-
 router.post('/newOrUpdate', function(req, res) {
     //date should be unix timestamp
     console.log(req.body.data);
@@ -164,8 +134,56 @@ router.post('/newOrUpdate', function(req, res) {
             })
         }
     })
+});
 
+router.post('/newComment', function(req, res) {
+    //date should be unix timestamp
+    console.log(req.body);
+    var id = req.body.id;
+    var username = req.body.username;
+    var message = req.body.message;
 
+    Competition.find({
+        "id": id
+    }, function(err, doc) {
+        if (err) {
+            console.log(err);
+            res.json({
+                status: "ERROR",
+                msg: err
+            });
+        }
+
+        var error = null;
+
+        try {
+            if (doc.length > 0) {
+                console.log(doc[0]);
+                doc[0].comments.push({
+                    username: username,
+                    message: message
+                });
+                doc[0].save();
+            } else {
+                console.error("Couldnt find requested Competition");
+                error = "Couldnt find requested Competition";
+            }
+        } catch (e) {
+            error = e.message;
+            console.error(e.message);
+        } finally {
+            if (error !== null) {
+                res.json({
+                    status: 'ERROR',
+                    msg: error
+                });
+            } else {
+                res.json({
+                    status: 'OK'
+                });
+            }
+        }
+    });
 });
 
 module.exports = router;

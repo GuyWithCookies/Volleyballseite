@@ -11,6 +11,8 @@ app.controller('competitionsViewController', ['$scope', '$filter', 'AuthService'
         $scope.editComp = false;
         $scope.reportMode = false;
         $scope.dateFormat = "dd.MM.yyyy";
+        $scope.userpics = {};
+        $scope.model = {};
 
         //FUNCTIONS
         $scope.getAllCompetitions = function() {
@@ -23,6 +25,9 @@ app.controller('competitionsViewController', ['$scope', '$filter', 'AuthService'
                         $scope.createNewCompetition = false;
                         $scope.currentCompetition = $scope.comps[$scope.comps.length-1];
                         $scope.currentCompetition.date = new Date($scope.currentCompetition.date);
+                        for(var com=0; com<$scope.currentCompetition.comments.length; com++){
+                            $scope.currentCompetition.comments[com].userPic = $scope.getUserPic($scope.currentCompetition.comments[com].username);
+                        }
                     }
                     console.log($scope.comps);
                     console.log($scope.createNewCompetition);
@@ -140,6 +145,57 @@ app.controller('competitionsViewController', ['$scope', '$filter', 'AuthService'
             });
         };
 
+        $scope.getUserPic = function (username) {
+            AuthService.getUserData(username).then(function (data) {
+                console.log(data);
+                if(!data.picture || data.picture === ""){
+                    tmp = "defaultUser.svg";
+                    console.log("Set default userpic");
+                }else {
+                    tmp = data.picture;
+                }
+                $scope.userpics[username] = tmp;
+                console.log(tmp);
+                return tmp;
+            })
+        };
+
+        $scope.newComment = function() {
+            console.log($scope.model.message);
+            if ($scope.model.message === undefined || $scope.model.message === "") {
+                return;
+            }
+            console.log("bla");
+            if ($scope.username === undefined) {
+                AuthService.getCurrentUser().then(function(username) {
+                    $scope.username = username;
+                }, function(err) {
+                    console.log("Something went wrong!");
+                    console.log(err)
+                });
+            }
+            console.log("basd");
+            var newCommentData = {
+                message: $scope.model.message,
+                createDate: Date.now(),
+                competitionID: $scope.currentCompetition.id
+            };
+            console.log(newCommentData);
+
+            competitionsService.newComment($scope.username, newCommentData).then(function(res) {
+                //refresh Competition when success
+                console.log(res);
+                if (res.status === "OK") {
+                    console.log("OK");
+                    $scope.model.message = "";
+                    $scope.getAllCompetitions();
+                    $scope.showCompetition($scope.currentCompetition.id);
+                }
+            }, function(err) {
+                console.log("Something went wrong!");
+                console.log(err)
+            })
+        };
 
 
 

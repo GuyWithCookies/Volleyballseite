@@ -143,13 +143,13 @@ app.factory('AuthService', ['$q', '$timeout', '$http', function($q, $timeout, $h
 
     // create a new instance of deferred
     var deferred = $q.defer();
-    console.log(user)
+    console.log(user);
       // send a post request to the server
     $http.post('/user/register', {
         username: user.username || "",
         password: user.password,
         forename: user.forename || "",
-        surname: user.surname || "",
+        surname: user.surname || ""
       })
       // handle success
       .success(function(data, status) {
@@ -172,7 +172,7 @@ app.factory('AuthService', ['$q', '$timeout', '$http', function($q, $timeout, $h
 
     // create a new instance of deferred
     var deferred = $q.defer();
-    console.log(data)
+    console.log(data);
       // send a post request to the server
     $http.post('/user/saveUserData', {
         userdata: data
@@ -193,5 +193,4 @@ app.factory('AuthService', ['$q', '$timeout', '$http', function($q, $timeout, $h
     // return promise object
     return deferred.promise;
   }
-
 }]);

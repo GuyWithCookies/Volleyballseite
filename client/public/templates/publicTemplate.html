@@ -108,8 +108,8 @@
                         <p>{{comp[1]}}</p>
                     </div>
                     <div class="media-left media-middle">
-                        <img ng-show="comp[2]" ng-src="img/competitions/flow-{{comp[2].split(' ').join('')}}.1"
-                              class="media-object" width="400em" height="300em">
+                        <img ng-hide="hideComp[comp[1]]" ng-src="img/uploads/flow-comp-{{comp[2].split(' ').join('')}}.1"
+                              onerror="hideComp[comp[1]]=true" class="media-object" width="400em" height="300em">
                     </div>
                 </div>
                 <div class="space"></div>

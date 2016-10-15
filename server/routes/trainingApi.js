@@ -18,12 +18,12 @@ router.post('/register', function(req, res) {
     "date": date
   }, function(err, doc) {
     if (err) {
-      console.log(err)
+      console.log(err);
       res.json({
         status: "ERROR",
         msg: err
       });
-    };
+    }
 
     var error = null;
 
@@ -31,7 +31,7 @@ router.post('/register', function(req, res) {
       if (doc.length > 0) {
         if (doc[0]["appear"].indexOf(username) > -1) {
           doc[0]["appear"].splice(doc[0]["appear"].indexOf(username), 1);
-        };
+        }
         if (doc[0]["maybe"].indexOf(username) > -1) {
           doc[0]["maybe"].splice(doc[0]["maybe"].indexOf(username), 1);
         }

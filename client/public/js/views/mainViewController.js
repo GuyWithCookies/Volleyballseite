@@ -19,7 +19,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         var date = $scope.currTraining.date || Date.today().add(2).hours();
         date = Date.parse(date);
         if(!date.is().monday()){
-            console.log("Today is not monday")
+            console.log("Today is not monday");
             date = date.next().monday();
         }
         if (setDate) {
@@ -110,7 +110,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         AuthService.getUserData(username).then(function (data) {
             console.log(data);
             if(!data.picture || data.picture === ""){
-                tmp = "defaultUser.svg";
+                tmp = "defaultUser.svg";currTraining
                 console.log("Set default userpic");
             }else {
                 tmp = data.picture;
