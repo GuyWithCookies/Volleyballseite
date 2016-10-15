@@ -14,7 +14,7 @@ var multipartMiddleware = multipart();
 var flow = require('./flow-node.js')('../client/public/img/uploads');
 
 // mongoose
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/volleyball');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/volleyball');
 
 // schema/models
 var User = require('./models/user.js');
