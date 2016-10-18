@@ -1,9 +1,9 @@
 #Comps
     mehr templates/bearbeiten der Templates
-    datepicker deutsch
     turnier sortierung funktioniert nicht
     bearbeiten löschen buttons
-    eigenes Turnier Tooltip+Todo list
+    eigenes Turnier Todo list
+    längere nachrichten scrollen
 
 #Public view
     navbar fixen
@@ -14,11 +14,13 @@
 NEW
     (GALLERY)
     EMAIL System implementieren
-    +Rundmail
+    +Runid="navbar"dmail
 
 
 algemein
     bei registrierung nach abschicken password feld rot
 
-    continue on comments in comps
-    --> need client service requestf
+small Screen
+    small navbar for public view
+
+

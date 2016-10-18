@@ -73,6 +73,9 @@
                         <br><br>
                         <div class="pull-right">
                             <label>
+                                <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
+                                      title="Ein eigenes Turnier hat zusätzliche Features aktiviert (z.B.ToDo-Liste)">
+                                </span>
                                 Eigenes Turnier:
                                 <input type="checkbox" name="own" ng-model="newCompetition.own">
                             </label>
@@ -103,7 +106,9 @@
                             <b>Datum</b>
                         </div>
                         <p class="input-group col-sm-4">
-                            <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="{{dateFormat}}" ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true" close-text="Abbrechen" />
+                            <input type="text" class="form-control" ng-disabled="!editComp" uib-datepicker-popup="{{dateFormat}}"
+                                   ng-model="currentCompetition.date" is-open="datepicker.opened" ng-required="true"
+                                   close-text="Abbrechen" current-text="Heute" clear-text="Reset" />
                             <span class="input-group-btn" ng-show="editComp">
 								<button type="button" ng-show="editComp" class="btn btn-primary" ng-click="openDatePicker()"><i class="glyphicon glyphicon-calendar"></i></button>
 							</span>
@@ -149,6 +154,9 @@
                     <br><br>
                     <div class="pull-right">
                         <label>
+                            <span class="glyphicon glyphicon-question-sign" data-toggle="too                                   ltip"
+                               title="Ein eigenes Turnier hat zusätzliche Features aktiviert (z.B.ToDo-Liste)">
+                            </span>
                             Eigenes Turnier:
                             <input type="checkbox" name="own" ng-model="currentCompetition.own" ng-disabled="!editComp">
                         </label>

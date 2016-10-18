@@ -8,8 +8,8 @@ module.exports = function(grunt) {
 					'css' : 'client/public/css/bower.css'
 				},
 				mainFiles : {
-					bootstrap : 'dist/css/bootstrap.css'
-				},
+					bootstrap : ['dist/css/bootstrap.css', 'dist/js/bootstrap.min.js']
+				}
 			}
 		},
 		copy : {

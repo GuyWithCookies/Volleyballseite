@@ -1,5 +1,6 @@
 app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService', function($scope, AuthService, TrainingService) {
     $scope.userpics = {};
+    $scope.model = {};
 
     $scope.currTraining = {
         food: {
@@ -74,7 +75,8 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
     };
 
     $scope.newComment = function() {
-        if ($scope.message === undefined || $scope.message === "") {
+        console.log($scope.model.message);
+        if ($scope.model.message === undefined || $scope.model.message === "") {
             return;
         }
         if ($scope.username === undefined) {
@@ -87,7 +89,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
         }
 
         var newCommentData = {
-            message: $scope.message,
+            message: $scope.model.message,
             createDate: Date.now(),
             trainingDate: $scope.currTraining.date
         };
@@ -97,7 +99,7 @@ app.controller('mainViewController', ['$scope', 'AuthService', 'TrainingService'
             console.log(res);
             if (res.status === "OK") {
                 console.log("OK");
-                $scope.message = "";
+                $scope.model.message = "";
                 $scope.getNextTraining($scope.currTraining.date);
             }
         }, function(err) {
