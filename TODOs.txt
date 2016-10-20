@@ -1,3 +1,8 @@
+#important for 1.0.0
+    small navbar public view
+    image problem(upload and overwrite)
+
+
 #Comps
     mehr templates/bearbeiten der Templates
     turnier sortierung funktioniert nicht
@@ -14,7 +19,7 @@
 NEW
     (GALLERY)
     EMAIL System implementieren
-    +Runid="navbar"dmail
+    +Rundmail
 
 
 algemein
@@ -23,4 +28,10 @@ algemein
 small Screen
     small navbar for public view
 
+
+#creds
+
+admin
+W_EA8YJAnXfa
+db: teamvolleyball
 

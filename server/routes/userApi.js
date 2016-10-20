@@ -123,21 +123,6 @@ router.get("/getUserData/:name", function(req, res) {
     })
 });
 
-// Handle status checks on chunks through Flow.js
-router.get('/uploadImg', function(req, res) {
-    flowUser.get(req, function(status, filename, original_filename, identifier) {
-        console.log('GET', status);
-
-        if (status == 'found') {
-            status = 200;
-        } else {
-            status = 204;
-        }
-
-        res.status(status).send();
-    });
-});
-
 
 
 module.exports = router;

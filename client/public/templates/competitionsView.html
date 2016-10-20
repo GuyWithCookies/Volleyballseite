@@ -214,7 +214,7 @@
                       placeholder="Bericht - Hinweis: Falls dir nichts einfällt, benutze doch einfach die Vorlage rechts oben"
                       ng-model="$ctrl.report.content"></textarea>
         </div>
-        <div flow-init="{target: '/upload'}"
+        <div flow-init="{target: '/uploadImg'}"
              flow-file-added="$file.uniqueIdentifier = 'comp-{{$ctrl.competition.name}}'"
              flow-files-submitted="$flow.upload()"
              flow-file-success="$file.msg = $message">
