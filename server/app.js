@@ -13,8 +13,15 @@ var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 var flow = require('./flow-node.js')('../client/public/img/uploads');
 
-// mongoose
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/volleyball');
+
+
+var connection_string = 'mongodb://localhost/volleyball';
+// if OPENSHIFT env variables are present, use the available connection info:
+if(process.env.OPENSHIFT_MONGODB_DB_URL){
+    connection_string = process.env.OPENSHIFT_MONGODB_DB_URL+process.env.OPENSHIFT_APP_NAME;
+}
+
+mongoose.connect(connection_string);
 
 // schema/models
 var User = require('./models/user.js');
@@ -33,6 +40,8 @@ var competitionRoutes = require('./routes/competitionsApi.js');
 app.use(express.static(path.join(__dirname, '../client/public')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
+//SEO Optimation
+app.use(require('prerender-node').set('prerenderToken', 'VR1ZTJCYUfwQfCq27BRn'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(require('express-session')({

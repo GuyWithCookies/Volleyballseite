@@ -12,11 +12,10 @@ app.directive("navbar", ["$location", "AuthService", function($location, AuthSer
       if ($scope.log === "true") {
         AuthService.getCurrentUser().then(function(username) {
             $scope.username = username;
-            console.log($scope.username)
             $scope.homeLink = "#/main";
             $scope.views = [{
               'link': "#/main",
-              'text': "Hauptseite",
+              'text': "Hauptseite"
             }, {
               'link': "#/profile?user=" + $scope.username,
               'text': "Mein Profil",

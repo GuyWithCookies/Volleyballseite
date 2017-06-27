@@ -4,7 +4,7 @@
 
         <div class='col-sm-8 col-sm-offset-2'>
             <div class="col-sm-3 col-sm-offset-5 row extra-bottom-padding">
-                <div flow-init="{target: '/uploadImg'}"
+                <!--<div flow-init="{target: '/uploadImg'}"
                      flow-file-added="$file.uniqueIdentifier = 'picture-{{userdata.username}}'
                      ; userdata.picture='flow-picture-{{userdata.username}}.1';save()"
                      flow-files-submitted="$flow.upload()"
@@ -12,7 +12,7 @@
 
                     <img flow-btn class="img-responsive img-rounded"
                          ng-src="/img/uploads/{{userdata.picture}}" width="100px" height="100px">
-                </div>
+                </div>-->
                 <h3>{{userdata.username}}</h3>
             </div>
             <br>
@@ -48,7 +48,8 @@
             <div class="col-sm-6 col-sm-offset-3" style="min-height: 200px">
                 <button class="btn btn-success pull-right " ng-click="save()" ng-show="user===currentUser && editing">Speichern</button>
                 <button class="btn btn-primary pull-right " ng-click="toggleEditing()" ng-show="user===currentUser && !editing">Bearbeiten</button>
-                <button class="btn btn-warning pull-right" ng-click="sendMail()" ng-show="userdata.email && user!==currentUser">Email schreiben</button>
+                <!--<button class="btn btn-warning pull-right" ng-click="sendMail()" ng-show="userdata.email && user!==currentUser">Email schreiben</button>-->
             </div>
         </div>
     </div>
+</div>

@@ -74,6 +74,32 @@ router.get("/getCurrentUser", function(req, res) {
     }
 });
 
+router.get("/getAllUsers", function(req, res) {
+    console.log("In getAllUsers");
+    User.find({}, function(err, docs) {
+        if (err) {
+            res.json({
+                status: "ERROR",
+                msg: errs
+            });
+        }
+        if (docs.length > 0) {
+            var userList = [];
+            for(var doc in docs){
+                if(docs.hasOwnProperty(doc)) {
+                    userList.push(docs[doc].username);
+                }
+            }
+            res.json({
+                status:"OK",
+                userList: userList
+            });
+        } else {
+            console.log("Cant find any users");
+        }
+    })
+});
+
 router.post("/saveUserData", function(req, res) {
     var data = req.body.userdata;
     User.find({
@@ -92,7 +118,7 @@ router.post("/saveUserData", function(req, res) {
                 }
             }
             docs[0].save();
-            res.json({status:"ok"});
+            res.json({status:"OK"});
         } else {
             console.log("Cant find user "+name);
         }
@@ -123,6 +149,9 @@ router.get("/getUserData/:name", function(req, res) {
     })
 });
 
+router.post("/sendEmail", function (req, res) {
+
+});
 
 
 module.exports = router;

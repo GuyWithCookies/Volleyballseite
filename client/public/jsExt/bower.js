@@ -123,7 +123,7 @@ q=l>p?1:-1;this.dates={start:arguments[0].clone(),end:arguments[1].clone()};d(q,
 m]=f(d)}})(c,"years months days hours minutes seconds milliseconds".split(" "));c.prototype.set=function(a,b,c,d,f,h,n){this.setYears(a||this.getYears());this.setMonths(b||this.getMonths());this.setDays(c||this.getDays());this.setHours(d||this.getHours());this.setMinutes(f||this.getMinutes());this.setSeconds(h||this.getSeconds());this.setMilliseconds(n||this.getMilliseconds())};Date.TimePeriod=c;"undefined"!==typeof window&&(window.TimePeriod=c)})();
 
 /**
- * @license AngularJS v1.4.9
+ * @license AngularJS v1.4.14
  * (c) 2010-2015 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -181,7 +181,7 @@ function minErr(module, ErrorConstructor) {
       return match;
     });
 
-    message += '\nhttp://errors.angularjs.org/1.4.9/' +
+    message += '\nhttp://errors.angularjs.org/1.4.14/' +
       (module ? module + '/' : '') + code;
 
     for (i = SKIP_INDEXES, paramPrefix = '?'; i < templateArgs.length; i++, paramPrefix = '&') {
@@ -429,7 +429,7 @@ function isArrayLike(obj) {
  *
  * Unlike ES262's
  * [Array.prototype.forEach](http://www.ecma-international.org/ecma-262/5.1/#sec-15.4.4.18),
- * Providing 'undefined' or 'null' values for `obj` will not throw a TypeError, but rather just
+ * providing 'undefined' or 'null' values for `obj` will not throw a TypeError, but rather just
  * return the value provided.
  *
    ```js
@@ -506,7 +506,7 @@ function forEachSorted(obj, iterator, context) {
  * @returns {function(*, string)}
  */
 function reverseParams(iteratorFn) {
-  return function(value, key) { iteratorFn(key, value); };
+  return function(value, key) {iteratorFn(key, value);};
 }
 
 /**
@@ -659,12 +659,22 @@ noop.$inject = [];
  * functional style.
  *
    ```js
-     function transformer(transformationFn, value) {
-       return (transformationFn || angular.identity)(value);
-     };
+   function transformer(transformationFn, value) {
+     return (transformationFn || angular.identity)(value);
+   };
+
+   // E.g.
+   function getResult(fn, input) {
+     return (fn || angular.identity)(input);
+   };
+
+   getResult(function(n) { return n * 2; }, 21);   // returns 42
+   getResult(null, 21);                            // returns 21
+   getResult(undefined, 21);                       // returns 21
    ```
-  * @param {*} value to be returned.
-  * @returns {*} the value passed in.
+ *
+ * @param {*} value to be returned.
+ * @returns {*} the value passed in.
  */
 function identity($) {return $;}
 identity.$inject = [];
@@ -914,7 +924,7 @@ function isElement(node) {
  * @returns {object} in the form of {key1:true, key2:true, ...}
  */
 function makeMap(str) {
-  var obj = {}, items = str.split(","), i;
+  var obj = {}, items = str.split(','), i;
   for (i = 0; i < items.length; i++) {
     obj[items[i]] = true;
   }
@@ -1087,6 +1097,8 @@ function copy(source, destination) {
     } else if (isRegExp(source)) {
       destination = new RegExp(source.source, source.toString().match(/[^\/]*$/)[0]);
       destination.lastIndex = source.lastIndex;
+    } else if (isBlob(source)) {
+      destination = new source.constructor([source], {type: source.type});
     } else if (isFunction(source.cloneNode)) {
         destination = source.cloneNode(true);
     } else {
@@ -1371,7 +1383,7 @@ function toJsonReplacer(key, value) {
  * @returns {string|undefined} JSON-ified string representing `obj`.
  */
 function toJson(obj, pretty) {
-  if (typeof obj === 'undefined') return undefined;
+  if (isUndefined(obj)) return undefined;
   if (!isNumber(pretty)) {
     pretty = pretty ? 2 : null;
   }
@@ -1398,7 +1410,10 @@ function fromJson(json) {
 }
 
 
+var ALL_COLONS = /:/g;
 function timezoneToOffset(timezone, fallback) {
+  // IE/Edge do not "understand" colon (`:`) in timezone
+  timezone = timezone.replace(ALL_COLONS, '');
   var requestedTimezoneOffset = Date.parse('Jan 01, 1970 00:00:00 ' + timezone) / 60000;
   return isNaN(requestedTimezoneOffset) ? fallback : requestedTimezoneOffset;
 }
@@ -1413,8 +1428,9 @@ function addDateMinutes(date, minutes) {
 
 function convertTimezoneToLocal(date, timezone, reverse) {
   reverse = reverse ? -1 : 1;
-  var timezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
-  return addDateMinutes(date, reverse * (timezoneOffset - date.getTimezoneOffset()));
+  var dateTimezoneOffset = date.getTimezoneOffset();
+  var timezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
+  return addDateMinutes(date, reverse * (timezoneOffset - dateTimezoneOffset));
 }
 
 
@@ -1433,7 +1449,7 @@ function startingTag(element) {
     return element[0].nodeType === NODE_TYPE_TEXT ? lowercase(elemHtml) :
         elemHtml.
           match(/^(<[^>]+>)/)[1].
-          replace(/^<([\w\-]+)/, function(match, nodeName) { return '<' + lowercase(nodeName); });
+          replace(/^<([\w\-]+)/, function(match, nodeName) {return '<' + lowercase(nodeName);});
   } catch (e) {
     return lowercase(elemHtml);
   }
@@ -1781,7 +1797,7 @@ function bootstrap(element, modules, config) {
       //Encode angle brackets to prevent input from being sanitized to empty string #8683
       throw ngMinErr(
           'btstrpd',
-          "App Already Bootstrapped with this Element '{0}'",
+          "App already bootstrapped with this element '{0}'",
           tag.replace(/</,'&lt;').replace(/>/,'&gt;'));
     }
 
@@ -2233,9 +2249,9 @@ function setupModuleLoader(window) {
            * @ngdoc method
            * @name angular.Module#decorator
            * @module ng
-           * @param {string} The name of the service to decorate.
-           * @param {Function} This function will be invoked when the service needs to be
-           *                                    instantiated and should return the decorated service instance.
+           * @param {string} name The name of the service to decorate.
+           * @param {Function} decorFn This function will be invoked when the service needs to be
+           *                           instantiated and should return the decorated service instance.
            * @description
            * See {@link auto.$provide#decorator $provide.decorator()}.
            */
@@ -2525,11 +2541,11 @@ function toDebugString(obj) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.4.9',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.4.14',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 4,
-  dot: 9,
-  codeName: 'implicit-superannuation'
+  dot: 14,
+  codeName: 'material-distinction'
 };
 
 
@@ -2918,6 +2934,16 @@ function jqLiteParseHTML(html, context) {
   }
 
   return [];
+}
+
+function jqLiteWrapNode(node, wrapper) {
+  var parent = node.parentNode;
+
+  if (parent) {
+    parent.replaceChild(wrapper, node);
+  }
+
+  wrapper.appendChild(node);
 }
 
 
@@ -3611,12 +3637,7 @@ forEach({
   },
 
   wrap: function(element, wrapNode) {
-    wrapNode = jqLite(wrapNode).eq(0).clone()[0];
-    var parent = element.parentNode;
-    if (parent) {
-      parent.replaceChild(wrapNode, element);
-    }
-    wrapNode.appendChild(element);
+    jqLiteWrapNode(element, jqLite(wrapNode).eq(0).clone()[0]);
   },
 
   remove: jqLiteRemove,
@@ -4319,8 +4340,20 @@ function annotate(fn, strictDi, name) {
  *
  * Register a **service constructor**, which will be invoked with `new` to create the service
  * instance.
- * This is short for registering a service where its provider's `$get` property is the service
- * constructor function that will be used to instantiate the service instance.
+ * This is short for registering a service where its provider's `$get` property is a factory
+ * function that returns an instance instantiated by the injector from the service constructor
+ * function.
+ *
+ * Internally it looks a bit like this:
+ *
+ * ```
+ * {
+ *   $get: function() {
+ *     return $injector.instantiate(constructor);
+ *   }
+ * }
+ * ```
+ *
  *
  * You should use {@link auto.$provide#service $provide.service(class)} if you define your service
  * as a type/class.
@@ -4360,14 +4393,13 @@ function annotate(fn, strictDi, name) {
  * @description
  *
  * Register a **value service** with the {@link auto.$injector $injector}, such as a string, a
- * number, an array, an object or a function.  This is short for registering a service where its
+ * number, an array, an object or a function. This is short for registering a service where its
  * provider's `$get` property is a factory function that takes no arguments and returns the **value
- * service**.
+ * service**. That also means it is not possible to inject other services into a value service.
  *
  * Value services are similar to constant services, except that they cannot be injected into a
  * module configuration function (see {@link angular.Module#config}) but they can be overridden by
- * an Angular
- * {@link auto.$provide#decorator decorator}.
+ * an Angular {@link auto.$provide#decorator decorator}.
  *
  * @param {string} name The name of the instance.
  * @param {*} value The value.
@@ -4392,8 +4424,11 @@ function annotate(fn, strictDi, name) {
  * @name $provide#constant
  * @description
  *
- * Register a **constant service**, such as a string, a number, an array, an object or a function,
- * with the {@link auto.$injector $injector}. Unlike {@link auto.$provide#value value} it can be
+ * Register a **constant service** with the {@link auto.$injector $injector}, such as a string,
+ * a number, an array, an object or a function. Like the {@link auto.$provide#value value}, it is not
+ * possible to inject other services into a constant.
+ *
+ * But unlike {@link auto.$provide#value value}, a constant can be
  * injected into a module configuration function (see {@link angular.Module#config}) and it cannot
  * be overridden by an Angular {@link auto.$provide#decorator decorator}.
  *
@@ -4724,7 +4759,7 @@ function $AnchorScrollProvider() {
    * When called, it scrolls to the element related to the specified `hash` or (if omitted) to the
    * current value of {@link ng.$location#hash $location.hash()}, according to the rules specified
    * in the
-   * [HTML5 spec](http://www.w3.org/html/wg/drafts/html/master/browsers.html#the-indicated-part-of-the-document).
+   * [HTML5 spec](http://www.w3.org/html/wg/drafts/html/master/browsers.html#an-indicated-part-of-the-document).
    *
    * It also watches the {@link ng.$location#hash $location.hash()} and automatically scrolls to
    * match any anchor whenever it changes. This can be disabled by calling
@@ -6731,35 +6766,38 @@ function $TemplateCacheProvider() {
  * is bound to the parent scope, via matching attributes on the directive's element:
  *
  * * `@` or `@attr` - bind a local scope property to the value of DOM attribute. The result is
- *   always a string since DOM attributes are strings. If no `attr` name is specified  then the
- *   attribute name is assumed to be the same as the local name.
- *   Given `<widget my-attr="hello {{name}}">` and widget definition
- *   of `scope: { localName:'@myAttr' }`, then widget scope property `localName` will reflect
- *   the interpolated value of `hello {{name}}`. As the `name` attribute changes so will the
- *   `localName` property on the widget scope. The `name` is read from the parent scope (not
- *   component scope).
+ *   always a string since DOM attributes are strings. If no `attr` name is specified then the
+ *   attribute name is assumed to be the same as the local name. Given `<my-component
+ *   my-attr="hello {{name}}">` and the isolate scope definition `scope: { localName:'@myAttr' }`,
+ *   the directive's scope property `localName` will reflect the interpolated value of `hello
+ *   {{name}}`. As the `name` attribute changes so will the `localName` property on the directive's
+ *   scope. The `name` is read from the parent scope (not the directive's scope).
  *
- * * `=` or `=attr` - set up bi-directional binding between a local scope property and the
- *   parent scope property of name defined via the value of the `attr` attribute. If no `attr`
- *   name is specified then the attribute name is assumed to be the same as the local name.
- *   Given `<widget my-attr="parentModel">` and widget definition of
- *   `scope: { localModel:'=myAttr' }`, then widget scope property `localModel` will reflect the
- *   value of `parentModel` on the parent scope. Any changes to `parentModel` will be reflected
- *   in `localModel` and any changes in `localModel` will reflect in `parentModel`. If the parent
- *   scope property doesn't exist, it will throw a NON_ASSIGNABLE_MODEL_EXPRESSION exception. You
- *   can avoid this behavior using `=?` or `=?attr` in order to flag the property as optional. If
- *   you want to shallow watch for changes (i.e. $watchCollection instead of $watch) you can use
- *   `=*` or `=*attr` (`=*?` or `=*?attr` if the property is optional).
+ * * `=` or `=attr` - set up a bidirectional binding between a local scope property and an expression
+ *   passed via the attribute `attr`. The expression is evaluated in the context of the parent scope.
+ *   If no `attr` name is specified then the attribute name is assumed to be the same as the local
+ *   name. Given `<my-component my-attr="parentModel">` and the isolate scope definition `scope: {
+ *   localModel: '=myAttr' }`, the property `localModel` on the directive's scope will reflect the
+ *   value of `parentModel` on the parent scope. Changes to `parentModel` will be reflected in
+ *   `localModel` and vice versa. Optional attributes should be marked as such with a question mark:
+ *   `=?` or `=?attr`. If the binding expression is non-assignable, or if the attribute isn't
+ *   optional and doesn't exist, an exception ({@link error/$compile/nonassign `$compile:nonassign`})
+ *   will be thrown upon discovering changes to the local value, since it will be impossible to sync
+ *   them back to the parent scope. By default, the {@link ng.$rootScope.Scope#$watch `$watch`}
+ *   method is used for tracking changes, and the equality check is based on object identity.
+ *   However, if an object literal or an array literal is passed as the binding expression, the
+ *   equality check is done by value (using the {@link angular.equals} function). It's also possible
+ *   to watch the evaluated value shallowly with {@link ng.$rootScope.Scope#$watchCollection
+ *   `$watchCollection`}: use `=*` or `=*attr` (`=*?` or `=*?attr` if the attribute is optional).
  *
- * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope.
- *   If no `attr` name is specified then the attribute name is assumed to be the same as the
- *   local name. Given `<widget my-attr="count = count + value">` and widget definition of
- *   `scope: { localFn:'&myAttr' }`, then isolate scope property `localFn` will point to
- *   a function wrapper for the `count = count + value` expression. Often it's desirable to
- *   pass data from the isolated scope via an expression to the parent scope, this can be
- *   done by passing a map of local variable names and values into the expression wrapper fn.
- *   For example, if the expression is `increment(amount)` then we can specify the amount value
- *   by calling the `localFn` as `localFn({amount: 22})`.
+ * * `&` or `&attr` - provides a way to execute an expression in the context of the parent scope. If
+ *   no `attr` name is specified then the attribute name is assumed to be the same as the local name.
+ *   Given `<my-component my-attr="count = count + value">` and the isolate scope definition `scope: {
+ *   localFn:'&myAttr' }`, the isolate scope property `localFn` will point to a function wrapper for
+ *   the `count = count + value` expression. Often it's desirable to pass data from the isolated scope
+ *   via an expression to the parent scope. This can be done by passing a map of local variable names
+ *   and values into the expression wrapper fn. For example, if the expression is `increment(amount)`
+ *   then we can specify the amount value by calling the `localFn` as `localFn({amount: 22})`.
  *
  * In general it's possible to apply more than one directive to one element, but there might be limitations
  * depending on the type of scope required by the directives. The following points will help explain these limitations.
@@ -6950,7 +6988,7 @@ function $TemplateCacheProvider() {
 
  * <div class="alert alert-warning">
  * **Note:** The compile function cannot handle directives that recursively use themselves in their
- * own templates or compile functions. Compiling these directives results in an infinite loop and a
+ * own templates or compile functions. Compiling these directives results in an infinite loop and
  * stack overflow errors.
  *
  * This can be avoided by manually using $compile in the postLink function to imperatively compile
@@ -7149,10 +7187,9 @@ function $TemplateCacheProvider() {
  * The {@link ng.$compile.directive.Attributes Attributes} object - passed as a parameter in the
  * `link()` or `compile()` functions. It has a variety of uses.
  *
- * accessing *Normalized attribute names:*
- * Directives like 'ngBind' can be expressed in many ways: 'ng:bind', `data-ng-bind`, or 'x-ng-bind'.
- * the attributes object allows for normalized access to
- *   the attributes.
+ * * *Accessing normalized attribute names:* Directives like 'ngBind' can be expressed in many ways:
+ *   'ng:bind', `data-ng-bind`, or 'x-ng-bind'. The attributes object allows for normalized access
+ *   to the attributes.
  *
  * * *Directive inter-communication:* All directives share the same instance of the attributes
  *   object which allows the directives to use the attributes object as inter directive
@@ -7340,13 +7377,18 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
   // The assumption is that future DOM event attribute names will begin with
   // 'on' and be composed of only English letters.
   var EVENT_HANDLER_ATTR_REGEXP = /^(on[a-z]+|formaction)$/;
+  var bindingCache = createMap();
 
   function parseIsolateBindings(scope, directiveName, isController) {
     var LOCAL_REGEXP = /^\s*([@&]|=(\*?))(\??)\s*(\w*)\s*$/;
 
-    var bindings = {};
+    var bindings = createMap();
 
     forEach(scope, function(definition, scopeName) {
+      if (definition in bindingCache) {
+        bindings[scopeName] = bindingCache[definition];
+        return;
+      }
       var match = definition.match(LOCAL_REGEXP);
 
       if (!match) {
@@ -7364,6 +7406,9 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         optional: match[3] === '?',
         attrName: match[4] || scopeName
       };
+      if (match[4]) {
+        bindingCache[definition] = bindings[scopeName];
+      }
     });
 
     return bindings;
@@ -7456,11 +7501,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                 directive.name = directive.name || name;
                 directive.require = directive.require || (directive.controller && directive.name);
                 directive.restrict = directive.restrict || 'EA';
-                var bindings = directive.$$bindings =
-                    parseDirectiveBindings(directive, directive.name);
-                if (isObject(bindings.isolateScope)) {
-                  directive.$$isolateBindings = bindings.isolateScope;
-                }
                 directive.$$moduleName = directiveFactory.$$moduleName;
                 directives.push(directive);
               } catch (e) {
@@ -7713,7 +7753,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             (nodeName === 'img' && key === 'src')) {
           // sanitize a[href] and img[src] values
           this[key] = value = $$sanitizeUri(value, key === 'src');
-        } else if (nodeName === 'img' && key === 'srcset') {
+        } else if (nodeName === 'img' && key === 'srcset' && isDefined(value)) {
           // sanitize img[srcset] values
           var result = "";
 
@@ -7820,7 +7860,7 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
     var startSymbol = $interpolate.startSymbol(),
         endSymbol = $interpolate.endSymbol(),
-        denormalizeTemplate = (startSymbol == '{{' || endSymbol  == '}}')
+        denormalizeTemplate = (startSymbol == '{{' && endSymbol  == '}}')
             ? identity
             : function denormalizeTemplate(template) {
               return template.replace(/\{\{/g, startSymbol).replace(/}}/g, endSymbol);
@@ -7864,13 +7904,19 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
         // modify it.
         $compileNodes = jqLite($compileNodes);
       }
+
+      var NOT_EMPTY = /\S+/;
+
       // We can not compile top level text elements since text nodes can be merged and we will
       // not be able to attach scope data to them, so we will wrap them in <span>
-      forEach($compileNodes, function(node, index) {
-        if (node.nodeType == NODE_TYPE_TEXT && node.nodeValue.match(/\S+/) /* non-empty */ ) {
-          $compileNodes[index] = jqLite(node).wrap('<span></span>').parent()[0];
+      for (var i = 0, len = $compileNodes.length; i < len; i++) {
+        var domNode = $compileNodes[i];
+
+        if (domNode.nodeType === NODE_TYPE_TEXT && domNode.nodeValue.match(NOT_EMPTY) /* non-empty */) {
+          jqLiteWrapNode(domNode, $compileNodes[i] = document.createElement('span'));
         }
-      });
+      }
+
       var compositeLinkFn =
               compileNodes($compileNodes, transcludeFn, $compileNodes,
                            maxPriority, ignoreDirective, previousCompileContext);
@@ -8092,13 +8138,17 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
       var nodeType = node.nodeType,
           attrsMap = attrs.$attr,
           match,
+          nodeName,
           className;
 
       switch (nodeType) {
         case NODE_TYPE_ELEMENT: /* Element */
+
+          nodeName = nodeName_(node);
+
           // use the node name: <directive>
           addDirective(directives,
-              directiveNormalize(nodeName_(node)), 'E', maxPriority, ignoreDirective);
+              directiveNormalize(nodeName), 'E', maxPriority, ignoreDirective);
 
           // iterate over the attributes
           for (var attr, name, nName, ngAttrName, value, isNgAttr, nAttrs = node.attributes,
@@ -8137,6 +8187,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
             addAttrInterpolateDirective(node, directives, value, nName, isNgAttr);
             addDirective(directives, nName, 'A', maxPriority, ignoreDirective, attrStartName,
                           attrEndName);
+          }
+
+          if (nodeName === 'input' && node.getAttribute('type') === 'hidden') {
+            // Hidden input elements can have strange behaviour when navigating back to the page
+            // This tells the browser not to try to cache and reinstate previous values
+            node.setAttribute('autocomplete', 'off');
           }
 
           // use class as directive
@@ -8549,15 +8605,12 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 
           var controllerInstance = $controller(controller, locals, true, directive.controllerAs);
 
-          // For directives with element transclusion the element is a comment,
-          // but jQuery .data doesn't support attaching data to comment nodes as it's hard to
-          // clean up (http://bugs.jquery.com/ticket/8335).
+          // For directives with element transclusion the element is a comment.
+          // In this case .data will not attach any data.
           // Instead, we save the controllers for the element in a local hash and attach to .data
           // later, once we have the actual element.
           elementControllers[directive.name] = controllerInstance;
-          if (!hasElementTranscludeDirective) {
-            $element.data('$' + directive.name + 'Controller', controllerInstance.instance);
-          }
+          $element.data('$' + directive.name + 'Controller', controllerInstance.instance);
         }
         return elementControllers;
       }
@@ -8725,6 +8778,13 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
                  directive.restrict.indexOf(location) != -1) {
               if (startAttrName) {
                 directive = inherit(directive, {$$start: startAttrName, $$end: endAttrName});
+              }
+              if (!directive.$$bindings) {
+                var bindings = directive.$$bindings =
+                    parseDirectiveBindings(directive, directive.name);
+                if (isObject(bindings.isolateScope)) {
+                  directive.$$isolateBindings = bindings.isolateScope;
+                }
               }
               tDirectives.push(directive);
               match = directive;
@@ -9190,10 +9250,15 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               }
             });
             attrs.$$observers[attrName].$$scope = scope;
-            if (isString(attrs[attrName])) {
+            lastValue = attrs[attrName];
+            if (isString(lastValue)) {
               // If the attribute has been provided then we trigger an interpolation to ensure
               // the value is there for use in the link fn
-              destination[scopeName] = $interpolate(attrs[attrName])(scope);
+              destination[scopeName] = $interpolate(lastValue)(scope);
+            } else if (isBoolean(lastValue)) {
+              // If the attributes is one of the BOOLEAN_ATTR then Angular will have converted
+              // the value to boolean rather than a string, so we special case this situation
+              destination[scopeName] = lastValue;
             }
             break;
 
@@ -9214,8 +9279,8 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
               // reset the change, or we will throw this exception on every $digest
               lastValue = destination[scopeName] = parentGet(scope);
               throw $compileMinErr('nonassign',
-                  "Expression '{0}' used with directive '{1}' is non-assignable!",
-                  attrs[attrName], directive.name);
+                  "Expression '{0}' in attribute '{1}' used with directive '{2}' is non-assignable!",
+                  attrs[attrName], attrName, directive.name);
             };
             lastValue = destination[scopeName] = parentGet(scope);
             var parentValueWatch = function parentValueWatch(parentValue) {
@@ -9896,10 +9961,9 @@ function $HttpProvider() {
    *
    * Object containing default values for all {@link ng.$http $http} requests.
    *
-   * - **`defaults.cache`** - {Object} - an object built with {@link ng.$cacheFactory `$cacheFactory`}
-   * that will provide the cache for all requests who set their `cache` property to `true`.
-   * If you set the `defaults.cache = false` then only requests that specify their own custom
-   * cache object will be cached. See {@link $http#caching $http Caching} for more information.
+   * - **`defaults.cache`** - {boolean|Object} - A boolean value or object created with
+   * {@link ng.$cacheFactory `$cacheFactory`} to enable or disable caching of HTTP responses
+   * by default. See {@link $http#caching $http Caching} for more information.
    *
    * - **`defaults.xsrfCookieName`** - {string} - Name of cookie containing the XSRF token.
    * Defaults value is `'XSRF-TOKEN'`.
@@ -10190,6 +10254,15 @@ function $HttpProvider() {
      * the transformed value (`function(data, headersGetter, status)`) or an array of such transformation functions,
      * which allows you to `push` or `unshift` a new transformation function into the transformation chain.
      *
+     * <div class="alert alert-warning">
+     * **Note:** Angular does not make a copy of the `data` parameter before it is passed into the `transformRequest` pipeline.
+     * That means changes to the properties of `data` are not local to the transform function (since Javascript passes objects by reference).
+     * For example, when calling `$http.get(url, $scope.myObject)`, modifications to the object's properties in a transformRequest
+     * function will be reflected on the scope and in any templates where the object is data-bound.
+     * To prevent this, transform functions should have no side-effects.
+     * If you need to modify properties, it is recommended to make a copy of the data, or create new object to return.
+     * </div>
+     *
      * ### Default Transformations
      *
      * The `$httpProvider` provider and `$http` service expose `defaults.transformRequest` and
@@ -10247,26 +10320,35 @@ function $HttpProvider() {
      *
      * ## Caching
      *
-     * To enable caching, set the request configuration `cache` property to `true` (to use default
-     * cache) or to a custom cache object (built with {@link ng.$cacheFactory `$cacheFactory`}).
-     * When the cache is enabled, `$http` stores the response from the server in the specified
-     * cache. The next time the same request is made, the response is served from the cache without
-     * sending a request to the server.
+     * {@link ng.$http `$http`} responses are not cached by default. To enable caching, you must
+     * set the config.cache value or the default cache value to TRUE or to a cache object (created
+     * with {@link ng.$cacheFactory `$cacheFactory`}). If defined, the value of config.cache takes
+     * precedence over the default cache value.
      *
-     * Note that even if the response is served from cache, delivery of the data is asynchronous in
-     * the same way that real requests are.
+     * In order to:
+     *   * cache all responses - set the default cache value to TRUE or to a cache object
+     *   * cache a specific response - set config.cache value to TRUE or to a cache object
      *
-     * If there are multiple GET requests for the same URL that should be cached using the same
-     * cache, but the cache is not populated yet, only one request to the server will be made and
-     * the remaining requests will be fulfilled using the response from the first request.
+     * If caching is enabled, but neither the default cache nor config.cache are set to a cache object,
+     * then the default `$cacheFactory($http)` object is used.
      *
-     * You can change the default cache to a new object (built with
-     * {@link ng.$cacheFactory `$cacheFactory`}) by updating the
-     * {@link ng.$http#defaults `$http.defaults.cache`} property. All requests who set
-     * their `cache` property to `true` will now use this cache object.
+     * The default cache value can be set by updating the
+     * {@link ng.$http#defaults `$http.defaults.cache`} property or the
+     * {@link $httpProvider#defaults `$httpProvider.defaults.cache`} property.
      *
-     * If you set the default cache to `false` then only requests that specify their own custom
-     * cache object will be cached.
+     * When caching is enabled, {@link ng.$http `$http`} stores the response from the server using
+     * the relevant cache object. The next time the same request is made, the response is returned
+     * from the cache without sending a request to the server.
+     *
+     * Take note that:
+     *
+     *   * Only GET and JSONP requests are cached.
+     *   * The cache key is the request URL including search parameters; headers are not considered.
+     *   * Cached responses are returned asynchronously, in the same way as responses from the server.
+     *   * If multiple identical requests are made using the same cache, which is not yet populated,
+     *     one request will be made to the server and remaining requests will return the same response.
+     *   * A cache-control header on the response does not affect if or how responses are cached.
+     *
      *
      * ## Interceptors
      *
@@ -10388,13 +10470,13 @@ function $HttpProvider() {
      *
      * ### Cross Site Request Forgery (XSRF) Protection
      *
-     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is a technique by which
-     * an unauthorized site can gain your user's private data. Angular provides a mechanism
-     * to counter XSRF. When performing XHR requests, the $http service reads a token from a cookie
-     * (by default, `XSRF-TOKEN`) and sets it as an HTTP header (`X-XSRF-TOKEN`). Since only
-     * JavaScript that runs on your domain could read the cookie, your server can be assured that
-     * the XHR came from JavaScript running on your domain. The header will not be set for
-     * cross-domain requests.
+     * [XSRF](http://en.wikipedia.org/wiki/Cross-site_request_forgery) is an attack technique by
+     * which the attacker can trick an authenticated user into unknowingly executing actions on your
+     * website. Angular provides a mechanism to counter XSRF. When performing XHR requests, the
+     * $http service reads a token from a cookie (by default, `XSRF-TOKEN`) and sets it as an HTTP
+     * header (`X-XSRF-TOKEN`). Since only JavaScript that runs on your domain could read the
+     * cookie, your server can be assured that the XHR came from JavaScript running on your domain.
+     * The header will not be set for cross-domain requests.
      *
      * To take advantage of this, your server needs to set a token in a JavaScript readable session
      * cookie called `XSRF-TOKEN` on the first HTTP GET request. On subsequent XHR requests the
@@ -10436,7 +10518,7 @@ function $HttpProvider() {
      *      transform function or an array of such functions. The transform function takes the http
      *      response body, headers and status and returns its transformed (typically deserialized) version.
      *      See {@link ng.$http#overriding-the-default-transformations-per-request
-     *      Overriding the Default TransformationjqLiks}
+     *      Overriding the Default Transformations}
      *    - **paramSerializer** - `{string|function(Object<string,string>):string}` - A function used to
      *      prepare the string representation of request parameters (specified as an object).
      *      If specified as string, it is interpreted as function registered with the
@@ -10444,10 +10526,9 @@ function $HttpProvider() {
      *      by registering it as a {@link auto.$provide#service service}.
      *      The default serializer is the {@link $httpParamSerializer $httpParamSerializer};
      *      alternatively, you can use the {@link $httpParamSerializerJQLike $httpParamSerializerJQLike}
-     *    - **cache** – `{boolean|Cache}` – If true, a default $http cache will be used to cache the
-     *      GET request, otherwise if a cache instance built with
-     *      {@link ng.$cacheFactory $cacheFactory}, this cache will be used for
-     *      caching.
+     *    - **cache** – `{boolean|Object}` – A boolean value or object created with
+     *      {@link ng.$cacheFactory `$cacheFactory`} to enable or disable caching of the HTTP response.
+     *      See {@link $http#caching $http Caching} for more information.
      *    - **timeout** – `{number|Promise}` – timeout in milliseconds, or {@link ng.$q promise}
      *      that should abort the request when resolved.
      *    - **withCredentials** - `{boolean}` - whether to set the `withCredentials` flag on the
@@ -11351,6 +11432,11 @@ function $InterpolateProvider() {
      *  </file>
      * </example>
      *
+     * @knownIssue
+     * It is currently not possible for an interpolated expression to contain the interpolation end
+     * symbol. For example, `{{ '}}' }}` will be incorrectly interpreted as `{{ ' }}` + `' }}`, i.e.
+     * an interpolated expression consisting of a single-quote (`'`) and the `' }}` string.
+     *
      * @param {string} text The text with markup to interpolate.
      * @param {boolean=} mustHaveExpression if set to true then the interpolation string must have
      *    embedded expression in order to return an interpolation function. Strings with no
@@ -12185,7 +12271,7 @@ var locationPrototype = {
    * ```
    *
    * @param {(string|number)=} path New path
-   * @return {string} path
+   * @return {(string|object)} path if called with no parameters, or `$location` if called with a parameter
    */
   path: locationGetterSetter('$$path', function(path) {
     path = path !== null ? path.toString() : '';
@@ -13844,6 +13930,9 @@ ASTCompiler.prototype = {
       intoId = intoId || this.nextId();
       self.recurse(ast.object, left, undefined, function() {
         self.if_(self.notNull(left), function() {
+          if (create && create !== 1) {
+            self.addEnsureSafeAssignContext(left);
+          }
           if (ast.computed) {
             right = self.nextId();
             self.recurse(ast.property, right);
@@ -14458,8 +14547,11 @@ ASTInterpreter.prototype = {
         rhs = right(scope, locals, assign, inputs);
         rhs = getStringValue(rhs);
         ensureSafeMemberName(rhs, expression);
-        if (create && create !== 1 && lhs && !(lhs[rhs])) {
-          lhs[rhs] = {};
+        if (create && create !== 1) {
+          ensureSafeAssignContext(lhs);
+          if (lhs && !(lhs[rhs])) {
+            lhs[rhs] = {};
+          }
         }
         value = lhs[rhs];
         ensureSafeObject(value, expression);
@@ -14474,8 +14566,11 @@ ASTInterpreter.prototype = {
   nonComputedMember: function(left, right, expensiveChecks, context, create, expression) {
     return function(scope, locals, assign, inputs) {
       var lhs = left(scope, locals, assign, inputs);
-      if (create && create !== 1 && lhs && !(lhs[right])) {
-        lhs[right] = {};
+      if (create && create !== 1) {
+        ensureSafeAssignContext(lhs);
+        if (lhs && !(lhs[right])) {
+          lhs[right] = {};
+        }
       }
       var value = lhs != null ? lhs[right] : undefined;
       if (expensiveChecks || isPossiblyDangerousMemberName(right)) {
@@ -14591,9 +14686,18 @@ function $ParseProvider() {
           csp: noUnsafeEval,
           expensiveChecks: true
         };
+    var runningChecksEnabled = false;
 
-    return function $parse(exp, interceptorFn, expensiveChecks) {
+    $parse.$$runningExpensiveChecks = function() {
+      return runningChecksEnabled;
+    };
+
+    return $parse;
+
+    function $parse(exp, interceptorFn, expensiveChecks) {
       var parsedExpression, oneTime, cacheKey;
+
+      expensiveChecks = expensiveChecks || runningChecksEnabled;
 
       switch (typeof exp) {
         case 'string':
@@ -14620,6 +14724,9 @@ function $ParseProvider() {
             } else if (parsedExpression.inputs) {
               parsedExpression.$$watchDelegate = inputsWatchDelegate;
             }
+            if (expensiveChecks) {
+              parsedExpression = expensiveChecksInterceptor(parsedExpression);
+            }
             cache[cacheKey] = parsedExpression;
           }
           return addInterceptor(parsedExpression, interceptorFn);
@@ -14630,7 +14737,31 @@ function $ParseProvider() {
         default:
           return addInterceptor(noop, interceptorFn);
       }
-    };
+    }
+
+    function expensiveChecksInterceptor(fn) {
+      if (!fn) return fn;
+      expensiveCheckFn.$$watchDelegate = fn.$$watchDelegate;
+      expensiveCheckFn.assign = expensiveChecksInterceptor(fn.assign);
+      expensiveCheckFn.constant = fn.constant;
+      expensiveCheckFn.literal = fn.literal;
+      for (var i = 0; fn.inputs && i < fn.inputs.length; ++i) {
+        fn.inputs[i] = expensiveChecksInterceptor(fn.inputs[i]);
+      }
+      expensiveCheckFn.inputs = fn.inputs;
+
+      return expensiveCheckFn;
+
+      function expensiveCheckFn(scope, locals, assign, inputs) {
+        var expensiveCheckOldValue = runningChecksEnabled;
+        runningChecksEnabled = true;
+        try {
+          return fn(scope, locals, assign, inputs);
+        } finally {
+          runningChecksEnabled = expensiveCheckOldValue;
+        }
+      }
+    }
 
     function expressionInputDirtyCheck(newValue, oldValueOfValue) {
 
@@ -14806,15 +14937,15 @@ function $ParseProvider() {
  * [Kris Kowal's Q](https://github.com/kriskowal/q).
  *
  * $q can be used in two fashions --- one which is more similar to Kris Kowal's Q or jQuery's Deferred
- * implementations, and the other which resembles ES6 promises to some degree.
+ * implementations, and the other which resembles ES6 (ES2015) promises to some degree.
  *
  * # $q constructor
  *
  * The streamlined ES6 style promise is essentially just using $q as a constructor which takes a `resolver`
- * function as the first argument. This is similar to the native Promise implementation from ES6 Harmony,
+ * function as the first argument. This is similar to the native Promise implementation from ES6,
  * see [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
  *
- * While the constructor-style use is supported, not all of the supporting methods from ES6 Harmony promises are
+ * While the constructor-style use is supported, not all of the supporting methods from ES6 promises are
  * available yet.
  *
  * It can be used like so:
@@ -16162,7 +16293,7 @@ function $RootScopeProvider() {
        *
        */
       $digest: function() {
-        var watch, value, last,
+        var watch, value, last, fn, get,
             watchers,
             length,
             dirty, ttl = TTL,
@@ -16208,7 +16339,8 @@ function $RootScopeProvider() {
                   // Most common watches are on primitives, in which case we can short
                   // circuit it with === operator, only when === fails do we use .equals
                   if (watch) {
-                    if ((value = watch.get(current)) !== (last = watch.last) &&
+                    get = watch.get;
+                    if ((value = get(current)) !== (last = watch.last) &&
                         !(watch.eq
                             ? equals(value, last)
                             : (typeof value === 'number' && typeof last === 'number'
@@ -16216,7 +16348,8 @@ function $RootScopeProvider() {
                       dirty = true;
                       lastDirtyWatch = watch;
                       watch.last = watch.eq ? copy(value, null) : value;
-                      watch.fn(value, ((last === initWatchVal) ? value : last), current);
+                      fn = watch.fn;
+                      fn(value, ((last === initWatchVal) ? value : last), current);
                       if (ttl < 5) {
                         logIdx = 4 - ttl;
                         if (!watchLog[logIdx]) watchLog[logIdx] = [];
@@ -16416,7 +16549,7 @@ function $RootScopeProvider() {
           });
         }
 
-        asyncQueue.push({scope: this, expression: expr, locals: locals});
+        asyncQueue.push({scope: this, expression: $parse(expr), locals: locals});
       },
 
       $$postDigest: function(fn) {
@@ -16508,6 +16641,7 @@ function $RootScopeProvider() {
       $applyAsync: function(expr) {
         var scope = this;
         expr && applyAsyncQueue.push($applyAsyncExpression);
+        expr = $parse(expr);
         scheduleApplyAsync();
 
         function $applyAsyncExpression() {
@@ -17011,13 +17145,15 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} whitelist When provided, replaces the resourceUrlWhitelist with the value
-   *     provided.  This must be an array or null.  A snapshot of this array is used so further
-   *     changes to the array are ignored.
+   *    provided.  This must be an array or null.  A snapshot of this array is used so further
+   *    changes to the array are ignored.
    *
-   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *     allowed in this array.
+   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *    allowed in this array.
    *
-   *     Note: **an empty whitelist array will block all URLs**!
+   *    <div class="alert alert-warning">
+   *    **Note:** an empty whitelist array will block all URLs!
+   *    </div>
    *
    * @return {Array} the currently set whitelist array.
    *
@@ -17040,17 +17176,17 @@ function $SceDelegateProvider() {
    * @kind function
    *
    * @param {Array=} blacklist When provided, replaces the resourceUrlBlacklist with the value
-   *     provided.  This must be an array or null.  A snapshot of this array is used so further
-   *     changes to the array are ignored.
+   *    provided.  This must be an array or null.  A snapshot of this array is used so further
+   *    changes to the array are ignored.
    *
-   *     Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
-   *     allowed in this array.
+   *    Follow {@link ng.$sce#resourceUrlPatternItem this link} for a description of the items
+   *    allowed in this array.
    *
-   *     The typical usage for the blacklist is to **block
-   *     [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
-   *     these would otherwise be trusted but actually return content from the redirected domain.
+   *    The typical usage for the blacklist is to **block
+   *    [open redirects](http://cwe.mitre.org/data/definitions/601.html)** served by your domain as
+   *    these would otherwise be trusted but actually return content from the redirected domain.
    *
-   *     Finally, **the blacklist overrides the whitelist** and has the final say.
+   *    Finally, **the blacklist overrides the whitelist** and has the final say.
    *
    * @return {Array} the currently set blacklist array.
    *
@@ -18044,7 +18180,7 @@ function $TemplateRequestProvider() {
       // are included in there. This also makes Angular accept any script
       // directive, no matter its name. However, we still need to unwrap trusted
       // types.
-      if (!isString(tpl) || !$templateCache.get(tpl)) {
+      if (!isString(tpl) || isUndefined($templateCache.get(tpl))) {
         tpl = $sce.getTrustedResourceUrl(tpl);
       }
 
@@ -18996,7 +19132,7 @@ function currencyFilter($locale) {
  * Formats a number as text.
  *
  * If the input is null or undefined, it will just be returned.
- * If the input is infinite (Infinity/-Infinity) the Infinity symbol '∞' is returned.
+ * If the input is infinite (Infinity or -Infinity), the Infinity symbol '∞' or '-∞' is returned, respectively.
  * If the input is not a number an empty string is returned.
  *
  *
@@ -19004,7 +19140,9 @@ function currencyFilter($locale) {
  * @param {(number|string)=} fractionSize Number of decimal places to round the number to.
  * If this is not provided then the fraction size is computed from the current locale's number
  * formatting pattern. In the case of the default locale, it will be 3.
- * @returns {string} Number rounded to fractionSize and places a “,” after each third digit.
+ * @returns {string} Number rounded to `fractionSize` appropriately formatted based on the current
+ *                   locale (e.g., in the en_US locale it will have "." as the decimal separator and
+ *                   include "," group separators after each third digit).
  *
  * @example
    <example module="numberFilterExample">
@@ -19086,7 +19224,7 @@ function parse(numStr) {
   }
 
   // Count the number of leading zeros.
-  for (i = 0; numStr.charAt(i) == ZERO_CHAR; i++);
+  for (i = 0; numStr.charAt(i) == ZERO_CHAR; i++) {/* jshint noempty: false */}
 
   if (i == (zeros = numStr.length)) {
     // The digits are all zero.
@@ -19207,7 +19345,7 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
 
     // extract decimals digits
     if (integerLen > 0) {
-      decimals = digits.splice(integerLen);
+      decimals = digits.splice(integerLen, digits.length);
     } else {
       decimals = digits;
       digits = [0];
@@ -19215,11 +19353,11 @@ function formatNumber(number, pattern, groupSep, decimalSep, fractionSize) {
 
     // format the integer digits with grouping separators
     var groups = [];
-    if (digits.length > pattern.lgSize) {
-      groups.unshift(digits.splice(-pattern.lgSize).join(''));
+    if (digits.length >= pattern.lgSize) {
+      groups.unshift(digits.splice(-pattern.lgSize, digits.length).join(''));
     }
     while (digits.length > pattern.gSize) {
-      groups.unshift(digits.splice(-pattern.gSize).join(''));
+      groups.unshift(digits.splice(-pattern.gSize, digits.length).join(''));
     }
     if (digits.length) {
       groups.unshift(digits.join(''));
@@ -19518,13 +19656,13 @@ function dateFilter($locale) {
 
     var dateTimezoneOffset = date.getTimezoneOffset();
     if (timezone) {
-      dateTimezoneOffset = timezoneToOffset(timezone, date.getTimezoneOffset());
+      dateTimezoneOffset = timezoneToOffset(timezone, dateTimezoneOffset);
       date = convertTimezoneToLocal(date, timezone, true);
     }
     forEach(parts, function(value) {
       fn = DATE_FORMATS[value];
       text += fn ? fn(date, $locale.DATETIME_FORMATS, dateTimezoneOffset)
-                 : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
+                 : value === "''" ? "'" : value.replace(/(^'|'$)/g, '').replace(/''/g, "'");
     });
 
     return text;
@@ -21079,6 +21217,12 @@ var WEEK_REGEXP = /^(\d{4})-W(\d\d)$/;
 var MONTH_REGEXP = /^(\d{4})-(\d\d)$/;
 var TIME_REGEXP = /^(\d\d):(\d\d)(?::(\d\d)(\.\d{1,3})?)?$/;
 
+var PARTIAL_VALIDATION_EVENTS = 'keydown wheel mousedown';
+var PARTIAL_VALIDATION_TYPES = createMap();
+forEach('date,datetime-local,month,time,week'.split(','), function(type) {
+  PARTIAL_VALIDATION_TYPES[type] = true;
+});
+
 var inputType = {
 
   /**
@@ -21434,7 +21578,7 @@ var inputType = {
         }]);
      </script>
      <form name="myForm" ng-controller="DateController as dateCtrl">
-        <label for="exampleInput">Pick a between 8am and 5pm:</label>
+        <label for="exampleInput">Pick a time between 8am and 5pm:</label>
         <input type="time" id="exampleInput" name="input" ng-model="example.value"
             placeholder="HH:mm:ss" min="08:00:00" max="17:00:00" required />
         <div role="alert">
@@ -22165,6 +22309,8 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
     });
   }
 
+  var timeout;
+
   var listener = function(ev) {
     if (timeout) {
       $browser.defer.cancel(timeout);
@@ -22194,8 +22340,6 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   if ($sniffer.hasEvent('input')) {
     element.on('input', listener);
   } else {
-    var timeout;
-
     var deferListener = function(ev, input, origValue) {
       if (!timeout) {
         timeout = $browser.defer(function() {
@@ -22226,6 +22370,26 @@ function baseInputType(scope, element, attr, ctrl, $sniffer, $browser) {
   // if user paste into input using mouse on older browser
   // or form autocomplete on newer browser, we need "change" event to catch it
   element.on('change', listener);
+
+  // Some native input types (date-family) have the ability to change validity without
+  // firing any input/change events.
+  // For these event types, when native validators are present and the browser supports the type,
+  // check for validity changes on various DOM events.
+  if (PARTIAL_VALIDATION_TYPES[type] && ctrl.$$hasNativeValidators && type === attr.type) {
+    element.on(PARTIAL_VALIDATION_EVENTS, function(ev) {
+      if (!timeout) {
+        var validity = this[VALIDITY_STATE_PROPERTY];
+        var origBadInput = validity.badInput;
+        var origTypeMismatch = validity.typeMismatch;
+        timeout = $browser.defer(function() {
+          timeout = null;
+          if (validity.badInput !== origBadInput || validity.typeMismatch !== origTypeMismatch) {
+            listener(ev);
+          }
+        });
+      }
+    });
+  }
 
   ctrl.$render = function() {
     // Workaround for Firefox validation #12102.
@@ -23008,8 +23172,9 @@ var ngBindHtmlDirective = ['$sce', '$parse', '$compile', function($sce, $parse, 
     restrict: 'A',
     compile: function ngBindHtmlCompile(tElement, tAttrs) {
       var ngBindHtmlGetter = $parse(tAttrs.ngBindHtml);
-      var ngBindHtmlWatch = $parse(tAttrs.ngBindHtml, function getStringValue(value) {
-        return (value || '').toString();
+      var ngBindHtmlWatch = $parse(tAttrs.ngBindHtml, function sceValueOf(val) {
+        // Unwrap the value to compare the actual inner safe value, not the wrapper object.
+        return $sce.valueOf(val);
       });
       $compile.$$addBindingClass(tElement);
 
@@ -23017,9 +23182,9 @@ var ngBindHtmlDirective = ['$sce', '$parse', '$compile', function($sce, $parse, 
         $compile.$$addBindingInfo(element, attr.ngBindHtml);
 
         scope.$watch(ngBindHtmlWatch, function ngBindHtmlWatchAction() {
-          // we re-evaluate the expr because we want a TrustedValueHolderType
-          // for $sce, not a string
-          element.html($sce.getTrustedHtml(ngBindHtmlGetter(scope)) || '');
+          // The watched value is the unwrapped value. To avoid re-escaping, use the direct getter.
+          var value = ngBindHtmlGetter(scope);
+          element.html($sce.getTrustedHtml(value) || '');
         });
       };
     }
@@ -23181,7 +23346,11 @@ function classDirective(name, selector) {
               updateClasses(oldClasses, newClasses);
             }
           }
-          oldVal = shallowCopy(newVal);
+          if (isArray(newVal)) {
+            oldVal = newVal.map(function(v) { return shallowCopy(v); });
+          } else {
+            oldVal = shallowCopy(newVal);
+          }
         }
       }
     };
@@ -26023,6 +26192,22 @@ var NgModelController = ['$scope', '$exceptionHandler', '$attrs', '$element', '$
  *  - {@link ng.directive:select select}
  *  - {@link ng.directive:textarea textarea}
  *
+ * # Complex Models (objects or collections)
+ *
+ * By default, `ngModel` watches the model by reference, not value. This is important to know when
+ * binding inputs to models that are objects (e.g. `Date`) or collections (e.g. arrays). If only properties of the
+ * object or collection change, `ngModel` will not be notified and so the input will not be  re-rendered.
+ *
+ * The model must be assigned an entirely new object or collection before a re-rendering will occur.
+ *
+ * Some directives have options that will cause them to use a custom `$watchCollection` on the model expression
+ * - for example, `ngOptions` will do so when a `track by` clause is included in the comprehension expression or
+ * if the select is given the `multiple` attribute.
+ *
+ * The `$watchCollection()` method only does a shallow comparison, meaning that changing properties deeper than the
+ * first level of the object (or only changing the properties of an item in the collection if it's an array) will still
+ * not trigger a re-rendering of the model.
+ *
  * # CSS classes
  * The following CSS classes are added and removed on the associated input/select/textarea element
  * depending on the validity of the model.
@@ -26998,14 +27183,20 @@ var ngOptionsDirective = ['$compile', '$parse', function($compile, $parse) {
           var option = options.getOptionFromViewValue(value);
 
           if (option && !option.disabled) {
+            // Don't update the option when it is already selected.
+            // For example, the browser will select the first option by default. In that case,
+            // most properties are set automatically - except the `selected` attribute, which we
+            // set always
+
             if (selectElement[0].value !== option.selectValue) {
               removeUnknownOption();
               removeEmptyOption();
 
               selectElement[0].value = option.selectValue;
               option.element.selected = true;
-              option.element.setAttribute('selected', 'selected');
             }
+
+            option.element.setAttribute('selected', 'selected');
           } else {
             if (value === null || providedEmptyOption) {
               removeUnknownOption();
@@ -28036,7 +28227,7 @@ var ngRepeatDirective = ['$parse', '$animate', function($parse, $animate) {
 
               if (getBlockStart(block) != nextNode) {
                 // existing item which got moved
-                $animate.move(getBlockNodes(block.clone), null, jqLite(previousNode));
+                $animate.move(getBlockNodes(block.clone), null, previousNode);
               }
               previousNode = getBlockEnd(block);
               updateScope(block.scope, index, valueIdentifier, value, keyIdentifier, key, collectionLength);
@@ -28048,8 +28239,7 @@ var ngRepeatDirective = ['$parse', '$animate', function($parse, $animate) {
                 var endNode = ngRepeatEndComment.cloneNode(false);
                 clone[clone.length++] = endNode;
 
-                // TODO(perf): support naked previousNode in `enter` to avoid creation of jqLite wrapper?
-                $animate.enter(clone, null, jqLite(previousNode));
+                $animate.enter(clone, null, previousNode);
                 previousNode = endNode;
                 // Note: We only need the first/last node of the cloned nodes.
                 // However, we need to keep the reference to the jqlite wrapper as it might be changed later
@@ -28859,6 +29049,9 @@ var SelectController =
 
   // Tell the select control that an option, with the given value, has been added
   self.addOption = function(value, element) {
+    // Skip comment nodes, as they only pollute the `optionsMap`
+    if (element[0].nodeType === NODE_TYPE_COMMENT) return;
+
     assertNotHasOwnProperty(value, '"option value"');
     if (value === '') {
       self.emptyOption = element;
@@ -29231,7 +29424,6 @@ var optionDirective = ['$interpolate', function($interpolate) {
     restrict: 'E',
     priority: 100,
     compile: function(element, attr) {
-
       if (isDefined(attr.value)) {
         // If the value attribute is defined, check if it contains an interpolation
         var interpolateValueFn = $interpolate(attr.value, true);
@@ -29245,7 +29437,6 @@ var optionDirective = ['$interpolate', function($interpolate) {
       }
 
       return function(scope, element, attr) {
-
         // This is an optimization over using ^^ since we don't want to have to search
         // all the way to the root of the DOM for every single option element
         var selectCtrlName = '$selectController',
@@ -29269,6 +29460,7 @@ var styleDirective = valueFn({
 /**
  * @ngdoc directive
  * @name ngRequired
+ * @restrict A
  *
  * @description
  *
@@ -29282,7 +29474,7 @@ var styleDirective = valueFn({
  * for more info.
  *
  * The validator will set the `required` error key to true if the `required` attribute is set and
- * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty` with the
+ * calling {@link ngModel.NgModelController#$isEmpty `NgModelController.$isEmpty`} with the
  * {@link ngModel.NgModelController#$viewValue `ngModel.$viewValue`} returns `true`. For example, the
  * `$isEmpty()` implementation for `input[text]` checks the length of the `$viewValue`. When developing
  * custom controls, `$isEmpty()` can be overwritten to account for a $viewValue that is not string-based.
@@ -29620,7 +29812,9 @@ var minlengthDirective = function() {
 
 if (window.angular.bootstrap) {
   //AngularJS is already loaded, so we can return here...
-  console.log('WARNING: Tried to load angular more than once.');
+  if (window.console) {
+    console.log('WARNING: Tried to load angular more than once.');
+  }
   return;
 }
 
@@ -29768,6 +29962,7 @@ $provide.value("$locale", {
     ]
   },
   "id": "en-us",
+  "localeID": "en_US",
   "pluralCat": function(n, opt_precision) {  var i = n | 0;  var vf = getVF(n, opt_precision);  if (i == 1 && vf.v == 0) {    return PLURAL_CATEGORY.ONE;  }  return PLURAL_CATEGORY.OTHER;}
 });
 }]);
@@ -43204,6 +43399,742 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
     }
   };
 }]);
+
+
+})(window, window.angular);
+
+/**
+ * @license AngularJS v1.5.8
+ * (c) 2010-2016 Google, Inc. http://angularjs.org
+ * License: MIT
+ */
+(function(window, angular) {'use strict';
+
+/* global ngTouchClickDirectiveFactory: false,
+ */
+
+/**
+ * @ngdoc module
+ * @name ngTouch
+ * @description
+ *
+ * # ngTouch
+ *
+ * The `ngTouch` module provides touch events and other helpers for touch-enabled devices.
+ * The implementation is based on jQuery Mobile touch event handling
+ * ([jquerymobile.com](http://jquerymobile.com/)).
+ *
+ *
+ * See {@link ngTouch.$swipe `$swipe`} for usage.
+ *
+ * <div doc-module-components="ngTouch"></div>
+ *
+ */
+
+// define ngTouch module
+/* global -ngTouch */
+var ngTouch = angular.module('ngTouch', []);
+
+ngTouch.provider('$touch', $TouchProvider);
+
+function nodeName_(element) {
+  return angular.lowercase(element.nodeName || (element[0] && element[0].nodeName));
+}
+
+/**
+ * @ngdoc provider
+ * @name $touchProvider
+ *
+ * @description
+ * The `$touchProvider` allows enabling / disabling {@link ngTouch.ngClick ngTouch's ngClick directive}.
+ */
+$TouchProvider.$inject = ['$provide', '$compileProvider'];
+function $TouchProvider($provide, $compileProvider) {
+
+  /**
+   * @ngdoc method
+   * @name  $touchProvider#ngClickOverrideEnabled
+   *
+   * @param {boolean=} enabled update the ngClickOverrideEnabled state if provided, otherwise just return the
+   * current ngClickOverrideEnabled state
+   * @returns {*} current value if used as getter or itself (chaining) if used as setter
+   *
+   * @kind function
+   *
+   * @description
+   * Call this method to enable/disable {@link ngTouch.ngClick ngTouch's ngClick directive}. If enabled,
+   * the default ngClick directive will be replaced by a version that eliminates the 300ms delay for
+   * click events on browser for touch-devices.
+   *
+   * The default is `false`.
+   *
+   */
+  var ngClickOverrideEnabled = false;
+  var ngClickDirectiveAdded = false;
+  this.ngClickOverrideEnabled = function(enabled) {
+    if (angular.isDefined(enabled)) {
+
+      if (enabled && !ngClickDirectiveAdded) {
+        ngClickDirectiveAdded = true;
+
+        // Use this to identify the correct directive in the delegate
+        ngTouchClickDirectiveFactory.$$moduleName = 'ngTouch';
+        $compileProvider.directive('ngClick', ngTouchClickDirectiveFactory);
+
+        $provide.decorator('ngClickDirective', ['$delegate', function($delegate) {
+          if (ngClickOverrideEnabled) {
+            // drop the default ngClick directive
+            $delegate.shift();
+          } else {
+            // drop the ngTouch ngClick directive if the override has been re-disabled (because
+            // we cannot de-register added directives)
+            var i = $delegate.length - 1;
+            while (i >= 0) {
+              if ($delegate[i].$$moduleName === 'ngTouch') {
+                $delegate.splice(i, 1);
+                break;
+              }
+              i--;
+            }
+          }
+
+          return $delegate;
+        }]);
+      }
+
+      ngClickOverrideEnabled = enabled;
+      return this;
+    }
+
+    return ngClickOverrideEnabled;
+  };
+
+  /**
+  * @ngdoc service
+  * @name $touch
+  * @kind object
+  *
+  * @description
+  * Provides the {@link ngTouch.$touch#ngClickOverrideEnabled `ngClickOverrideEnabled`} method.
+  *
+  */
+  this.$get = function() {
+    return {
+      /**
+       * @ngdoc method
+       * @name  $touch#ngClickOverrideEnabled
+       *
+       * @returns {*} current value of `ngClickOverrideEnabled` set in the {@link ngTouch.$touchProvider $touchProvider},
+       * i.e. if {@link ngTouch.ngClick ngTouch's ngClick} directive is enabled.
+       *
+       * @kind function
+       */
+      ngClickOverrideEnabled: function() {
+        return ngClickOverrideEnabled;
+      }
+    };
+  };
+
+}
+
+/* global ngTouch: false */
+
+    /**
+     * @ngdoc service
+     * @name $swipe
+     *
+     * @description
+     * The `$swipe` service is a service that abstracts the messier details of hold-and-drag swipe
+     * behavior, to make implementing swipe-related directives more convenient.
+     *
+     * Requires the {@link ngTouch `ngTouch`} module to be installed.
+     *
+     * `$swipe` is used by the `ngSwipeLeft` and `ngSwipeRight` directives in `ngTouch`.
+     *
+     * # Usage
+     * The `$swipe` service is an object with a single method: `bind`. `bind` takes an element
+     * which is to be watched for swipes, and an object with four handler functions. See the
+     * documentation for `bind` below.
+     */
+
+ngTouch.factory('$swipe', [function() {
+  // The total distance in any direction before we make the call on swipe vs. scroll.
+  var MOVE_BUFFER_RADIUS = 10;
+
+  var POINTER_EVENTS = {
+    'mouse': {
+      start: 'mousedown',
+      move: 'mousemove',
+      end: 'mouseup'
+    },
+    'touch': {
+      start: 'touchstart',
+      move: 'touchmove',
+      end: 'touchend',
+      cancel: 'touchcancel'
+    },
+    'pointer': {
+      start: 'pointerdown',
+      move: 'pointermove',
+      end: 'pointerup',
+      cancel: 'pointercancel'
+    }
+  };
+
+  function getCoordinates(event) {
+    var originalEvent = event.originalEvent || event;
+    var touches = originalEvent.touches && originalEvent.touches.length ? originalEvent.touches : [originalEvent];
+    var e = (originalEvent.changedTouches && originalEvent.changedTouches[0]) || touches[0];
+
+    return {
+      x: e.clientX,
+      y: e.clientY
+    };
+  }
+
+  function getEvents(pointerTypes, eventType) {
+    var res = [];
+    angular.forEach(pointerTypes, function(pointerType) {
+      var eventName = POINTER_EVENTS[pointerType][eventType];
+      if (eventName) {
+        res.push(eventName);
+      }
+    });
+    return res.join(' ');
+  }
+
+  return {
+    /**
+     * @ngdoc method
+     * @name $swipe#bind
+     *
+     * @description
+     * The main method of `$swipe`. It takes an element to be watched for swipe motions, and an
+     * object containing event handlers.
+     * The pointer types that should be used can be specified via the optional
+     * third argument, which is an array of strings `'mouse'`, `'touch'` and `'pointer'`. By default,
+     * `$swipe` will listen for `mouse`, `touch` and `pointer` events.
+     *
+     * The four events are `start`, `move`, `end`, and `cancel`. `start`, `move`, and `end`
+     * receive as a parameter a coordinates object of the form `{ x: 150, y: 310 }` and the raw
+     * `event`. `cancel` receives the raw `event` as its single parameter.
+     *
+     * `start` is called on either `mousedown`, `touchstart` or `pointerdown`. After this event, `$swipe` is
+     * watching for `touchmove`, `mousemove` or `pointermove` events. These events are ignored until the total
+     * distance moved in either dimension exceeds a small threshold.
+     *
+     * Once this threshold is exceeded, either the horizontal or vertical delta is greater.
+     * - If the horizontal distance is greater, this is a swipe and `move` and `end` events follow.
+     * - If the vertical distance is greater, this is a scroll, and we let the browser take over.
+     *   A `cancel` event is sent.
+     *
+     * `move` is called on `mousemove`, `touchmove` and `pointermove` after the above logic has determined that
+     * a swipe is in progress.
+     *
+     * `end` is called when a swipe is successfully completed with a `touchend`, `mouseup` or `pointerup`.
+     *
+     * `cancel` is called either on a `touchcancel` or `pointercancel`  from the browser, or when we begin scrolling
+     * as described above.
+     *
+     */
+    bind: function(element, eventHandlers, pointerTypes) {
+      // Absolute total movement, used to control swipe vs. scroll.
+      var totalX, totalY;
+      // Coordinates of the start position.
+      var startCoords;
+      // Last event's position.
+      var lastPos;
+      // Whether a swipe is active.
+      var active = false;
+
+      pointerTypes = pointerTypes || ['mouse', 'touch', 'pointer'];
+      element.on(getEvents(pointerTypes, 'start'), function(event) {
+        startCoords = getCoordinates(event);
+        active = true;
+        totalX = 0;
+        totalY = 0;
+        lastPos = startCoords;
+        eventHandlers['start'] && eventHandlers['start'](startCoords, event);
+      });
+      var events = getEvents(pointerTypes, 'cancel');
+      if (events) {
+        element.on(events, function(event) {
+          active = false;
+          eventHandlers['cancel'] && eventHandlers['cancel'](event);
+        });
+      }
+
+      element.on(getEvents(pointerTypes, 'move'), function(event) {
+        if (!active) return;
+
+        // Android will send a touchcancel if it thinks we're starting to scroll.
+        // So when the total distance (+ or - or both) exceeds 10px in either direction,
+        // we either:
+        // - On totalX > totalY, we send preventDefault() and treat this as a swipe.
+        // - On totalY > totalX, we let the browser handle it as a scroll.
+
+        if (!startCoords) return;
+        var coords = getCoordinates(event);
+
+        totalX += Math.abs(coords.x - lastPos.x);
+        totalY += Math.abs(coords.y - lastPos.y);
+
+        lastPos = coords;
+
+        if (totalX < MOVE_BUFFER_RADIUS && totalY < MOVE_BUFFER_RADIUS) {
+          return;
+        }
+
+        // One of totalX or totalY has exceeded the buffer, so decide on swipe vs. scroll.
+        if (totalY > totalX) {
+          // Allow native scrolling to take over.
+          active = false;
+          eventHandlers['cancel'] && eventHandlers['cancel'](event);
+          return;
+        } else {
+          // Prevent the browser from scrolling.
+          event.preventDefault();
+          eventHandlers['move'] && eventHandlers['move'](coords, event);
+        }
+      });
+
+      element.on(getEvents(pointerTypes, 'end'), function(event) {
+        if (!active) return;
+        active = false;
+        eventHandlers['end'] && eventHandlers['end'](getCoordinates(event), event);
+      });
+    }
+  };
+}]);
+
+/* global ngTouch: false,
+  nodeName_: false
+*/
+
+/**
+ * @ngdoc directive
+ * @name ngClick
+ * @deprecated
+ *
+ * @description
+ * <div class="alert alert-danger">
+ * **DEPRECATION NOTICE**: Beginning with Angular 1.5, this directive is deprecated and by default **disabled**.
+ * The directive will receive no further support and might be removed from future releases.
+ * If you need the directive, you can enable it with the {@link ngTouch.$touchProvider $touchProvider#ngClickOverrideEnabled}
+ * function. We also recommend that you migrate to [FastClick](https://github.com/ftlabs/fastclick).
+ * To learn more about the 300ms delay, this [Telerik article](http://developer.telerik.com/featured/300-ms-click-delay-ios-8/)
+ * gives a good overview.
+ * </div>
+ * A more powerful replacement for the default ngClick designed to be used on touchscreen
+ * devices. Most mobile browsers wait about 300ms after a tap-and-release before sending
+ * the click event. This version handles them immediately, and then prevents the
+ * following click event from propagating.
+ *
+ * Requires the {@link ngTouch `ngTouch`} module to be installed.
+ *
+ * This directive can fall back to using an ordinary click event, and so works on desktop
+ * browsers as well as mobile.
+ *
+ * This directive also sets the CSS class `ng-click-active` while the element is being held
+ * down (by a mouse click or touch) so you can restyle the depressed element if you wish.
+ *
+ * @element ANY
+ * @param {expression} ngClick {@link guide/expression Expression} to evaluate
+ * upon tap. (Event object is available as `$event`)
+ *
+ * @example
+    <example module="ngClickExample" deps="angular-touch.js">
+      <file name="index.html">
+        <button ng-click="count = count + 1" ng-init="count=0">
+          Increment
+        </button>
+        count: {{ count }}
+      </file>
+      <file name="script.js">
+        angular.module('ngClickExample', ['ngTouch']);
+      </file>
+    </example>
+ */
+
+var ngTouchClickDirectiveFactory = ['$parse', '$timeout', '$rootElement',
+    function($parse, $timeout, $rootElement) {
+  var TAP_DURATION = 750; // Shorter than 750ms is a tap, longer is a taphold or drag.
+  var MOVE_TOLERANCE = 12; // 12px seems to work in most mobile browsers.
+  var PREVENT_DURATION = 2500; // 2.5 seconds maximum from preventGhostClick call to click
+  var CLICKBUSTER_THRESHOLD = 25; // 25 pixels in any dimension is the limit for busting clicks.
+
+  var ACTIVE_CLASS_NAME = 'ng-click-active';
+  var lastPreventedTime;
+  var touchCoordinates;
+  var lastLabelClickCoordinates;
+
+
+  // TAP EVENTS AND GHOST CLICKS
+  //
+  // Why tap events?
+  // Mobile browsers detect a tap, then wait a moment (usually ~300ms) to see if you're
+  // double-tapping, and then fire a click event.
+  //
+  // This delay sucks and makes mobile apps feel unresponsive.
+  // So we detect touchstart, touchcancel and touchend ourselves and determine when
+  // the user has tapped on something.
+  //
+  // What happens when the browser then generates a click event?
+  // The browser, of course, also detects the tap and fires a click after a delay. This results in
+  // tapping/clicking twice. We do "clickbusting" to prevent it.
+  //
+  // How does it work?
+  // We attach global touchstart and click handlers, that run during the capture (early) phase.
+  // So the sequence for a tap is:
+  // - global touchstart: Sets an "allowable region" at the point touched.
+  // - element's touchstart: Starts a touch
+  // (- touchcancel ends the touch, no click follows)
+  // - element's touchend: Determines if the tap is valid (didn't move too far away, didn't hold
+  //   too long) and fires the user's tap handler. The touchend also calls preventGhostClick().
+  // - preventGhostClick() removes the allowable region the global touchstart created.
+  // - The browser generates a click event.
+  // - The global click handler catches the click, and checks whether it was in an allowable region.
+  //     - If preventGhostClick was called, the region will have been removed, the click is busted.
+  //     - If the region is still there, the click proceeds normally. Therefore clicks on links and
+  //       other elements without ngTap on them work normally.
+  //
+  // This is an ugly, terrible hack!
+  // Yeah, tell me about it. The alternatives are using the slow click events, or making our users
+  // deal with the ghost clicks, so I consider this the least of evils. Fortunately Angular
+  // encapsulates this ugly logic away from the user.
+  //
+  // Why not just put click handlers on the element?
+  // We do that too, just to be sure. If the tap event caused the DOM to change,
+  // it is possible another element is now in that position. To take account for these possibly
+  // distinct elements, the handlers are global and care only about coordinates.
+
+  // Checks if the coordinates are close enough to be within the region.
+  function hit(x1, y1, x2, y2) {
+    return Math.abs(x1 - x2) < CLICKBUSTER_THRESHOLD && Math.abs(y1 - y2) < CLICKBUSTER_THRESHOLD;
+  }
+
+  // Checks a list of allowable regions against a click location.
+  // Returns true if the click should be allowed.
+  // Splices out the allowable region from the list after it has been used.
+  function checkAllowableRegions(touchCoordinates, x, y) {
+    for (var i = 0; i < touchCoordinates.length; i += 2) {
+      if (hit(touchCoordinates[i], touchCoordinates[i + 1], x, y)) {
+        touchCoordinates.splice(i, i + 2);
+        return true; // allowable region
+      }
+    }
+    return false; // No allowable region; bust it.
+  }
+
+  // Global click handler that prevents the click if it's in a bustable zone and preventGhostClick
+  // was called recently.
+  function onClick(event) {
+    if (Date.now() - lastPreventedTime > PREVENT_DURATION) {
+      return; // Too old.
+    }
+
+    var touches = event.touches && event.touches.length ? event.touches : [event];
+    var x = touches[0].clientX;
+    var y = touches[0].clientY;
+    // Work around desktop Webkit quirk where clicking a label will fire two clicks (on the label
+    // and on the input element). Depending on the exact browser, this second click we don't want
+    // to bust has either (0,0), negative coordinates, or coordinates equal to triggering label
+    // click event
+    if (x < 1 && y < 1) {
+      return; // offscreen
+    }
+    if (lastLabelClickCoordinates &&
+        lastLabelClickCoordinates[0] === x && lastLabelClickCoordinates[1] === y) {
+      return; // input click triggered by label click
+    }
+    // reset label click coordinates on first subsequent click
+    if (lastLabelClickCoordinates) {
+      lastLabelClickCoordinates = null;
+    }
+    // remember label click coordinates to prevent click busting of trigger click event on input
+    if (nodeName_(event.target) === 'label') {
+      lastLabelClickCoordinates = [x, y];
+    }
+
+    // Look for an allowable region containing this click.
+    // If we find one, that means it was created by touchstart and not removed by
+    // preventGhostClick, so we don't bust it.
+    if (checkAllowableRegions(touchCoordinates, x, y)) {
+      return;
+    }
+
+    // If we didn't find an allowable region, bust the click.
+    event.stopPropagation();
+    event.preventDefault();
+
+    // Blur focused form elements
+    event.target && event.target.blur && event.target.blur();
+  }
+
+
+  // Global touchstart handler that creates an allowable region for a click event.
+  // This allowable region can be removed by preventGhostClick if we want to bust it.
+  function onTouchStart(event) {
+    var touches = event.touches && event.touches.length ? event.touches : [event];
+    var x = touches[0].clientX;
+    var y = touches[0].clientY;
+    touchCoordinates.push(x, y);
+
+    $timeout(function() {
+      // Remove the allowable region.
+      for (var i = 0; i < touchCoordinates.length; i += 2) {
+        if (touchCoordinates[i] == x && touchCoordinates[i + 1] == y) {
+          touchCoordinates.splice(i, i + 2);
+          return;
+        }
+      }
+    }, PREVENT_DURATION, false);
+  }
+
+  // On the first call, attaches some event handlers. Then whenever it gets called, it creates a
+  // zone around the touchstart where clicks will get busted.
+  function preventGhostClick(x, y) {
+    if (!touchCoordinates) {
+      $rootElement[0].addEventListener('click', onClick, true);
+      $rootElement[0].addEventListener('touchstart', onTouchStart, true);
+      touchCoordinates = [];
+    }
+
+    lastPreventedTime = Date.now();
+
+    checkAllowableRegions(touchCoordinates, x, y);
+  }
+
+  // Actual linking function.
+  return function(scope, element, attr) {
+    var clickHandler = $parse(attr.ngClick),
+        tapping = false,
+        tapElement,  // Used to blur the element after a tap.
+        startTime,   // Used to check if the tap was held too long.
+        touchStartX,
+        touchStartY;
+
+    function resetState() {
+      tapping = false;
+      element.removeClass(ACTIVE_CLASS_NAME);
+    }
+
+    element.on('touchstart', function(event) {
+      tapping = true;
+      tapElement = event.target ? event.target : event.srcElement; // IE uses srcElement.
+      // Hack for Safari, which can target text nodes instead of containers.
+      if (tapElement.nodeType == 3) {
+        tapElement = tapElement.parentNode;
+      }
+
+      element.addClass(ACTIVE_CLASS_NAME);
+
+      startTime = Date.now();
+
+      // Use jQuery originalEvent
+      var originalEvent = event.originalEvent || event;
+      var touches = originalEvent.touches && originalEvent.touches.length ? originalEvent.touches : [originalEvent];
+      var e = touches[0];
+      touchStartX = e.clientX;
+      touchStartY = e.clientY;
+    });
+
+    element.on('touchcancel', function(event) {
+      resetState();
+    });
+
+    element.on('touchend', function(event) {
+      var diff = Date.now() - startTime;
+
+      // Use jQuery originalEvent
+      var originalEvent = event.originalEvent || event;
+      var touches = (originalEvent.changedTouches && originalEvent.changedTouches.length) ?
+          originalEvent.changedTouches :
+          ((originalEvent.touches && originalEvent.touches.length) ? originalEvent.touches : [originalEvent]);
+      var e = touches[0];
+      var x = e.clientX;
+      var y = e.clientY;
+      var dist = Math.sqrt(Math.pow(x - touchStartX, 2) + Math.pow(y - touchStartY, 2));
+
+      if (tapping && diff < TAP_DURATION && dist < MOVE_TOLERANCE) {
+        // Call preventGhostClick so the clickbuster will catch the corresponding click.
+        preventGhostClick(x, y);
+
+        // Blur the focused element (the button, probably) before firing the callback.
+        // This doesn't work perfectly on Android Chrome, but seems to work elsewhere.
+        // I couldn't get anything to work reliably on Android Chrome.
+        if (tapElement) {
+          tapElement.blur();
+        }
+
+        if (!angular.isDefined(attr.disabled) || attr.disabled === false) {
+          element.triggerHandler('click', [event]);
+        }
+      }
+
+      resetState();
+    });
+
+    // Hack for iOS Safari's benefit. It goes searching for onclick handlers and is liable to click
+    // something else nearby.
+    element.onclick = function(event) { };
+
+    // Actual click handler.
+    // There are three different kinds of clicks, only two of which reach this point.
+    // - On desktop browsers without touch events, their clicks will always come here.
+    // - On mobile browsers, the simulated "fast" click will call this.
+    // - But the browser's follow-up slow click will be "busted" before it reaches this handler.
+    // Therefore it's safe to use this directive on both mobile and desktop.
+    element.on('click', function(event, touchend) {
+      scope.$apply(function() {
+        clickHandler(scope, {$event: (touchend || event)});
+      });
+    });
+
+    element.on('mousedown', function(event) {
+      element.addClass(ACTIVE_CLASS_NAME);
+    });
+
+    element.on('mousemove mouseup', function(event) {
+      element.removeClass(ACTIVE_CLASS_NAME);
+    });
+
+  };
+}];
+
+/* global ngTouch: false */
+
+/**
+ * @ngdoc directive
+ * @name ngSwipeLeft
+ *
+ * @description
+ * Specify custom behavior when an element is swiped to the left on a touchscreen device.
+ * A leftward swipe is a quick, right-to-left slide of the finger.
+ * Though ngSwipeLeft is designed for touch-based devices, it will work with a mouse click and drag
+ * too.
+ *
+ * To disable the mouse click and drag functionality, add `ng-swipe-disable-mouse` to
+ * the `ng-swipe-left` or `ng-swipe-right` DOM Element.
+ *
+ * Requires the {@link ngTouch `ngTouch`} module to be installed.
+ *
+ * @element ANY
+ * @param {expression} ngSwipeLeft {@link guide/expression Expression} to evaluate
+ * upon left swipe. (Event object is available as `$event`)
+ *
+ * @example
+    <example module="ngSwipeLeftExample" deps="angular-touch.js">
+      <file name="index.html">
+        <div ng-show="!showActions" ng-swipe-left="showActions = true">
+          Some list content, like an email in the inbox
+        </div>
+        <div ng-show="showActions" ng-swipe-right="showActions = false">
+          <button ng-click="reply()">Reply</button>
+          <button ng-click="delete()">Delete</button>
+        </div>
+      </file>
+      <file name="script.js">
+        angular.module('ngSwipeLeftExample', ['ngTouch']);
+      </file>
+    </example>
+ */
+
+/**
+ * @ngdoc directive
+ * @name ngSwipeRight
+ *
+ * @description
+ * Specify custom behavior when an element is swiped to the right on a touchscreen device.
+ * A rightward swipe is a quick, left-to-right slide of the finger.
+ * Though ngSwipeRight is designed for touch-based devices, it will work with a mouse click and drag
+ * too.
+ *
+ * Requires the {@link ngTouch `ngTouch`} module to be installed.
+ *
+ * @element ANY
+ * @param {expression} ngSwipeRight {@link guide/expression Expression} to evaluate
+ * upon right swipe. (Event object is available as `$event`)
+ *
+ * @example
+    <example module="ngSwipeRightExample" deps="angular-touch.js">
+      <file name="index.html">
+        <div ng-show="!showActions" ng-swipe-left="showActions = true">
+          Some list content, like an email in the inbox
+        </div>
+        <div ng-show="showActions" ng-swipe-right="showActions = false">
+          <button ng-click="reply()">Reply</button>
+          <button ng-click="delete()">Delete</button>
+        </div>
+      </file>
+      <file name="script.js">
+        angular.module('ngSwipeRightExample', ['ngTouch']);
+      </file>
+    </example>
+ */
+
+function makeSwipeDirective(directiveName, direction, eventName) {
+  ngTouch.directive(directiveName, ['$parse', '$swipe', function($parse, $swipe) {
+    // The maximum vertical delta for a swipe should be less than 75px.
+    var MAX_VERTICAL_DISTANCE = 75;
+    // Vertical distance should not be more than a fraction of the horizontal distance.
+    var MAX_VERTICAL_RATIO = 0.3;
+    // At least a 30px lateral motion is necessary for a swipe.
+    var MIN_HORIZONTAL_DISTANCE = 30;
+
+    return function(scope, element, attr) {
+      var swipeHandler = $parse(attr[directiveName]);
+
+      var startCoords, valid;
+
+      function validSwipe(coords) {
+        // Check that it's within the coordinates.
+        // Absolute vertical distance must be within tolerances.
+        // Horizontal distance, we take the current X - the starting X.
+        // This is negative for leftward swipes and positive for rightward swipes.
+        // After multiplying by the direction (-1 for left, +1 for right), legal swipes
+        // (ie. same direction as the directive wants) will have a positive delta and
+        // illegal ones a negative delta.
+        // Therefore this delta must be positive, and larger than the minimum.
+        if (!startCoords) return false;
+        var deltaY = Math.abs(coords.y - startCoords.y);
+        var deltaX = (coords.x - startCoords.x) * direction;
+        return valid && // Short circuit for already-invalidated swipes.
+            deltaY < MAX_VERTICAL_DISTANCE &&
+            deltaX > 0 &&
+            deltaX > MIN_HORIZONTAL_DISTANCE &&
+            deltaY / deltaX < MAX_VERTICAL_RATIO;
+      }
+
+      var pointerTypes = ['touch'];
+      if (!angular.isDefined(attr['ngSwipeDisableMouse'])) {
+        pointerTypes.push('mouse');
+      }
+      $swipe.bind(element, {
+        'start': function(coords, event) {
+          startCoords = coords;
+          valid = true;
+        },
+        'cancel': function(event) {
+          valid = false;
+        },
+        'end': function(coords, event) {
+          if (validSwipe(coords)) {
+            scope.$apply(function() {
+              element.triggerHandler(eventName);
+              swipeHandler(scope, {$event: event});
+            });
+          }
+        }
+      }, pointerTypes);
+    };
+  }]);
+}
+
+// Left is negative X-coordinate, right is positive.
+makeSwipeDirective('ngSwipeLeft', -1, 'swipeleft');
+makeSwipeDirective('ngSwipeRight', 1, 'swiperight');
+
 
 
 })(window, window.angular);

@@ -153,13 +153,13 @@
                     </div>
                     <br><br>
                     <div class="pull-right">
-                        <label>
-                            <span class="glyphicon glyphicon-question-sign" data-toggle="too                                   ltip"
+                        <!--<label>
+                            <span class="glyphicon glyphicon-question-sign" data-toggle="tooltip"
                                title="Ein eigenes Turnier hat zusätzliche Features aktiviert (z.B.ToDo-Liste)">
                             </span>
                             Eigenes Turnier:
                             <input type="checkbox" name="own" ng-model="currentCompetition.own" ng-disabled="!editComp">
-                        </label>
+                        </label>-->
                         <button class="btn btn-primary" type="button" ng-show="!editComp" ng-click="editCompetition()">Bearbeiten</button>
                         <button class="btn btn-warning" type="button" ng-show="editComp" ng-click="saveCompetition()">Speichern</button>
                         <button  class="btn btn-success" type="button" ng-if="!alreadyIn()" ng-click="addMember()">Teilnehmen</button>
@@ -170,14 +170,9 @@
                         <!--Competition Comments-->
                         <hr style="margin-top:4em">
                         <div class="media col-sm-offset-3 col-sm-8" ng-repeat="comment in currentCompetition.comments">
-                            <div class="media-left">
-                                <a href="#/profile?user="+{{comment.username}}>
-                                    <img ng-src="img/uploads/{{userpics[comment.username]}}" class="media-object img-circle" style="width:60px;height: 60px">
-                                </a>
-                            </div>
                             <div class="media-body text-left">
                                 <h4 class="media-heading">
-                                    <a href="#/profile?user="+{{comment.username}}>
+                                    <a ng-href="#/profile?user={{comment.username}}">
                                         <b>{{comment.username}}</b>
                                     </a>
                                 </h4>
@@ -185,12 +180,13 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-8 col-sm-offset-3" style="margin-top:2em">
-                                <textarea class="col-sm-8" ng-model="model.message"></textarea>
-                                <button type="button" style="height:100%;" class="col-sm-1 btn btn-success btn-lg" ng-click="newComment()">
-              <span class="pull-right glyphicon glyphicon-triangle-right"><a></a>
-              </span>
-                                </button>
+                            <div class="col-sm-7 col-sm-offset-3" style="margin-top:2em">
+                                <div class="input-group">
+                                    <textarea class="form-control custom-control" ng-model="model.message" rows="3" style="resize:none"></textarea>
+                                    <span class="input-group-addon btn btn-primary" ng-click="newComment()">
+                                    <span class="pull-right glyphicon glyphicon-triangle-right"><a></a></span>
+                                </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,15 +209,6 @@
             <textarea class="form-control" rows="8" id="comment"
                       placeholder="Bericht - Hinweis: Falls dir nichts einfällt, benutze doch einfach die Vorlage rechts oben"
                       ng-model="$ctrl.report.content"></textarea>
-        </div>
-        <div flow-init="{target: '/uploadImg'}"
-             flow-file-added="$file.uniqueIdentifier = 'comp-{{$ctrl.competition.name}}'"
-             flow-files-submitted="$flow.upload()"
-             flow-file-success="$file.msg = $message">
-
-            <span class="btn" flow-btn class="btn btn-success">Mannschaftsfoto</span>
-
-            <img flow-img="$flow.files[0]" width="10%" height="10%"/>
         </div>
     </div>
     <div class="modal-footer">

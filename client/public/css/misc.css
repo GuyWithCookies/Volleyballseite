@@ -161,3 +161,54 @@ top: 66%;
     0%,100% { opacity: 0; }
     50% { opacity: 1; }
 }
+
+.header{
+    background-size: cover;
+    background-image: url(../img/header-bg.jpg);
+    margin-bottom: 0em;
+}
+
+.footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem;
+    background-color: #EEEEEE;
+    text-align: center;
+}
+
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+
+    position: relative;
+    margin: 0;
+    padding-bottom: 6rem;
+    min-height: 100%;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}

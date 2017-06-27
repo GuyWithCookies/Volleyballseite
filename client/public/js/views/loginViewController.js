@@ -3,7 +3,7 @@ app.controller('loginViewController', ['$scope', '$location', 'AuthService', fun
 
       // initial values
       $scope.error = false;
-      $scope.disabled = true;
+      $scope.loading = true;
 
       // call login from service
       console.log($scope.login.username);
@@ -13,14 +13,14 @@ app.controller('loginViewController', ['$scope', '$location', 'AuthService', fun
         // handle success
         .then(function () {
           $location.path('/main');
-          $scope.disabled = false;
+          $scope.loading = false;
           $scope.login = {};
         })
         // handle error
         .catch(function () {
           $scope.error = true;
           $scope.errorMessage = "Invalid username and/or password";
-          $scope.disabled = false;
+          $scope.loading = false;
           $scope.login = {};
         });
 

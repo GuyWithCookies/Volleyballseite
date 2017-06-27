@@ -18,12 +18,12 @@ module.exports = function(grunt) {
 					expand:true,
 					cwd:"bower_components/bootstrap/dist/",
 					src : "fonts/*",
-					dest : "public/"
+					dest : "./client/public/"
 				},{
 					expand:true,
 					cwd:"bower_components/angular-ui-grid/",
 					src : ["ui-grid.svg","ui-grid.ttf","ui-grid.woff"],
-					dest : "public"
+					dest : "./client/public"
 				} ]
 			}
 		}

@@ -1,4 +1,3 @@
-# Volleyballseite
+The OpenShift `nodejs` cartridge documentation can be found at:
 
-
-Website for team-volleyball.org
+http://openshift.github.io/documentation/oo_cartridge_guide.html#nodejs

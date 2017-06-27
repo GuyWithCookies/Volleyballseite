@@ -1,8 +1,3 @@
-#important for 1.0.0
-    small navbar public view
-    image problem(upload and overwrite)
-
-
 #Comps
     mehr templates/bearbeiten der Templates
     turnier sortierung funktioniert nicht
@@ -10,28 +5,12 @@
     eigenes Turnier Todo list
     längere nachrichten scrollen
 
-#Public view
-    navbar fixen
-    competition picture bug in delete --> user ansicht
-    Problem wenn kein Mannschaftsbild --> bekommt man mit ng-src raus ob das Bild existiert ?
-    Ansonsten get Request + ng-show
-
 NEW
     (GALLERY)
     EMAIL System implementieren
     +Rundmail
 
+ausloggen bei einloggfenster entfernen
 
-algemein
-    bei registrierung nach abschicken password feld rot
-
-small Screen
-    small navbar for public view
-
-
-#creds
-
-admin
-W_EA8YJAnXfa
-db: teamvolleyball
+Eigenes Turnier wieder implementieren mit funktionen
 
