@@ -38,7 +38,7 @@ app.directive("navbar", ["$location", "AuthService", function($location, AuthSer
           'text': "Login",
           "symbol": "log-out"
         }, {
-          'link': "#/register ",
+          'link': "#/register",
           'text': "Registrierung"
         }];
       }
